@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.common.base.Strings;
+
 import io.hs.bex.web.view.ModelView;
 
 
@@ -32,9 +34,15 @@ public class CurrencyController
     }
     
     @RequestMapping(value={ "/currency-update"}, method = RequestMethod.GET)
-    public String currencyUpdate( ModelMap model, @RequestParam( name="supported" ) String[] supported ) 
+    public String currencyUpdate( ModelMap model, 
+            @RequestParam( name="supported", required = false ) String[] supported,
+            @RequestParam( name="code", required = false ) String code,
+            @RequestParam( name="details", required = false ) String details) 
     {
-        currencyService.setSupported( supported );
+        if(supported != null && supported.length > 0)
+            currencyService.setSupported( supported );
+        else if(!Strings.isNullOrEmpty( code ))
+            currencyService.updateCurrency( code, details );
         
         return currencyListView( model );
     }
@@ -45,6 +53,14 @@ public class CurrencyController
         currencyService.startSyncJob();
         
         return currencyListView( model );
+    }
+    
+    
+    @RequestMapping(value={ "/currency-details"}, method = RequestMethod.GET)
+    public String currencyDetailsView( ModelMap model, @RequestParam( name="code" ) String code ) 
+    {
+        model.addAttribute( "currency", currencyService.getCurrencyDetails(code));
+        return ModelView.VIEW_CURRENCY_DETAILS_PAGE;
     }
 
 

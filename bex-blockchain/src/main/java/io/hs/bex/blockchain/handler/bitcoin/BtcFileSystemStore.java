@@ -36,7 +36,7 @@ import com.google.common.base.Strings;
 public class BtcFileSystemStore implements BlockStoreService
 {
     // ---------------------------------
-    private static final Logger logger = LoggerFactory.getLogger( BtcDBStore.class );
+    private static final Logger logger = LoggerFactory.getLogger( BtcFileSystemStore.class );
     // ---------------------------------
 
     static final String BLOCKSTORE_ROOT_FOLDER = "/blockstore/";
@@ -105,9 +105,7 @@ public class BtcFileSystemStore implements BlockStoreService
                     if( !Strings.isNullOrEmpty( txInputData.getAddress() ) )
                     {
                         if( addressDataMap.containsKey( txInputData.getAddress() ) )
-                        {
                             addressData = addressDataMap.get( txInputData.getAddress() );
-                        }
                         else
                         {
                             addressData = new AddressData();
@@ -159,9 +157,7 @@ public class BtcFileSystemStore implements BlockStoreService
                     if( !Strings.isNullOrEmpty( txOutputData.getAddress() ) )
                     {
                         if( addressDataMap.containsKey( txOutputData.getAddress() ) )
-                        {
                             addressData = addressDataMap.get( txOutputData.getAddress() );
-                        }
                         else
                         {
                             addressData = new AddressData();
@@ -209,7 +205,7 @@ public class BtcFileSystemStore implements BlockStoreService
 //        saveFile( txDir, "index.json", mapper.writeValueAsString( txData ) );
 //    }
     
-    private void saveAddressaData( String nodeDataPath, Map<String, AddressData> addressDataMap ) 
+    private synchronized void saveAddressaData( String nodeDataPath, Map<String, AddressData> addressDataMap ) 
             throws IOException 
     {
         for( String address : addressDataMap.keySet()) 

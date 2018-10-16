@@ -22,4 +22,8 @@ public interface CurrencyService
 
     void startSyncJob();
 
+    SysCurrency getCurrencyDetails( String code );
+
+    void updateCurrency( String code, String details );
+
 }

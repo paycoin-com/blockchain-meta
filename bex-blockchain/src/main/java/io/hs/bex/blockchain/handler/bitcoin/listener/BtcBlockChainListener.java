@@ -79,7 +79,7 @@ public class BtcBlockChainListener extends DownloadProgressTracker
         //----Sync Data to LocalStore --------------
         try
         {
-            blockStoreService.store( node, peer.getBestHeight(), block );
+            blockStoreService.store( node, peer.getBestHeight() - blocksLeft, block );
             //logger.info( "(!) Data saved successfully BlocksLeft:{}  ", blocksLeft );
         }
         catch( Exception e )

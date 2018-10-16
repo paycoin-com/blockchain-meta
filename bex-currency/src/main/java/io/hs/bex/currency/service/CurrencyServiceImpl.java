@@ -110,7 +110,6 @@ public class CurrencyServiceImpl implements CurrencyService
     {
         try
         {
-            
             HashSet<SysCurrency> currencies = new HashSet<>(Arrays.asList(SysCurrency.values()));
             
             String data  = getFileContent( "", "index.json" );
@@ -127,6 +126,26 @@ public class CurrencyServiceImpl implements CurrencyService
         
         return Collections.emptySet();
     }
+    
+    @Override
+    public SysCurrency getCurrencyDetails( String code )
+    {
+        try
+        {
+            SysCurrency currency = SysCurrency.find( code );
+            String details = getFileContent( "/" + currency.getCode(), "index.json");
+            currency.setDetails( details );
+            
+            return currency; 
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error getting currency details" , e );
+        }
+        
+        return SysCurrency.OTHER;
+    }
+    
     
     @Override
     public List<SysCurrency> getSupported( CurrencyType currencyType )
@@ -172,6 +191,22 @@ public class CurrencyServiceImpl implements CurrencyService
         }
 
     }
+    
+    @Override
+    public void updateCurrency(String code, String details)
+    {
+        try
+        {
+            SysCurrency currency = SysCurrency.find( code );
+            saveFile( "/" + currency.getCode(), "index.json", details );
+        }
+        catch( IOException e )
+        {
+            logger.error( "Error setting supporeted currences" , e );
+        }
+
+    }
+
 
     @Override
     public void saveCurrencyRates( CurrencyInfoRequest request , boolean storeLastRate ) 
@@ -215,7 +250,7 @@ public class CurrencyServiceImpl implements CurrencyService
     
     private String getFileContent( String path, String fileName )
     {
-        return dataStoreService.getFileContent( XRATES_ROOT_FOLDER , "index.json");
+        return dataStoreService.getFileContent( XRATES_ROOT_FOLDER + path , "index.json");
     }
    
 }
