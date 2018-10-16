@@ -1,4 +1,4 @@
-# Horizontal-Systems Block-Explorer
+# Block Explorer by Horizontal Systems
 
 ## Requirements
 - [Maven](http://maven.apache.org/) is used as project management tool
