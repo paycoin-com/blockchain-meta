@@ -38,6 +38,8 @@ public class BtcFileSystemStore implements BlockStoreService
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( BtcFileSystemStore.class );
     // ---------------------------------
+    
+    private DataStoreType defaultStoreType = DataStoreType.IPFS;
 
     static final String BLOCKSTORE_ROOT_FOLDER = "/blockstore/";
 
@@ -184,12 +186,12 @@ public class BtcFileSystemStore implements BlockStoreService
     
     private void saveFile( String path, String data ) 
     {
-        dataStoreService.saveFile( DataStoreType.FILESYSTEM, true, path, "index.json", data );
+        dataStoreService.saveFile( defaultStoreType, true, path, "index.json", data );
     }
     
     private String getFileContent( String path ) 
     {
-        return dataStoreService.getFileContent(DataStoreType.FILESYSTEM, path, "index.json" );
+        return dataStoreService.getFileContent( defaultStoreType, path, "index.json" );
     }
     
 //    private void saveBlockData( String nodeDataPath, String hash, BlockData blockData ) 

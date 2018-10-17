@@ -24,4 +24,6 @@ public interface BlockChainService
 
     Node syncBlocks( int nodeId );
 
+    Node syncLocalBlocks( int nodeId );
+
 }

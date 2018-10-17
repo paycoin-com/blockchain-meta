@@ -202,7 +202,7 @@
     	{
             $('#dvOperationPg').attr("style","width:0%;");   
             $('#dvOperationPg').html("0%");   
-    		
+            
             checkOperationStatus( ${node.id});
         }
     });

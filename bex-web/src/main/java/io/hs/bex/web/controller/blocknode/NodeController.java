@@ -53,6 +53,8 @@ public class NodeController
             model.addAttribute( "node", nodeService.stopNode( nodeId ));
         else if(actionType == 3)
             model.addAttribute( "node", blockChainService.syncBlocks( nodeId ));
+        else if(actionType == 4)
+            model.addAttribute( "node", blockChainService.syncLocalBlocks( nodeId ));
         
         return ModelView.VIEW_NODE_DETAILS_PAGE;
     }

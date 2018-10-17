@@ -69,7 +69,8 @@ public class BlockChainDAO
             ResultSet rs = pst.executeQuery();
             
             if(rs.next()) 
-                return new LocalStoreStatus(rs.getLong( "block" ), rs.getLong( "tx" ), rs.getLong( "address" ));
+                return new LocalStoreStatus(rs.getLong( "block" ), rs.getLong( "tx" ), rs.getLong( "address" ),
+                        rs.getString( "block_hash" ));
         } 
         catch( Exception  e) 
         {
@@ -86,7 +87,7 @@ public class BlockChainDAO
     
     public LocalStoreStatus saveLocalStoreStatus( LocalStoreStatus storeStatus ) throws SQLException 
     {
-        String SQL_QUERY = "insert into status_data (id,block,tx,address) values( ?, ?, ?, ? )";
+        String SQL_QUERY = "insert into status_data (id,block,tx,address,block_hash) values( ?, ?, ?, ?, ? )";
         Connection con = null;
         
         try
@@ -98,7 +99,8 @@ public class BlockChainDAO
             pst.setLong( 2, storeStatus.getBlockIndex() );
             pst.setLong( 3, storeStatus.getTxIndex() );
             pst.setLong( 4, storeStatus.getAddressIndex() );
-
+            pst.setString( 5, storeStatus.getBlockHash());
+            
             pst.execute();
         } 
         catch( Exception  e) 
@@ -117,7 +119,7 @@ public class BlockChainDAO
     
     public void updateLocalStoreStatus( LocalStoreStatus storeStatus ) throws SQLException 
     {
-        String SQL_QUERY = "update status_data set block=?, tx=?, address=? where id=?";
+        String SQL_QUERY = "update status_data set block=?, tx=?, address=?, block_hash=? where id=?";
         Connection con = null;
         
         try
@@ -128,7 +130,8 @@ public class BlockChainDAO
             pst.setLong( 1, storeStatus.getBlockIndex() );
             pst.setLong( 2, storeStatus.getTxIndex() );
             pst.setLong( 3, storeStatus.getAddressIndex() );
-            pst.setInt( 4, LocalStoreStatus.STATUS_DATA_ID );
+            pst.setString( 4, storeStatus.getBlockHash());
+            pst.setInt( 5, LocalStoreStatus.STATUS_DATA_ID );
 
             pst.executeUpdate();
         } 
