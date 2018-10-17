@@ -87,7 +87,7 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
-                                    <td>${currency.code }</td>
+                                    <td><a href="<c:url value = "/currency-details?code=${currency.code }"/>">${currency.code }</a></td>
                                     <td>${currency.codeNumeric}</td>
                                     <td>${currency.displayName}</td>
                                     <td>Unicode:${currency.symbolUnicode}&nbsp;&nbsp;-&nbsp;&nbsp;${currency.symbol}</td>

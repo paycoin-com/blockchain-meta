@@ -39,11 +39,11 @@ public class FileSystemHandlerTest
     
     //@Ignore
     @Test
-    public void testWriteFIle() throws IOException
+    public void testWriteReadFile() throws IOException
     {
         String test_dir = "/x1/x2/x3/x4";
         String fileName = "test.json";
-        String content = "{json:data}";
+        String content = "{json:data1,data2}";
         
         storeHandler.saveFile( true, test_dir, fileName, content );
         

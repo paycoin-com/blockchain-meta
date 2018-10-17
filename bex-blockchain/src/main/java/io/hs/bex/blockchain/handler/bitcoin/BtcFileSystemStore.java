@@ -36,8 +36,10 @@ import com.google.common.base.Strings;
 public class BtcFileSystemStore implements BlockStoreService
 {
     // ---------------------------------
-    private static final Logger logger = LoggerFactory.getLogger( BtcDBStore.class );
+    private static final Logger logger = LoggerFactory.getLogger( BtcFileSystemStore.class );
     // ---------------------------------
+    
+    private DataStoreType defaultStoreType = DataStoreType.IPFS;
 
     static final String BLOCKSTORE_ROOT_FOLDER = "/blockstore/";
 
@@ -105,9 +107,7 @@ public class BtcFileSystemStore implements BlockStoreService
                     if( !Strings.isNullOrEmpty( txInputData.getAddress() ) )
                     {
                         if( addressDataMap.containsKey( txInputData.getAddress() ) )
-                        {
                             addressData = addressDataMap.get( txInputData.getAddress() );
-                        }
                         else
                         {
                             addressData = new AddressData();
@@ -159,9 +159,7 @@ public class BtcFileSystemStore implements BlockStoreService
                     if( !Strings.isNullOrEmpty( txOutputData.getAddress() ) )
                     {
                         if( addressDataMap.containsKey( txOutputData.getAddress() ) )
-                        {
                             addressData = addressDataMap.get( txOutputData.getAddress() );
-                        }
                         else
                         {
                             addressData = new AddressData();
@@ -188,12 +186,12 @@ public class BtcFileSystemStore implements BlockStoreService
     
     private void saveFile( String path, String data ) 
     {
-        dataStoreService.saveFile( DataStoreType.FILESYSTEM, true, path, "index.json", data );
+        dataStoreService.saveFile( defaultStoreType, true, path, "index.json", data );
     }
     
     private String getFileContent( String path ) 
     {
-        return dataStoreService.getFileContent(DataStoreType.FILESYSTEM, path, "index.json" );
+        return dataStoreService.getFileContent( defaultStoreType, path, "index.json" );
     }
     
 //    private void saveBlockData( String nodeDataPath, String hash, BlockData blockData ) 
@@ -209,7 +207,7 @@ public class BtcFileSystemStore implements BlockStoreService
 //        saveFile( txDir, "index.json", mapper.writeValueAsString( txData ) );
 //    }
     
-    private void saveAddressaData( String nodeDataPath, Map<String, AddressData> addressDataMap ) 
+    private synchronized void saveAddressaData( String nodeDataPath, Map<String, AddressData> addressDataMap ) 
             throws IOException 
     {
         for( String address : addressDataMap.keySet()) 

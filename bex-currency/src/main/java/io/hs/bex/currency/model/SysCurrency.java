@@ -40,6 +40,8 @@ public enum SysCurrency
     private CurrencyType type;
     private boolean supported = false;
     
+    private String details;
+    
 
     private java.util.Currency internalIns = null;
 
@@ -128,6 +130,16 @@ public enum SysCurrency
         }
 
         return null;
+    }
+    
+    public String getDetails()
+    {
+        return details;
+    }
+
+    public void setDetails( String details )
+    {
+        this.details = details;
     }
 
     @JsonCreator

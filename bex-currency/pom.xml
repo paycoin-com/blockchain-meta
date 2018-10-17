@@ -6,8 +6,8 @@
         <artifactId>bex-parent</artifactId>
         <version>1.2-SNAPSHOT</version>
     </parent>    
-    <artifactId>bex-ecurrency</artifactId>
-    <name>HS-BE E-Curreny</name>
+    <artifactId>bex-currency</artifactId>
+    <name>HS-Bex Currency</name>
 
     <dependencies>
      

@@ -2,10 +2,10 @@ package io.hs.bex.datastore.handler.fs;
 
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,12 +50,24 @@ public class FileSystemHandler implements DataStoreHandler
     {
         try 
         {
+            String file = root_dir + pathStr + File.separator + fileName;
             StringBuilder sb = new StringBuilder();
-            Files.lines( Paths.get( root_dir + pathStr + File.separator + fileName ), StandardCharsets.UTF_8 )
-                    .forEach( c -> sb.append( c ) );
+          
+            FileInputStream inputStream = new FileInputStream( file );
+
+            int content = 0;
+            
+            while ((content = inputStream.read()) != -1) 
+            {
+                sb.append( (char) content);
+            }
+
+            inputStream.close();  
+            
             return sb.toString();
+            
         }
-        catch( NoSuchFileException e ) 
+        catch( FileNotFoundException e ) 
         {
             return "";
         }

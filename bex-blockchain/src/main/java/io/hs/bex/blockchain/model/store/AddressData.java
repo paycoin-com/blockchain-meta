@@ -2,7 +2,6 @@ package io.hs.bex.blockchain.model.store;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -35,7 +34,28 @@ public class AddressData
     
     public void addBlockData( String hash, long height ) 
     {
-        blocks.add( new BlockDataLimited( hash, height ) );
+        if(!containsBlock( hash ))
+            blocks.add( new BlockDataLimited( hash, height ) );
+    }
+    
+    public void addBlockData( BlockDataLimited block ) 
+    {
+        if(!containsBlock( block.getHash() ))
+            blocks.add( new BlockDataLimited( block.getHash(), block.getHeight() ) );
+    }
+
+    
+    public boolean containsBlock( String hash ) 
+    {
+        return blocks.stream().anyMatch( item -> item.getHash().equals( hash ));
+    }
+    
+    public void addBlocks( Set<BlockDataLimited> inpBlocks ) 
+    {
+        for(BlockDataLimited block : inpBlocks) 
+        {
+            addBlockData(block);
+        }
     }
     
 }

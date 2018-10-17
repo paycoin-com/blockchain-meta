@@ -52,6 +52,8 @@ public class BtcBlockChainHandler implements BlockChainHandler
     @Autowired
     BtcFileSystemStore dataStoreService;
     
+    @Autowired
+    BtcDataSyncService dataSyncService;
     
     DigitalCurrencyType BITCOIN = DigitalCurrencyType.BTC; 
 
@@ -102,6 +104,26 @@ public class BtcBlockChainHandler implements BlockChainHandler
         
         return node;
     }
+    
+    @Override
+    public Node syncLocalBlocks() 
+    {
+        if( node.getState() == NodeState.ACTIVE_NOTSYNC || node.getState() == NodeState.ACTIVE_SYNC ) 
+        {
+            peerGroup = (PeerGroup) node.getPeerGroup();
+            
+            if( peerGroup.isRunning()) 
+            {
+                node.getStatus().setOperationType( OperationType.SYNC_LOCAL_STORE );
+                node.getStatus().setMessage( "Started Local Block synchronization !!!" );
+                
+                dataSyncService.syncData( node );
+            }
+        }
+        
+        return node;
+    }
+
     
     @Override
     public GenericAddress getAddressDetails( String addressStr )

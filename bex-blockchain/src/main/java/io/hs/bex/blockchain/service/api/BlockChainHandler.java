@@ -23,4 +23,6 @@ public interface BlockChainHandler
 
     Node syncBlocks();
 
+    Node syncLocalBlocks();
+
 }

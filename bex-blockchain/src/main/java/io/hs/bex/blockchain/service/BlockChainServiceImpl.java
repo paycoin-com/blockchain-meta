@@ -90,6 +90,21 @@ public class BlockChainServiceImpl implements BlockChainService
         }  
     }
     
+    @Override
+    public Node syncLocalBlocks( int nodeId )
+    {
+        try
+        {
+            return getHandler(nodeId).syncLocalBlocks();
+        }
+        catch( Exception e )
+        {
+            logger.error( "(E!) Error synchronizing blocks nodeId:{}", nodeId, e );
+            
+            return null;
+        }  
+    }
+    
     
     @Override
     public GenericBlock getBlockByHash( String provider, String blockHash ) 

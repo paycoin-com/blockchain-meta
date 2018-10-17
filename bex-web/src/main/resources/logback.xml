@@ -3,7 +3,7 @@
 <configuration>
 
     <property name="LOG_DIR" value="${catalina.home}/logs" />
-    <property name="LOG_FILE_NAME" value="gbe" />
+    <property name="LOG_FILE_NAME" value="bex" />
     <property name="PATTERN" value="%date %5level [%thread] %logger{10} %msg%n" />
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">

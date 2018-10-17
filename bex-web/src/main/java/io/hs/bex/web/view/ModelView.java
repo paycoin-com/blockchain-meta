@@ -17,6 +17,7 @@ public class ModelView
     public static final String VIEW_ADDRESS_DETAILS_PAGE = "address-details";
     
     public static final String VIEW_CURRENCY_LIST_PAGE = "currency-list";
+    public static final String VIEW_CURRENCY_DETAILS_PAGE = "currency-details";
 
 
 }
