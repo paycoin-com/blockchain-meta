@@ -74,7 +74,7 @@ public class WebAppConfig implements WebMvcConfigurer
     
     @Configuration
     @Profile("prod")
-    @PropertySource("file:${gbe.config.path}/config.properties")
+    @PropertySource("file:${bex.config.path}/config.properties")
     static class Prod
     { }
     

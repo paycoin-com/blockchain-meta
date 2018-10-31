@@ -37,7 +37,7 @@ public class BlockChainServiceImpl implements BlockChainService
     
     @Autowired
     NodeService nodeService;
-    
+        
     @Autowired
     private ApplicationContext appContext;
     
@@ -190,5 +190,20 @@ public class BlockChainServiceImpl implements BlockChainService
             return Collections.emptyList();
         }
     }
+    
+    
+    @Override
+    public double getEstimatedTxFee( String provider )
+    {
+        try 
+        {
+            return getHandler( provider ).getEstimatedTxFee();
+        }
+        catch( Exception e ) 
+        {
+            return 0;
+        }
+    }
+
     
 }

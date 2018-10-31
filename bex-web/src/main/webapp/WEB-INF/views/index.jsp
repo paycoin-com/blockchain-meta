@@ -97,6 +97,7 @@
     <script src="<c:url value = "/assets/js/main.js"/>"></script>
     <script type="text/javascript">
     
+    /*
     function drawLineChart() 
     {
     	  function formatDate( dateInp ) 
@@ -144,7 +145,7 @@
     	}
 
     	drawLineChart();
-    
+    */
     
     </script>
 </body>

@@ -2,18 +2,31 @@ package io.hs.bex.web.config.db;
 
 
 import java.beans.PropertyVetoException;
+import java.util.Properties;
+
 import javax.annotation.Resource;
+import javax.persistence.EntityManagerFactory;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 import com.zaxxer.hikari.HikariDataSource;
 
 
 @Configuration
-//@EnableTransactionManagement
-//@EnableJpaRepositories(  {"org.grouvi.jpublisher.db.dao"})
+@EnableTransactionManagement
+@EnableJpaRepositories(  {"io.hs.bex.blockchain.dao.api"})
 public class DbConfig
 {
     // ---------------------------------
@@ -56,11 +69,11 @@ public class DbConfig
     //private static final String PROPERTY_NAME_PREFERREDTESTQUERY = "db.preferredTestQuery";
     private static final String PROPERTY_NAME_MAXIDLETIME = "db.maxIdleTime";
    
-//    private static final String PROPERTY_NAME_HIBERNATE_DIALECT = "hibernate.dialect";
-//    private static final String PROPERTY_NAME_HIBERNATE_SHOW_SQL = "hibernate.show_sql";
-//    private static final String PROPERTY_NAME_HIBERNATE_FORMAT_SQL = "hibernate.format_sql";
-//    private static final String PROPERTY_NAME_HIBERNATE_HBM2DDL_AUTO = "hibernate.hbm2ddl.auto";
-//    private static final String PROPERTY_NAME_HIBERNATE_DEFAULT_SCHEMA = "hibernate.default_schema";
+    private static final String PROPERTY_NAME_HIBERNATE_DIALECT = "hibernate.dialect";
+    private static final String PROPERTY_NAME_HIBERNATE_SHOW_SQL = "hibernate.show_sql";
+    private static final String PROPERTY_NAME_HIBERNATE_FORMAT_SQL = "hibernate.format_sql";
+    private static final String PROPERTY_NAME_HIBERNATE_HBM2DDL_AUTO = "hibernate.hbm2ddl.auto";
+    //private static final String PROPERTY_NAME_HIBERNATE_DEFAULT_SCHEMA = "hibernate.default_schema";
 
     @Resource
     private Environment env;
@@ -91,101 +104,70 @@ public class DbConfig
         return dataSource;
     }
 
-//    /* *************************************
-//     * EntityManagerFactory
-//     */
-//    @Bean
-//    public LocalContainerEntityManagerFactoryBean entityManagerFactory()
-//                    throws IllegalStateException, PropertyVetoException
-//    {
-//        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-//        em.setPersistenceUnitName("FSTP");
-//        em.setDataSource( dataSource() );
-//        em.setJpaVendorAdapter( jpaVendorAdapter() );    
-//        em.setJpaProperties( hibernateProperties() );
-//        em.setPackagesToScan(new String[] { "io.hs.gbeorg.grouvi.jpublisher.common.model"});
-//        
-//        return em;
-//    }
-//    
-//    /* *************************************
-//     * Provider specific adapter.
-//     */
-//    @Bean
-//    public JpaVendorAdapter jpaVendorAdapter() 
-//    {
-//        HibernateJpaVendorAdapter hibernateJpaVendorAdapter = new HibernateJpaVendorAdapter();
-//        return hibernateJpaVendorAdapter;
-//    }
-//    
-//
-//    /* *************************************
-//     * PlatformTransactionManager
-//     */
-//    @Bean
-//    public PlatformTransactionManager transactionManager( EntityManagerFactory emf )
-//    {
-//        JpaTransactionManager transactionManager = new JpaTransactionManager();
-//        transactionManager.setEntityManagerFactory( emf );
-//
-//        return transactionManager;
-//    }
-//    
-//    
-//    /* *************************************
-//     * 
-//     */
-//    @Bean
-//    public PersistenceExceptionTranslationPostProcessor exceptionTranslation()
-//    {
-//       return new PersistenceExceptionTranslationPostProcessor();
-//    }
-//   
-//
-//    public Properties hibernateProperties()
-//    {
-//        Properties properties = new Properties();
-//        properties.put( PROPERTY_NAME_HIBERNATE_DIALECT, env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_DIALECT ) );
-//        properties.put( PROPERTY_NAME_HIBERNATE_SHOW_SQL, env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_SHOW_SQL ) );
-//        properties.put( PROPERTY_NAME_HIBERNATE_FORMAT_SQL,
-//                        env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_FORMAT_SQL ) );
-//        properties.put( PROPERTY_NAME_HIBERNATE_HBM2DDL_AUTO,
-//                        env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_HBM2DDL_AUTO ) );
-//        //properties.put( PROPERTY_NAME_HIBERNATE_DEFAULT_SCHEMA,
-//                        //env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_DEFAULT_SCHEMA ) );
-//
-//        return properties;
-//    }
-    
-    /*
+    /* *************************************
+     * EntityManagerFactory
+     */
     @Bean
-    JedisConnectionFactory jedisConnectionFactory() 
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory()
+                    throws IllegalStateException, PropertyVetoException
     {
-        String redisHost = env.getRequiredProperty( "redis.host" );
-        int port  = Integer.parseInt( env.getRequiredProperty( "redis.port" ));
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setPersistenceUnitName("FSTP");
+        em.setDataSource( dataSource() );
+        em.setJpaVendorAdapter( jpaVendorAdapter() );    
+        em.setJpaProperties( hibernateProperties() );
+        em.setPackagesToScan(new String[] { "io.hs.bex.blockchain.model.store"});
         
-        logger.info( "*** Configuration loaded for Redis/Port:" + redisHost );
-        
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration( redisHost,  port );
-        return new JedisConnectionFactory(redisStandaloneConfiguration);
+        return em;
     }
     
+    /* *************************************
+     * Provider specific adapter.
+     */
     @Bean
-    StringRedisSerializer keySerializer() 
+    public JpaVendorAdapter jpaVendorAdapter() 
     {
-        return new StringRedisSerializer();
+        HibernateJpaVendorAdapter hibernateJpaVendorAdapter = new HibernateJpaVendorAdapter();
+        return hibernateJpaVendorAdapter;
+    }
+    
+
+    /* *************************************
+     * PlatformTransactionManager
+     */
+    @Bean
+    public PlatformTransactionManager transactionManager( EntityManagerFactory emf )
+    {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory( emf );
+
+        return transactionManager;
+    }
+    
+    
+    /* *************************************
+     * 
+     */
+    @Bean
+    public PersistenceExceptionTranslationPostProcessor exceptionTranslation()
+    {
+       return new PersistenceExceptionTranslationPostProcessor();
     }
    
-    
-    @Bean
-    public RedisTemplate<String, String> redisTemplate() 
+
+    public Properties hibernateProperties()
     {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(jedisConnectionFactory());
-        template.setKeySerializer( keySerializer() );
-        template.setValueSerializer(new StringRedisSerializer());
-        return template;
-    }*/
-    //---------------------------------------------------
+        Properties properties = new Properties();
+        properties.put( PROPERTY_NAME_HIBERNATE_DIALECT, env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_DIALECT ) );
+        properties.put( PROPERTY_NAME_HIBERNATE_SHOW_SQL, env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_SHOW_SQL ) );
+        properties.put( PROPERTY_NAME_HIBERNATE_FORMAT_SQL,
+                        env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_FORMAT_SQL ) );
+        properties.put( PROPERTY_NAME_HIBERNATE_HBM2DDL_AUTO,
+                        env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_HBM2DDL_AUTO ) );
+        //properties.put( PROPERTY_NAME_HIBERNATE_DEFAULT_SCHEMA,
+                        //env.getRequiredProperty( PROPERTY_NAME_HIBERNATE_DEFAULT_SCHEMA ) );
+
+        return properties;
+    }
     
 }

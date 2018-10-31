@@ -10,7 +10,6 @@ import io.hs.bex.blocknode.model.Node;
 import io.hs.bex.common.utils.StringUtils;
 import io.hs.bex.datastore.model.DataStoreType;
 import io.hs.bex.datastore.service.api.DataStoreService;
-import io.hs.bex.blockchain.handler.bitcoin.dao.BlockChainDAO;
 import io.hs.bex.blockchain.listener.BlockStoreEventListener;
 import io.hs.bex.blockchain.model.store.AddressData;
 import io.hs.bex.blockchain.model.store.BlockData;
@@ -21,7 +20,7 @@ import io.hs.bex.blockchain.service.api.BlockStoreService;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Block;
-import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
@@ -47,22 +46,18 @@ public class BtcFileSystemStore implements BlockStoreService
     DataStoreService dataStoreService;
     
     @Autowired
-    BlockChainDAO blockChainDAO;
-    
-    private ObjectMapper mapper  = new ObjectMapper();
-    
-    private BlockStoreEventListener blockStoreEventListener;
+    ObjectMapper mapper;
     
     @SuppressWarnings( "deprecation" )
     @Override
-    public void store( Node node, long blockHeight, Object blockObject )
+    public void store( Node node, long blockHeight, byte[] blockObject )
     {
-        //BlockStoreData blockStoreData = null;
-        Block block = (Block) blockObject;
         AddressData addressData = null;
         
         try 
         {
+            Block block = new Block( (NetworkParameters) node.getNetwork().getNetworkParams(), blockObject) ; 
+            
             String nodeDataPath = BLOCKSTORE_ROOT_FOLDER +
                     node.getProvider().getCurrencyType().getCode() + "/" 
                    + node.getNetwork().getType().name().toLowerCase();
@@ -124,11 +119,11 @@ public class BtcFileSystemStore implements BlockStoreService
                 {
                     TxOutputData txOutputData = new TxOutputData();
     
-                    double value = txOutput.getValue() != null ? 
-                            ( (double) txOutput.getValue().value / Coin.COIN.value): 0;
-                    txOutputData.setIndex( txOutput.getIndex() );
-                    txOutputData.setHash( txOutput.getOutPointFor().getHash().toString() );
-                    txOutputData.setValue( value );
+//                    double value = txOutput.getValue() != null ? 
+//                            ( (double) txOutput.getValue().value / Coin.COIN.value): 0;
+//                    txOutputData.setIndex( txOutput.getIndex() );
+//                    txOutputData.setHash( txOutput.getOutPointFor().getHash().toString() );
+//                    txOutputData.setValue( value );
     
                     try
                     {
@@ -180,7 +175,7 @@ public class BtcFileSystemStore implements BlockStoreService
         }
         catch( Exception e ) 
         {
-            logger.error( "(!!!) Error storing to data to FS:", e );
+            logger.error( "(!!!) Error storing data to FS:", e );
         }
     }
     
@@ -234,18 +229,17 @@ public class BtcFileSystemStore implements BlockStoreService
         }
     }
 
-
     @Override
     public BlockStoreEventListener getBlockStoreEventListener()
     {
-        return blockStoreEventListener;
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
     public void setBlockStoreEventListener( BlockStoreEventListener blockStoreEventListener )
     {
-        this.blockStoreEventListener = blockStoreEventListener;
+        // TODO Auto-generated method stub
+        
     }
-    
-          
 }

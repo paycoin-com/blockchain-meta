@@ -1,7 +1,9 @@
 package io.hs.bex.currency.service;
 
 
-import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 
 
 @Service( "CurrencyService" )
@@ -113,13 +116,16 @@ public class CurrencyServiceImpl implements CurrencyService
             HashSet<SysCurrency> currencies = new HashSet<>(Arrays.asList(SysCurrency.values()));
             
             String data  = getFileContent( "", "index.json" );
-            List<SysCurrency> supported = mapper.readValue(data, new TypeReference<List<SysCurrency>>(){});
             
-            currencies.addAll( supported );
+            if(!Strings.isNullOrEmpty( data )) 
+            {
+                List<SysCurrency> supported = mapper.readValue(data, new TypeReference<List<SysCurrency>>(){});
+                currencies.addAll( supported );
+            }
             
             return currencies; 
         }
-        catch( IOException e )
+        catch( Exception e )
         {
             logger.error( "Error getting currency list" , e );
         }
@@ -162,7 +168,7 @@ public class CurrencyServiceImpl implements CurrencyService
             
             return supported;
         }
-        catch( IOException e )
+        catch( Exception e )
         {
             logger.error( "Error getting currency list (supported:)" , e );
         }
@@ -185,7 +191,7 @@ public class CurrencyServiceImpl implements CurrencyService
             
             saveFile( "", "index.json", mapper.writeValueAsString( currencies ) );
         }
-        catch( IOException e )
+        catch( Exception e )
         {
             logger.error( "Error setting supporeted currences" , e );
         }
@@ -200,11 +206,10 @@ public class CurrencyServiceImpl implements CurrencyService
             SysCurrency currency = SysCurrency.find( code );
             saveFile( "/" + currency.getCode(), "index.json", details );
         }
-        catch( IOException e )
+        catch( Exception e )
         {
-            logger.error( "Error setting supporeted currences" , e );
+            logger.error( "Error updating  currencies" , e );
         }
-
     }
 
 
@@ -224,12 +229,15 @@ public class CurrencyServiceImpl implements CurrencyService
                 saveFile( CurrencyUtils.buildDirStructure( request.getPeriod(), 
                         rootPath, xrate.getDate()), "index.json", lastRate );
                 
-                logger.info( "(!) Successfully fetched and saved currency data By:{}", xrate.getDate() );
             }
             
             if(storeLastRate)
                 saveFile( rootPath, "index.json", lastRate );
             
+            logger.info( "(!) Successfully fetched and saved currency S:{}-T:{} Date:{}",
+                    request.getSourceCurrency().getCode(),request.getTargetCurrency().getCode(), 
+                    request.getDateTo().atZone(ZoneId.systemDefault()).toLocalDateTime() );
+
         }
         catch( Exception e ) 
         {

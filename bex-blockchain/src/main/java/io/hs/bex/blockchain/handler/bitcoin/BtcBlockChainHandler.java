@@ -8,13 +8,23 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Block;
+import org.bitcoinj.core.BlockChain;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Context;
+import org.bitcoinj.core.MemoryPoolMessage;
+import org.bitcoinj.core.Message;
 import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.PeerGroup;
+import org.bitcoinj.core.Ping;
+import org.bitcoinj.core.Pong;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
+import org.bitcoinj.core.TxConfidenceTable;
+import org.bitcoinj.core.listeners.PreMessageReceivedEventListener;
+
 import io.hs.bex.blockchain.handler.bitcoin.listener.BtcBlockChainListener;
 import io.hs.bex.blockchain.model.GenericBlock;
 import io.hs.bex.blockchain.model.address.GenericAddress;
@@ -22,6 +32,7 @@ import io.hs.bex.blockchain.model.tx.GenericTransaction;
 import io.hs.bex.blockchain.model.tx.GenericTxInput;
 import io.hs.bex.blockchain.model.tx.GenericTxOutput;
 import io.hs.bex.blockchain.model.tx.TransactionStatus;
+import io.hs.bex.blockchain.service.BlockChainStoreService;
 import io.hs.bex.blockchain.service.api.BlockChainHandler;
 import io.hs.bex.blocknode.model.Node;
 import io.hs.bex.blocknode.model.NodeState;
@@ -49,12 +60,6 @@ public class BtcBlockChainHandler implements BlockChainHandler
     @Autowired
     private ApplicationContext context;
     
-    @Autowired
-    BtcFileSystemStore dataStoreService;
-    
-    @Autowired
-    BtcDataSyncService dataSyncService;
-    
     DigitalCurrencyType BITCOIN = DigitalCurrencyType.BTC; 
 
     private PeerGroup peerGroup;
@@ -63,8 +68,8 @@ public class BtcBlockChainHandler implements BlockChainHandler
     
     private BtcBlockChainListener blockChainEventListener;
     
-    //private BlockStoreEventListener blockStoreEventListener;
-
+    @Autowired
+    BlockChainStoreService blockStoreService;
 
     @Override
     public Node init( int nodeId )
@@ -117,7 +122,7 @@ public class BtcBlockChainHandler implements BlockChainHandler
                 node.getStatus().setOperationType( OperationType.SYNC_LOCAL_STORE );
                 node.getStatus().setMessage( "Started Local Block synchronization !!!" );
                 
-                dataSyncService.syncData( node );
+                blockStoreService.syncData( node );
             }
         }
         
@@ -198,6 +203,46 @@ public class BtcBlockChainHandler implements BlockChainHandler
             return null;
         }
     }
+    
+    private void messageReceived( Message m ) 
+    {
+        Pong pong = m();
+        MemoryPoolMessage mPool = (MemoryPoolMessage)m;
+    }
+    
+    @Override
+    public double getEstimatedTxFee()
+    {
+        class EventListener implements PreMessageReceivedEventListener 
+        {
+
+            @Override
+            public Message onPreMessageReceived( Peer peer, Message m )
+            {
+                messageReceived( m );
+                return m;
+            }
+            
+        };
+        
+        double fee = 0;
+        
+        try
+        {
+            BlockChain blockChain = (BlockChain)node.getBlockChain();
+            
+            //getPeerMempoolTransaction( hash ) addPreMessageReceivedEventListener( new EventListener() ); 
+            getConnectedPeer().sendMessage( new MemoryPoolMessage() );
+            getConnectedPeer().sendMessage( new Ping( 100 ) );
+            
+        }
+        catch( Exception e )
+        {
+        }
+        
+        return fee;
+    }
+
     
     @Override
     public GenericTransaction getTransactionByHash( String blockHash, String txHash )

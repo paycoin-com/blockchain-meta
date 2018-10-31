@@ -120,5 +120,25 @@ public class BlockChainRestController
         }
     }
 
+    @RequestMapping( value = "{provider}/fee/estimate", method = {
+            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+    public ResponseEntity<?> getEstimateTxFee( 
+            @PathVariable( name = "provider" ) String provider )
+    {
+        try
+        {        
+            if(Strings.isNullOrEmpty( provider ))
+                provider = "BTC";
+
+            logger.info( " GET {}/fee/" , provider);
+            return new ResponseEntity<Double>( blockChainService.getEstimatedTxFee( provider ), HttpStatus.OK); 
+        }
+        catch ( Exception e )
+        {
+            //logger.error( " Error getting tx details for hash:{}" + txHash, e );
+            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
+        }
+    }
+
 
 }

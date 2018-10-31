@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 
@@ -34,21 +35,36 @@ public class NodeServiceImpl implements NodeService
     private ApplicationContext appContext;
     
     private Map<Integer,GenericNodeHandler> nodeHandlers = new HashMap<>();
+    
+    @Autowired
+    private Environment env;
 
     @PostConstruct
     public void init()
     {
-        GenericNodeHandler bitcoinRegtest = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
-        Node node = bitcoinRegtest.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.REGTEST ));
-        nodeHandlers.put( node.getId(), bitcoinRegtest );
+        Node node = null;
         
-        //GenericNodeHandler bitcoinMainnet = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
-        //node = bitcoinMainnet.init( new NodeProvider(DigitalCurrencyType.BITCOIN, NodeNetworkType.TESTNET ));
-        //nodeHandlers.put( node.getId(), bitcoinTestnet );
+        if(0 != Integer.parseInt(env.getProperty( "node.bitcoin-regtest.status.active" ))) 
+        {
+            GenericNodeHandler bitcoinRegtest = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
+            node = bitcoinRegtest.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.REGTEST ));
+            nodeHandlers.put( node.getId(), bitcoinRegtest );
+        }
         
-        GenericNodeHandler bitcoinTestnet = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
-        node = bitcoinTestnet.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.TESTNET ));
-        nodeHandlers.put( node.getId(), bitcoinTestnet );
+        if(0 != Integer.parseInt(env.getProperty( "node.bitcoin.status.active" ))) 
+        {
+            GenericNodeHandler bitcoinMainnet = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
+            node = bitcoinMainnet.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.MAINNET ));
+            nodeHandlers.put( node.getId(), bitcoinMainnet );
+        }
+        
+        if(0 != Integer.parseInt(env.getProperty( "node.bitcoin-testnet3.status.active" ))) 
+        {
+            GenericNodeHandler bitcoinTestnet = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
+            node = bitcoinTestnet.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.TESTNET ));
+            nodeHandlers.put( node.getId(), bitcoinTestnet );
+        }
+        
     }
 
     @Override

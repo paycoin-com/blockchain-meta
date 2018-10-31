@@ -6,14 +6,14 @@ import org.bitcoinj.core.Block;
 import org.bitcoinj.core.FilteredBlock;
 import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.listeners.DownloadProgressTracker;
-import io.hs.bex.blockchain.service.api.BlockStoreService;
+
+import io.hs.bex.blockchain.handler.bitcoin.BtcDBStore;
 import io.hs.bex.blocknode.model.Node;
 import io.hs.bex.blocknode.model.NodeState;
 import io.hs.bex.blocknode.model.OperationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +26,7 @@ public class BtcBlockChainListener extends DownloadProgressTracker
     // ---------------------------------
     
     @Autowired
-    @Qualifier( "BtcFileSystemStore" )
-    BlockStoreService blockStoreService;
+    BtcDBStore btcDBStore;
     
     private Node node;
     private float percentage = 0;
@@ -79,7 +78,7 @@ public class BtcBlockChainListener extends DownloadProgressTracker
         //----Sync Data to LocalStore --------------
         try
         {
-            blockStoreService.store( node, peer.getBestHeight() - blocksLeft, block );
+            btcDBStore.store( node, peer.getBestHeight() - blocksLeft, block );
             //logger.info( "(!) Data saved successfully BlocksLeft:{}  ", blocksLeft );
         }
         catch( Exception e )
