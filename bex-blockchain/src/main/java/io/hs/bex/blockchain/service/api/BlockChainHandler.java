@@ -25,4 +25,6 @@ public interface BlockChainHandler
 
     Node syncLocalBlocks();
 
+    double getEstimatedTxFee();
+
 }

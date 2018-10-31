@@ -47,7 +47,7 @@ public class CurrencyController
         return currencyListView( model );
     }
     
-    @RequestMapping(value={ "//currency-sync-start"}, method = RequestMethod.GET)
+    @RequestMapping(value={ "/currency-sync-start"}, method = RequestMethod.GET)
     public String currencyStartSync( ModelMap model ) 
     {
         currencyService.startSyncJob();

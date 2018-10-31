@@ -55,7 +55,7 @@ public class WebAppInit extends AbstractAnnotationConfigDispatcherServletInitial
         if(System.getProperty("spring.profiles.active") == null)
             System.setProperty("spring.profiles.active", "dev");
         
-        if(System.getProperty("cwallet.config.path") == null)
-            System.setProperty("cwallet.config.path", "/opt/grouvi-geos/conf");
+        if(System.getProperty("bex.config.path") == null)
+            System.setProperty("bex.config.path", "/opt/bex/conf");
     }
 }

@@ -3,7 +3,7 @@ package io.hs.bex.blocknode.model;
 
 public enum NodeNetworkType
 {
-    MAIN( 1 ),
+    MAINNET( 1 ),
     TESTNET( 2 ),
     REGTEST( 3 );
 

@@ -26,4 +26,6 @@ public interface BlockChainService
 
     Node syncLocalBlocks( int nodeId );
 
+    double getEstimatedTxFee( String provider );
+
 }

@@ -9,5 +9,5 @@ public interface BlockStoreService
 
     void setBlockStoreEventListener( BlockStoreEventListener blockStoreEventListener );
 
-    void store( Node node, long blockHeight, Object block );
+    void store( Node node, long blockHeight, byte[] blockObject );
 }

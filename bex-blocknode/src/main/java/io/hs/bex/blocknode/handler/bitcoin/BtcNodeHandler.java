@@ -92,6 +92,7 @@ public class BtcNodeHandler implements GenericNodeHandler
         dbUsername = env.getProperty( "node.bitcoin" + prefix + ".db.username");
         dbPassword = env.getProperty( "node.bitcoin" + prefix + ".db.password");
         
+        
         return init( nodeProvider, false );
     }
     
@@ -112,6 +113,8 @@ public class BtcNodeHandler implements GenericNodeHandler
         }
         else
             params = MainNetParams.get();
+        
+        node.getNetwork().setNetworkParams( params );
         
         //-----------------------------------------
         try
