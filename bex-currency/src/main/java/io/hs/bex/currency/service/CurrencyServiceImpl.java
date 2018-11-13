@@ -1,9 +1,7 @@
 package io.hs.bex.currency.service;
 
 
-import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -226,13 +224,11 @@ public class CurrencyServiceImpl implements CurrencyService
             {
                 lastRate = xrate.getRate();
 
-                saveFile( CurrencyUtils.buildDirStructure( request.getPeriod(), 
-                        rootPath, xrate.getDate()), "index.json", lastRate );
                 
             }
             
-            if(storeLastRate)
-                saveFile( rootPath, "index.json", lastRate );
+            //saveFile( CurrencyUtils.buildDirStructure( request.getPeriod(), rootPath, xrate.getDate()), "index.json", lastRate );
+
             
             logger.info( "(!) Successfully fetched and saved currency S:{}-T:{} Date:{}",
                     request.getSourceCurrency().getCode(),request.getTargetCurrency().getCode(), 
@@ -245,10 +241,10 @@ public class CurrencyServiceImpl implements CurrencyService
         }
     }
     
-    private void saveFile( String path, String fileName, float value ) throws JsonProcessingException 
-    {
-        dataStoreService.saveFile( true , XRATES_ROOT_FOLDER + path, "index.json", Float.toString( value ) );
-    }
+//    private void saveFile( String path, String fileName, float value ) throws JsonProcessingException 
+//    {
+//        dataStoreService.saveFile( true , XRATES_ROOT_FOLDER + path, "index.json", Float.toString( value ) );
+//    }
     
     private void saveFile( String path, String fileName, String value ) throws JsonProcessingException 
     {

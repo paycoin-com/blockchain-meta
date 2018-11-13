@@ -23,11 +23,12 @@
             <artifactId>spring-web</artifactId>
         </dependency>
      
-        <!-- Bitcoin-core -->
+        <!-- Bitcoin-core 
         <dependency>
             <groupId>org.bitcoinj</groupId>
             <artifactId>bitcoinj-core</artifactId>
         </dependency>
+        -->
         
         <!-- ehcache -->
         <dependency>

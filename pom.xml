@@ -39,7 +39,7 @@
         <junit.version>4.12</junit.version>
         <mockito-core.version>2.13.0</mockito-core.version>
         <ehcache.version>2.10.4</ehcache.version>
-        <bitcoinj.core.version>0.14.7</bitcoinj.core.version>
+        <!--  <bitcoinj.core.version>0.14.7</bitcoinj.core.version> -->
         <com.google.zxing.version>3.3.0</com.google.zxing.version>
 
     </properties>
@@ -294,12 +294,13 @@
             </dependency>
 
 
-            <!-- Bitcoin-core -->
+            <!-- Bitcoin-core 
             <dependency>
                 <groupId>org.bitcoinj</groupId>
                 <artifactId>bitcoinj-core</artifactId>
                 <version>0.14.7</version>
             </dependency>
+            -->
 
             <!-- ******* Test ********************** -->
 

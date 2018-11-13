@@ -51,11 +51,11 @@ public class NodeController
             model.addAttribute( "node", nodeService.startNode( nodeId ));
         else if(actionType == 2)
             model.addAttribute( "node", nodeService.stopNode( nodeId ));
-        else if(actionType == 3)
-            model.addAttribute( "node", blockChainService.syncBlocks( nodeId ));
-        else if(actionType == 4)
-            model.addAttribute( "node", blockChainService.syncLocalBlocks( nodeId ));
-        
+//        else if(actionType == 3)
+//            model.addAttribute( "node", blockChainService.syncBlocks( nodeId ));
+//        else if(actionType == 4)
+//            model.addAttribute( "node", blockChainService.syncLocalBlocks( nodeId ));
+//        
         return ModelView.VIEW_NODE_DETAILS_PAGE;
     }
 }
