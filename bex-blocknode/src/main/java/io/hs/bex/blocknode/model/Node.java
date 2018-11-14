@@ -21,10 +21,6 @@ public class Node
     
     private NodeStatus status = new NodeStatus();
     
-    private Object blockChain;
-    
-    private Object peerGroup; 
-    
     public Node()
     {
         provider = new NodeProvider( DigitalCurrencyType.BTC, NodeNetworkType.TESTNET );
@@ -117,24 +113,4 @@ public class Node
         FullVerificationMode = fullVerificationMode;
     }
 
-    public Object getBlockChain()
-    {
-        return blockChain;
-    }
-
-    public void setBlockChain( Object blockChain )
-    {
-        this.blockChain = blockChain;
-    }
-
-    public Object getPeerGroup()
-    {
-        return peerGroup;
-    }
-
-    public void setPeerGroup( Object peerGroup )
-    {
-        this.peerGroup = peerGroup;
-    }
-        
 }

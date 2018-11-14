@@ -30,115 +30,115 @@ public class BlockChainRestController
     @Autowired
     BlockChainService blockChainService;
     
-    @RequestMapping( value = "{provider}/address/{address}", method = {
-            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> getAddressDetails( 
-            @PathVariable( name = "provider" ) String provider, @PathVariable( name = "address" ) String address)
-    {
-        try
-        {        
-            if(Strings.isNullOrEmpty( provider ))
-                provider = "BTC";
+//    @RequestMapping( value = "{provider}/address/{address}", method = {
+//            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+//    public ResponseEntity<?> getAddressDetails( 
+//            @PathVariable( name = "provider" ) String provider, @PathVariable( name = "address" ) String address)
+//    {
+//        try
+//        {        
+//            if(Strings.isNullOrEmpty( provider ))
+//                provider = "BTC";
+//
+//            logger.info( " GET /{}/address/{}" , provider, address);
+//            return new ResponseEntity<GenericAddress>( 
+//                    blockChainService.getAddressDetails( provider, address ) , HttpStatus.OK);
+//        }
+//        catch ( Exception e )
+//        {
+//            logger.error( " Error getting address details for address:{}" + address, e );
+//            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
+//        }
+//    }
+//    
+//    
+//    @RequestMapping( value = "{provider}/address", method = {
+//            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+//    public ResponseEntity<?> getAddressesDetails( 
+//            @PathVariable( name = "provider" ) String provider,
+//            @RequestParam( name = "ads" , required = false ) String[] ads, 
+//            @RequestParam( name = "ads[]" , required = false ) String[] aAds )
+//    {
+//        try
+//        {        
+//            if(Strings.isNullOrEmpty( provider ))
+//                provider = "BTC";
+//
+//            logger.info( " GET /{}/address?ads={}" , provider, ads);
+//            return new ResponseEntity<List<GenericAddress>>( 
+//                    blockChainService.getAddressDetails( provider, (ads == null) ? aAds : ads ), HttpStatus.OK);
+//        }
+//        catch ( Exception e )
+//        {
+//            logger.error( " Error getting address details for address:{}" + aAds, e );
+//            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
+//        }
+//    }
+//    
+//    @RequestMapping( value = "{provider}/blocks/{hash}", method = {
+//            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+//    public ResponseEntity<?> getBlockDetails( 
+//            @PathVariable( name = "provider" ) String provider, @PathVariable( name = "hash" ) String blockHash)
+//    {
+//        try
+//        {        
+//            if(Strings.isNullOrEmpty( provider ))
+//                provider = "BTC";
+//
+//            logger.info( " GET /{}/blocks/{}" , provider, blockHash);
+//            return new ResponseEntity<GenericBlock>( 
+//                    blockChainService.getBlockByHash( provider, blockHash ) , HttpStatus.OK);
+//        }
+//        catch ( Exception e )
+//        {
+//            logger.error( " Error getting block details for hash:" + blockHash, e );
+//            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
+//        }
+//    }
+//    
+//    
+//    @RequestMapping( value = "{provider}/blocks/{blockHash}/txs/{txHash}", method = {
+//            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+//    public ResponseEntity<?> getTxDetails( 
+//            @PathVariable( name = "provider" ) String provider, 
+//            @PathVariable( name = "blockHash" ) String blockHash,
+//            @PathVariable( name = "txHash" ) String txHash)
+//    {
+//        try
+//        {        
+//            if(Strings.isNullOrEmpty( provider ))
+//                provider = "BTC";
+//
+//            logger.info( " GET /{}/blocks/{}/txs/{}" , provider,blockHash, txHash);
+//            return new ResponseEntity<GenericTransaction>( 
+//                    blockChainService.getTransactionByHash( provider, blockHash, txHash ), HttpStatus.OK);
+//        }
+//        catch ( Exception e )
+//        {
+//            logger.error( " Error getting tx details for hash:{}" + txHash, e );
+//            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
+//        }
+//    }
 
-            logger.info( " GET /{}/address/{}" , provider, address);
-            return new ResponseEntity<GenericAddress>( 
-                    blockChainService.getAddressDetails( provider, address ) , HttpStatus.OK);
-        }
-        catch ( Exception e )
-        {
-            logger.error( " Error getting address details for address:{}" + address, e );
-            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
-        }
-    }
-    
-    
-    @RequestMapping( value = "{provider}/address", method = {
-            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> getAddressesDetails( 
-            @PathVariable( name = "provider" ) String provider,
-            @RequestParam( name = "ads" , required = false ) String[] ads, 
-            @RequestParam( name = "ads[]" , required = false ) String[] aAds )
-    {
-        try
-        {        
-            if(Strings.isNullOrEmpty( provider ))
-                provider = "BTC";
-
-            logger.info( " GET /{}/address?ads={}" , provider, ads);
-            return new ResponseEntity<List<GenericAddress>>( 
-                    blockChainService.getAddressDetails( provider, (ads == null) ? aAds : ads ), HttpStatus.OK);
-        }
-        catch ( Exception e )
-        {
-            logger.error( " Error getting address details for address:{}" + aAds, e );
-            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
-        }
-    }
-    
-    @RequestMapping( value = "{provider}/blocks/{hash}", method = {
-            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> getBlockDetails( 
-            @PathVariable( name = "provider" ) String provider, @PathVariable( name = "hash" ) String blockHash)
-    {
-        try
-        {        
-            if(Strings.isNullOrEmpty( provider ))
-                provider = "BTC";
-
-            logger.info( " GET /{}/blocks/{}" , provider, blockHash);
-            return new ResponseEntity<GenericBlock>( 
-                    blockChainService.getBlockByHash( provider, blockHash ) , HttpStatus.OK);
-        }
-        catch ( Exception e )
-        {
-            logger.error( " Error getting block details for hash:" + blockHash, e );
-            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
-        }
-    }
-    
-    
-    @RequestMapping( value = "{provider}/blocks/{blockHash}/txs/{txHash}", method = {
-            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> getTxDetails( 
-            @PathVariable( name = "provider" ) String provider, 
-            @PathVariable( name = "blockHash" ) String blockHash,
-            @PathVariable( name = "txHash" ) String txHash)
-    {
-        try
-        {        
-            if(Strings.isNullOrEmpty( provider ))
-                provider = "BTC";
-
-            logger.info( " GET /{}/blocks/{}/txs/{}" , provider,blockHash, txHash);
-            return new ResponseEntity<GenericTransaction>( 
-                    blockChainService.getTransactionByHash( provider, blockHash, txHash ), HttpStatus.OK);
-        }
-        catch ( Exception e )
-        {
-            logger.error( " Error getting tx details for hash:{}" + txHash, e );
-            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
-        }
-    }
-
-    @RequestMapping( value = "{provider}/fee/estimate", method = {
-            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> getEstimateTxFee( 
-            @PathVariable( name = "provider" ) String provider )
-    {
-        try
-        {        
-            if(Strings.isNullOrEmpty( provider ))
-                provider = "BTC";
-
-            logger.info( " GET {}/fee/" , provider);
-            return new ResponseEntity<Double>( blockChainService.getEstimatedTxFee( provider ), HttpStatus.OK); 
-        }
-        catch ( Exception e )
-        {
-            //logger.error( " Error getting tx details for hash:{}" + txHash, e );
-            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
-        }
-    }
+//    @RequestMapping( value = "{provider}/fee/estimate", method = {
+//            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+//    public ResponseEntity<?> getEstimateTxFee( 
+//            @PathVariable( name = "provider" ) String provider )
+//    {
+//        try
+//        {        
+//            if(Strings.isNullOrEmpty( provider ))
+//                provider = "BTC";
+//
+//            logger.info( " GET {}/fee/" , provider);
+//            return new ResponseEntity<Double>( blockChainService.getEstimatedTxFee( provider ), HttpStatus.OK); 
+//        }
+//        catch ( Exception e )
+//        {
+//            //logger.error( " Error getting tx details for hash:{}" + txHash, e );
+//            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
+//        }
+//    }
 
 
 }

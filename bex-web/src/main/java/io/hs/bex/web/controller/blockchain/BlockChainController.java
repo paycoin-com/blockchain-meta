@@ -23,51 +23,51 @@ public class BlockChainController
     @Autowired
     BlockChainService blockChainService;
  
-    @RequestMapping( value = { "/block-list" }, method = RequestMethod.GET )
-    public String blockNodeListView( ModelMap model, @RequestParam(name="provider", required = false) String provider )
-    {
-        model.addAttribute( "provider", provider );
-        model.addAttribute( "blocks", blockChainService.getRecentBlocks( provider ) );
-        return ModelView.VIEW_BLOCK_LIST_PAGE;
-    }
-
-    @RequestMapping( value = { "/block-details" }, method = RequestMethod.GET )
-    public String blockNodeDetailsView( ModelMap model,@RequestParam(name="provider", required = false) String provider,
-                                                       @RequestParam( name = "hash" ) String blockHash )
-    {
-        model.addAttribute( "provider", provider );
-        model.addAttribute( "block", blockChainService.getBlockByHash( provider, blockHash ));
-
-        return ModelView.VIEW_BLOCK_DETAILS_PAGE;
-    }
+//    @RequestMapping( value = { "/block-list" }, method = RequestMethod.GET )
+//    public String blockNodeListView( ModelMap model, @RequestParam(name="provider", required = false) String provider )
+//    {
+//        model.addAttribute( "provider", provider );
+//        model.addAttribute( "blocks", blockChainService.getRecentBlocks( provider ) );
+//        return ModelView.VIEW_BLOCK_LIST_PAGE;
+//    }
+//
+//    @RequestMapping( value = { "/block-details" }, method = RequestMethod.GET )
+//    public String blockNodeDetailsView( ModelMap model,@RequestParam(name="provider", required = false) String provider,
+//                                                       @RequestParam( name = "hash" ) String blockHash )
+//    {
+//        model.addAttribute( "provider", provider );
+//        model.addAttribute( "block", blockChainService.getBlockByHash( provider, blockHash ));
+//
+//        return ModelView.VIEW_BLOCK_DETAILS_PAGE;
+//    }
     
-    @RequestMapping( value = { "/blocks/{blockHash}" }, method = RequestMethod.GET )
-    public String blockNodeDetailsViewExt( ModelMap model, @RequestParam(name="provider", required = false) String provider,
-                                                           @PathVariable( "blockHash" ) String blockHash )
-    {
-        return blockNodeDetailsView(model, provider, blockHash );
-    }
-
-    @RequestMapping( value = { "/txs/{txHash}" }, method = RequestMethod.GET )
-    public String txDetailsViewExt( ModelMap model, @PathVariable( "txHash" ) String txHash,
-                                                    @RequestParam( name = "blockhash" ) String blockHash,
-                                                    @RequestParam(name="provider", required = false) String provider)
-    {
-        model.addAttribute( "provider", provider );
-        model.addAttribute( "transaction", blockChainService.getTransactionByHash( provider, blockHash, txHash ));
-        
-        return ModelView.VIEW_TX_DETAILS_PAGE;
-    }
-    
-    @RequestMapping( value = { "/address/{address}" }, method = RequestMethod.GET )
-    public String addressDetailsViewExt( ModelMap model, @PathVariable( "address" ) String address,
-                                                    @RequestParam(name="provider", required = false) String provider)
-    {
-        model.addAttribute( "provider", provider );
-        model.addAttribute( "address", blockChainService.getAddressDetails( provider, address ));
-        
-        return ModelView.VIEW_ADDRESS_DETAILS_PAGE;
-    }
+//    @RequestMapping( value = { "/blocks/{blockHash}" }, method = RequestMethod.GET )
+//    public String blockNodeDetailsViewExt( ModelMap model, @RequestParam(name="provider", required = false) String provider,
+//                                                           @PathVariable( "blockHash" ) String blockHash )
+//    {
+//        return blockNodeDetailsView(model, provider, blockHash );
+//    }
+//
+//    @RequestMapping( value = { "/txs/{txHash}" }, method = RequestMethod.GET )
+//    public String txDetailsViewExt( ModelMap model, @PathVariable( "txHash" ) String txHash,
+//                                                    @RequestParam( name = "blockhash" ) String blockHash,
+//                                                    @RequestParam(name="provider", required = false) String provider)
+//    {
+//        model.addAttribute( "provider", provider );
+//        model.addAttribute( "transaction", blockChainService.getTransactionByHash( provider, blockHash, txHash ));
+//        
+//        return ModelView.VIEW_TX_DETAILS_PAGE;
+//    }
+//    
+//    @RequestMapping( value = { "/address/{address}" }, method = RequestMethod.GET )
+//    public String addressDetailsViewExt( ModelMap model, @PathVariable( "address" ) String address,
+//                                                    @RequestParam(name="provider", required = false) String provider)
+//    {
+//        model.addAttribute( "provider", provider );
+//        model.addAttribute( "address", blockChainService.getAddressDetails( provider, address ));
+//        
+//        return ModelView.VIEW_ADDRESS_DETAILS_PAGE;
+//    }
     
     
 

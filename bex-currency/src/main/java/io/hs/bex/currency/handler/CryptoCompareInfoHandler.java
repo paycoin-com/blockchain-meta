@@ -80,7 +80,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
     private static final Logger logger = LoggerFactory.getLogger( CryptoCompareInfoHandler.class );
     // ---------------------------------
 
-    @Value("${service.cryptocompare.api.url}")
+    @Value("${service.ccy.cryptocompare.api.url}")
     private String infoServiceUrl;
     
     private RestTemplate restTemplate;

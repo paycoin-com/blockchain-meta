@@ -8,7 +8,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import io.hs.bex.blocknode.handler.bitcoin.BtcNodeHandler;
+import io.hs.bex.blocknode.handler.btc.BtcNodeHandler;
 import io.hs.bex.blocknode.model.Node;
 import io.hs.bex.blocknode.model.NodeNetworkType;
 import io.hs.bex.blocknode.model.NodeProvider;

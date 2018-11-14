@@ -35,7 +35,7 @@ public class CoinDeskInfoHandler implements CurrencyInfoService
     private static final Logger logger = LoggerFactory.getLogger( CoinDeskInfoHandler.class );
     // ---------------------------------
     
-    @Value("${service.coindesk.api.url}")
+    @Value("${service.ccy.coindesk.api.url}")
     private String infoServiceUrl;
     
     private RestTemplate restTemplate;

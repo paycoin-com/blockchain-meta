@@ -37,7 +37,6 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 import io.hs.bex.web.config.cache.CacheConfig;
-import io.hs.bex.web.config.db.DbConfig;
 import io.hs.bex.web.config.json.JacksonConfig;
 
 
@@ -48,7 +47,7 @@ import io.hs.bex.web.config.json.JacksonConfig;
                                 "io.hs.bex.web.controller",
                                 "io.hs.bex.*.service",
                                 "io.hs.bex.*.handler"})
-@Import({ DbConfig.class, CacheConfig.class, JacksonConfig.class })
+@Import({ /*DbConfig.class,*/ CacheConfig.class, JacksonConfig.class })
 public class WebAppConfig implements WebMvcConfigurer
 {
     private static final Charset UTF8 = Charset.forName("UTF-8");
