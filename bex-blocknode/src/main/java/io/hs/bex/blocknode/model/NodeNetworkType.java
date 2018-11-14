@@ -18,5 +18,10 @@ public enum NodeNetworkType
     {
         return id;
     }
+    
+    public String getName()
+    {
+        return name().toLowerCase();
+    }
 
 }

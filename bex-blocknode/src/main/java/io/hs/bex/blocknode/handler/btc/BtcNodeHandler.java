@@ -16,7 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 
-@Service( "BitcoinNodeHandler" )
+@Service( "BTC-NodeHandler" )
 @Scope("prototype")
 public class BtcNodeHandler implements GenericNodeHandler
 {
@@ -37,21 +37,13 @@ public class BtcNodeHandler implements GenericNodeHandler
     {
         String prefix = ""; 
                 
-        if( nodeProvider.getNetworkType() == NodeNetworkType.TESTNET)
-            prefix = "-testnet3";
-        else if( nodeProvider.getNetworkType() == NodeNetworkType.REGTEST)
-            prefix = "-regtest";
+        if( nodeProvider.getNetworkType() != NodeNetworkType.MAINNET)
+            prefix = "-" + nodeProvider.getNetworkType().name().toLowerCase();
                 
         host = env.getProperty( "node.btc" + prefix + ".host" );
         
-        return init( nodeProvider, false );
-    }
-    
-    
-    public Node init( NodeProvider nodeProvider, boolean fullVerificationMode )
-    {
+        node.setProvider( nodeProvider );
         node.setId( nodeProvider.getId());
-        node.setFullVerificationMode( fullVerificationMode );
         node.setName( "Bitcoin-" + nodeProvider.getNetworkType().name().toLowerCase() );
         node.getNetwork().setType( nodeProvider.getNetworkType() );
         node.getNetwork().setHost( host );
@@ -62,6 +54,7 @@ public class BtcNodeHandler implements GenericNodeHandler
      
         return node;
     }
+    
 
     public Node start() 
     {

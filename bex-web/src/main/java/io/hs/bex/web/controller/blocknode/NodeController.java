@@ -26,6 +26,13 @@ public class NodeController
     @Autowired
     BlockChainService blockChainService; 
     
+    @RequestMapping(value={ "/blockchain-tasks-start"}, method = RequestMethod.GET)
+    public String currencyStartSync( ModelMap model ) 
+    {
+        blockChainService.startTasks();
+        
+        return blockNodeListView( model );
+    }
     
     @RequestMapping(value={ "/node-list"}, method = RequestMethod.GET)
     public String blockNodeListView( ModelMap model ) 
@@ -33,7 +40,6 @@ public class NodeController
         model.addAttribute( "nodes", nodeService.getNodes());
         return ModelView.VIEW_NODE_LIST_PAGE;
     }
-    
     
     @RequestMapping(value={ "/node-details"}, method = RequestMethod.GET)
     public String blockNodeDetailsView( ModelMap model, @RequestParam( name="node_id" ) int nodeId ) 

@@ -8,8 +8,6 @@ public interface GenericNodeHandler
 {
     Node init( NodeProvider nodeProvider );
 
-    Node init( NodeProvider nodeProvider , boolean fullVerificationMode );
-    
     Node start() throws Exception;
 
     NodeStatus getStatus();

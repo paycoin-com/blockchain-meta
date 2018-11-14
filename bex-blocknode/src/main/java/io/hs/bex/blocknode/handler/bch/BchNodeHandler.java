@@ -16,7 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 
-@Service( "BitcoinCashNodeHandler" )
+@Service( "BCH-NodeHandler" )
 @Scope("prototype")
 public class BchNodeHandler implements GenericNodeHandler
 {
@@ -36,23 +36,14 @@ public class BchNodeHandler implements GenericNodeHandler
     public Node init( NodeProvider nodeProvider )
     {
         String prefix = ""; 
-                
-        if( nodeProvider.getNetworkType() == NodeNetworkType.TESTNET)
-            prefix = "-testnet3";
-        else if( nodeProvider.getNetworkType() == NodeNetworkType.REGTEST)
-            prefix = "-regtest";
+        
+        if( nodeProvider.getNetworkType() != NodeNetworkType.MAINNET)
+            prefix = "-" + nodeProvider.getNetworkType().name().toLowerCase();
                 
         host = env.getProperty( "node.bch" + prefix + ".host" );
-        
-        return init( nodeProvider, false );
-    }
-    
-    
-    public Node init( NodeProvider nodeProvider, boolean fullVerificationMode )
-    {
+        node.setProvider( nodeProvider );
         node.setId( nodeProvider.getId());
-        node.setFullVerificationMode( fullVerificationMode );
-        node.setName( "BitcoinCash-" + nodeProvider.getNetworkType().name().toLowerCase() );
+        node.setName( "BCH-" + nodeProvider.getNetworkType().name().toLowerCase() );
         node.getNetwork().setType( nodeProvider.getNetworkType() );
         node.getNetwork().setHost( host );
         
@@ -62,7 +53,8 @@ public class BchNodeHandler implements GenericNodeHandler
      
         return node;
     }
-
+    
+    
     public Node start() 
     {
         setNodeStatus( node, NodeState.ACTIVE_NOTSYNC, OperationType.INIT, "Successfully started node."); 

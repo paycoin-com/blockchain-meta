@@ -24,7 +24,7 @@ public class StringUtils
     static DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern( "yyyy-MM-dd" )
             .withZone( ZoneId.systemDefault() );
 
-    static DecimalFormat df = new DecimalFormat( "#0.0#############" );
+    static DecimalFormat df = new DecimalFormat( "#0.0#########################" );
 
     public static String instantToString( Instant dateTime )
     {

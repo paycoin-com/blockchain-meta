@@ -42,30 +42,36 @@ public class NodeServiceImpl implements NodeService
     @PostConstruct
     public void init()
     {
-        Node node = null;
+        if(0 != Integer.parseInt(env.getProperty( "node.btc.status.active" ))) 
+            initNode( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.MAINNET ));
         
-        if(0 != Integer.parseInt(env.getProperty( "node.bitcoin-regtest.status.active" ))) 
-        {
-            GenericNodeHandler bitcoinRegtest = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
-            node = bitcoinRegtest.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.REGTEST ));
-            nodeHandlers.put( node.getId(), bitcoinRegtest );
-        }
+        if(0 != Integer.parseInt(env.getProperty( "node.btc-regtest.status.active" ))) 
+            initNode( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.REGTEST ));
         
-        if(0 != Integer.parseInt(env.getProperty( "node.bitcoin.status.active" ))) 
-        {
-            GenericNodeHandler bitcoinMainnet = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
-            node = bitcoinMainnet.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.MAINNET ));
-            nodeHandlers.put( node.getId(), bitcoinMainnet );
-        }
+        if(0 != Integer.parseInt(env.getProperty( "node.btc-testnet.status.active" ))) 
+            initNode( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.TESTNET ));
         
-        if(0 != Integer.parseInt(env.getProperty( "node.bitcoin-testnet3.status.active" ))) 
-        {
-            GenericNodeHandler bitcoinTestnet = (GenericNodeHandler) appContext.getBean( "BitcoinNodeHandler" );
-            node = bitcoinTestnet.init( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.TESTNET ));
-            nodeHandlers.put( node.getId(), bitcoinTestnet );
-        }
+        if(0 != Integer.parseInt(env.getProperty( "node.bch.status.active" ))) 
+            initNode( new NodeProvider(DigitalCurrencyType.BCH, NodeNetworkType.MAINNET ));
         
+        if(0 != Integer.parseInt(env.getProperty( "node.bch-regtest.status.active" ))) 
+            initNode( new NodeProvider(DigitalCurrencyType.BCH, NodeNetworkType.REGTEST ));
+        
+        if(0 != Integer.parseInt(env.getProperty( "node.bch-testnet.status.active" ))) 
+            initNode( new NodeProvider(DigitalCurrencyType.BCH, NodeNetworkType.TESTNET ));
+
     }
+    
+    private void initNode( NodeProvider nodeProvider ) 
+    {
+        Node node = null;
+        String code = nodeProvider.getCurrencyType().getCode();
+        
+        GenericNodeHandler nodeHandler = (GenericNodeHandler) appContext.getBean( code + "-NodeHandler" );
+        node = nodeHandler.init( new NodeProvider( nodeProvider.getCurrencyType() ,nodeProvider.getNetworkType() ));
+        nodeHandlers.put( node.getId(), nodeHandler );
+    }
+    
 
     @Override
     public List<Node> getNodes()

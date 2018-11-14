@@ -5,4 +5,8 @@ import io.hs.bex.blockchain.model.FeeRate;
 public interface BlockChainService
 {
     FeeRate getEstimatedFee( String provider, int nBlocks );
+
+    void startTasks();
+
+    void saveFeeEstimateRates();
 }

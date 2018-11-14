@@ -52,6 +52,10 @@
                     <div class="card-header">
                         <i class="fa fa-align-justify"></i> Node list</div>
                     <div class="card-body">
+                         <span class="input-group-prepend">
+                            <a href="<c:url value = "/blockchain-tasks-start"/>" class="btn-sm btn-primary" role="button">
+                                <i class="fa fa-clock"></i> Start Tasks</a>
+                        </span><br>
                         <table class="table table-responsive-sm table-bordered table-striped table-sm">
                             <thead>
                                 <tr>
@@ -76,14 +80,6 @@
                                     <td>${node.network.host}</td>
                                     <td>${node.network.type}</td>
                                     <td>
-                                        <c:choose>
-                                            <c:when test="${node.fullVerificationMode }">
-                                                <span class="badge badge-success">True</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge badge-warning">False</span>
-                                            </c:otherwise>
-                                        </c:choose>
                                     </td>
                                     <td>
                                         <c:choose>
@@ -112,7 +108,7 @@
                                             <c:when test="${node.status.operationType == OperationType.INIT }">
                                                 <span class="badge badge-warning">Init</span>
                                             </c:when>
-                                            <c:when test="${node.status.operationType == OperationType.SYNC_CORE }">
+                                            <c:when test="${node.status.operationType == OperationType.SYNC }">
                                                 <span class="badge badge-primary">Sync</span>
                                             </c:when>
                                             <c:otherwise>
