@@ -20,7 +20,6 @@ import io.hs.bex.currency.model.task.CurrencyDataTask;
 import io.hs.bex.currency.model.task.DataPublishTask;
 import io.hs.bex.currency.service.api.CurrencyInfoService;
 import io.hs.bex.currency.service.api.CurrencyService;
-import io.hs.bex.currency.utils.CurrencyUtils;
 import io.hs.bex.datastore.service.api.DataStoreService;
 
 import org.slf4j.Logger;

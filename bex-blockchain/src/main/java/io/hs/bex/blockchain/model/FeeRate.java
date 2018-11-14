@@ -1,48 +1,59 @@
 package io.hs.bex.blockchain.model;
 
+import java.time.Instant;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.hs.bex.common.utils.StringUtils;
 
 @JsonIgnoreProperties( ignoreUnknown = true )
 public class FeeRate
 {
-    @JsonProperty("fastestFee")
-    public double fastestFee = 0;
+    @JsonIgnore
+    private Instant dateFetched = Instant.now();
 
-    @JsonProperty("halfHourFee")
-    public double halfHourFee = 0;
+    @JsonIgnore
+    public double lowPriorityRate  = 0;
     
-    @JsonProperty("hourFee")
-    public double hourFee = 0;
-
-    public double getFastestFee()
+    @JsonIgnore
+    public double mediumPriorityRate = 0;
+    
+    @JsonIgnore
+    public double highPriorityRate  = 0;
+    
+    public FeeRate() {}
+    
+    public FeeRate( double lowPriority, double mediumPriority, double highPriority )
     {
-        return fastestFee;
+        this.lowPriorityRate = lowPriority;
+        this.mediumPriorityRate = mediumPriority;
+        this.highPriorityRate = highPriority;
     }
 
-    public void setFastestFee( double fastestFee )
+    @JsonProperty("low_priority")
+    public String getLowPriorityStr()
     {
-        this.fastestFee = fastestFee;
+        return StringUtils.doubleToString( lowPriorityRate );
     }
 
-    public double getHalfHourFee()
+    @JsonProperty("medium_priority")
+    public String getMediumPriorityStr()
     {
-        return halfHourFee;
-    }
-
-    public void setHalfHourFee( double halfHourFee )
-    {
-        this.halfHourFee = halfHourFee;
-    }
-
-    public double getHourFee()
-    {
-        return hourFee;
-    }
-
-    public void setHourFee( double hourFee )
-    {
-        this.hourFee = hourFee;
+        return StringUtils.doubleToString( mediumPriorityRate );
     }
     
+    @JsonProperty("high_priority")
+    public String getHighPriorityStr()
+    {
+        return StringUtils.doubleToString( highPriorityRate );
+    }
+
+    @JsonProperty("date")
+    public String getDateStr()
+    {
+        return StringUtils.instantToString( dateFetched ); 
+    }
+
 }

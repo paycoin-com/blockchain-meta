@@ -13,8 +13,6 @@ public class Node
     
     private String name;
     
-    private boolean FullVerificationMode = false;
-    
     private NodeProvider provider;
     
     private NodeNetwork network;
@@ -101,16 +99,6 @@ public class Node
     public void setState( NodeState state )
     {
         this.status.setOverallState( state );
-    }
-
-    public boolean isFullVerificationMode()
-    {
-        return FullVerificationMode;
-    }
-
-    public void setFullVerificationMode( boolean fullVerificationMode )
-    {
-        FullVerificationMode = fullVerificationMode;
     }
 
 }
