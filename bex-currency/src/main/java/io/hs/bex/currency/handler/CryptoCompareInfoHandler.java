@@ -2,8 +2,6 @@ package io.hs.bex.currency.handler;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -188,8 +186,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
             
             for( Data data : responseObject.dataList) 
             {
-                LocalDateTime date = Instant.ofEpochMilli( data.time ).atZone(ZoneId.systemDefault()).toLocalDateTime();
-                return new CurrencyRate( date, SysCurrency.find( sourceCurrency ) , 
+                return new CurrencyRate( Instant.ofEpochSecond( data.time ), SysCurrency.find( sourceCurrency ) , 
                         SysCurrency.find( targetCurrency ), (float) data.open);
             }
         }
@@ -218,8 +215,8 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
             
             for( Data data : responseObject.dataList) 
             {
-                LocalDateTime date = Instant.ofEpochSecond( data.time ).atZone(ZoneId.systemDefault()).toLocalDateTime();
-                rateList.add( new CurrencyRate( date, sourceCurrency, targetCurrency, (float) data.open));
+                rateList.add( new CurrencyRate( Instant.ofEpochSecond( data.time ), 
+                        sourceCurrency, targetCurrency, (float) data.open));
             }
             
             return rateList;

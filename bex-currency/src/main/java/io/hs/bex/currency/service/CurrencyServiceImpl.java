@@ -1,23 +1,31 @@
 package io.hs.bex.currency.service;
 
 
-import java.time.ZoneId;
+import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
+
+import io.hs.bex.common.utils.StringUtils;
 import io.hs.bex.currency.handler.CryptoCompareInfoHandler;
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
-import io.hs.bex.currency.model.task.CurrencyDataTask;
-import io.hs.bex.currency.model.task.DataPublishTask;
+import io.hs.bex.currency.task.HourlyXRatesTask;
+import io.hs.bex.currency.task.LatestXRatesTask;
+import io.hs.bex.currency.utils.CurrencyUtils;
+import io.hs.bex.currency.task.DataPublishTask;
 import io.hs.bex.currency.service.api.CurrencyInfoService;
 import io.hs.bex.currency.service.api.CurrencyService;
 import io.hs.bex.datastore.service.api.DataStoreService;
@@ -41,6 +49,9 @@ public class CurrencyServiceImpl implements CurrencyService
     private static final Logger logger = LoggerFactory.getLogger( CryptoCompareInfoHandler.class );
     // ---------------------------------
     
+    final int LAST_XRATES_FETCH_PERIOD = 180; //seconds
+    final int HOURLY_XRATES_FETCH_PERIOD = 600; //seconds
+    
     final String XRATES_ROOT_FOLDER = "/xrates";
     
     @Autowired
@@ -56,16 +67,24 @@ public class CurrencyServiceImpl implements CurrencyService
     DataStoreService dataStoreService;
 
     CurrencyInfoService defaultInfoService;
+    
+    private List<CurrencyInfoRequest> currencyTaskParams = new ArrayList<>();
 
     @PostConstruct
     public void init() 
     {
         defaultInfoService = (CurrencyInfoService) appContext.getBean( "CryptoCompareInfoHandler" );
+        buildTaskParams();
     }
     
-    private CurrencyDataTask startCurrencyTask() 
+    private HourlyXRatesTask startHourlyXRatesTask() 
     {
-        return new CurrencyDataTask(this, buildTaskParams() ); 
+        return new HourlyXRatesTask( this ); 
+    }
+    
+    private LatestXRatesTask startLatesXRatesTask() 
+    {
+        return new LatestXRatesTask( this ); 
     }
     
     private DataPublishTask startDataPublishTask() 
@@ -74,9 +93,10 @@ public class CurrencyServiceImpl implements CurrencyService
     }
 
     
-    private List<CurrencyInfoRequest> buildTaskParams() 
+    public void buildTaskParams() 
     {
-        List<CurrencyInfoRequest> requests = new ArrayList<>();
+        currencyTaskParams.clear();
+        
         List<SysCurrency> digitalCurrencies = getSupported( CurrencyType.DIGITAL );
         List<SysCurrency> fiatCurrencies = getSupported( CurrencyType.FIAT );
         
@@ -85,17 +105,16 @@ public class CurrencyServiceImpl implements CurrencyService
             for( SysCurrency fiatCurrency: fiatCurrencies ) 
             {
                 CurrencyInfoRequest req = new CurrencyInfoRequest( digCurrency, fiatCurrency, TimePeriod.MINUTE, null, 0);
-                requests.add( req );
+                currencyTaskParams.add( req );
             }
         }
-        
-        return requests;
     }
     
     @Override
     public void startSyncJob()
     {
-        taskManager.startScheduledAtFixed( startCurrencyTask(), "CurrencyDataProcessTask", 0, 180 );
+        taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 0, HOURLY_XRATES_FETCH_PERIOD );
+        taskManager.startScheduledAtFixed( startLatesXRatesTask(), "LatesXRatesTask", 0, LAST_XRATES_FETCH_PERIOD );
         taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
     }
 
@@ -187,6 +206,10 @@ public class CurrencyServiceImpl implements CurrencyService
             }
             
             saveFile( "", "index.json", mapper.writeValueAsString( currencies ) );
+            
+            //-----------------------
+            buildTaskParams();
+            //-----------------------
         }
         catch( Exception e )
         {
@@ -211,28 +234,43 @@ public class CurrencyServiceImpl implements CurrencyService
 
 
     @Override
-    public void saveCurrencyRates( CurrencyInfoRequest request , boolean storeLastRate ) 
+    public void saveXRates( CurrencyInfoRequest request ) 
     {
         try 
         {
-            float lastRate = 0;
-            List<CurrencyRate> xrates = defaultInfoService.getCurrencyRateBy( request ) ;
+            Map<Integer,Float> dataMap = new LinkedHashMap<>();
+            LocalDateTime lastDate = null, localDateTime = null;
+            
+            int hour = 0;
+            
             String rootPath =  "/" + request.getSourceCurrency().getCode() + "/" + request.getTargetCurrency().getCode() +"/";
+            List<CurrencyRate> xrates = defaultInfoService.getCurrencyRateBy( request ) ;
             
             for( CurrencyRate xrate: xrates ) 
             {
-                lastRate = xrate.getRate();
-
+                localDateTime = xrate.getLocalDateTime();
                 
+                if(hour != localDateTime.getHour()) 
+                {
+                    if(dataMap.size() > 0) 
+                    {
+                        String path = CurrencyUtils.buildDirStructure( TimePeriod.HOUR, rootPath,lastDate );
+                        appendData( path, "index.json", dataMap );
+                        dataMap.clear();
+                    }
+                }
+                
+                dataMap.put( localDateTime.getMinute(), xrate.getRate() );
+                
+                hour = localDateTime.getHour();
+                lastDate = localDateTime;
             }
             
-            //saveFile( CurrencyUtils.buildDirStructure( request.getPeriod(), rootPath, xrate.getDate()), "index.json", lastRate );
-
-            
-            logger.info( "(!) Successfully fetched and saved currency S:{}-T:{} Date:{}",
-                    request.getSourceCurrency().getCode(),request.getTargetCurrency().getCode(), 
-                    request.getDateTo().atZone(ZoneId.systemDefault()).toLocalDateTime() );
-
+            if(dataMap.size() > 0) 
+            {
+                String path = CurrencyUtils.buildDirStructure( TimePeriod.HOUR, rootPath, lastDate );
+                appendData( path, "index.json", dataMap );
+            }
         }
         catch( Exception e ) 
         {
@@ -240,10 +278,60 @@ public class CurrencyServiceImpl implements CurrencyService
         }
     }
     
-//    private void saveFile( String path, String fileName, float value ) throws JsonProcessingException 
-//    {
-//        dataStoreService.saveFile( true , XRATES_ROOT_FOLDER + path, "index.json", Float.toString( value ) );
-//    }
+    private void appendData( String path, String fileName,  Map<Integer,Float> dataMap ) throws IOException 
+    {
+        LinkedHashMap<Integer,Float> contentMap = null;
+        
+        String content = getFileContent( path, fileName );
+        
+        if(!Strings.isNullOrEmpty( content )) 
+        {
+            contentMap = mapper.readValue(content, new TypeReference<LinkedHashMap<Integer,Float>>(){});
+            contentMap.putAll( dataMap );
+            saveFile( path, fileName, mapper.writeValueAsString( contentMap ) );
+        }
+        else 
+            saveFile( path, fileName, mapper.writeValueAsString( dataMap ) );
+    }
+    
+    @Override
+    public void saveLatestXRates( CurrencyInfoRequest request ) 
+    {
+        try 
+        {
+            String rootPath =  "/" + request.getSourceCurrency().getCode() + "/" + request.getTargetCurrency().getCode() +"/";
+            List<CurrencyRate> xrates = defaultInfoService.getCurrencyRateBy( request ) ;
+            
+            for( CurrencyRate xrate: xrates ) 
+            {
+                saveFile( rootPath, "index.json", mapper.writeValueAsString( xrate ));
+            }
+        }
+        catch( Exception e ) 
+        {
+            logger.error( "Error saving xrates for:{}", request, e );
+        }
+    }
+    
+    @Override
+    public void fetchAndStoreXRates( int storeType, TimePeriod timePeriod, int fetchSize ) 
+    {
+        Instant requestDate = Instant.now();
+        
+        for( CurrencyInfoRequest request : currencyTaskParams ) 
+        {
+            request.setDateTo( requestDate );
+            request.setLimit( fetchSize );
+            
+            if( storeType == 1 )
+                saveXRates( request );
+            else
+                saveLatestXRates( request );
+        }
+        
+        logger.info( "Successfully fetchAndStore XRates for:{}-{}",storeType ,StringUtils.instantToString( requestDate ) );
+
+    }
     
     private void saveFile( String path, String fileName, String value ) throws JsonProcessingException 
     {

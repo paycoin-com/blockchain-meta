@@ -72,7 +72,7 @@ public class CurrencyRestController
             
             CurrencyInfoRequest request = new CurrencyInfoRequest(sourceCurrency, targetCurrency, period,toDate, limit);
             
-            currencyService.saveCurrencyRates( request, false );
+            currencyService.saveXRates( request );
             
             return new ResponseEntity<>( HttpStatus.OK );
         }

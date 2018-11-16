@@ -1,14 +1,16 @@
 package io.hs.bex.currency.handler;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+
+import io.hs.bex.common.utils.StringUtils;
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.CurrencyRate;
@@ -149,8 +151,8 @@ public class CoinDeskInfoHandler implements CurrencyInfoService
                 else if(bpi.get( rateDateStr ).getClass().getName().equals( "java.lang.Integer" ))
                     rate = (Integer) bpi.get( rateDateStr );
                 
-                LocalDate localDate = LocalDate.parse( rateDateStr, DateTimeFormatter.ofPattern("yyyy-MM-d") );
-                rateList.add( new CurrencyRate( localDate.atStartOfDay(), SysCurrency.BTC, SysCurrency.USD, (float)rate));
+                Instant date = StringUtils.stringToInstant( rateDateStr, "yyyy-MM-d");
+                rateList.add( new CurrencyRate( date, SysCurrency.BTC, SysCurrency.USD, (float)rate));
             }
             
             return rateList;
