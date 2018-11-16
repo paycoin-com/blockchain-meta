@@ -232,7 +232,7 @@ public class IpfsHandler implements DataStoreHandler
         }
         catch( HttpServerErrorException e )
         {
-            logger.error( "Error fetching file in ipfs:{}. File not found !!!", url );
+            //logger.error( "Error fetching file in ipfs:{}. File not found !!!", url );
 
             return null;
         }
