@@ -188,7 +188,7 @@ public class IpfsHandler implements DataStoreHandler
             // ---------------------------------
 
             path = rootDir + "/" + path + "/" + fileName;
-            url += "?arg=" + path + "&create=true";
+            url += "?arg=" + path + "&truncate=true&create=true";
 
             MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
             bodyMap.add( "user-file", data.getBytes() );
