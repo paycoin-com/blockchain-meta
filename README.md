@@ -26,8 +26,8 @@
   Common libraries, utilities, tools used by other modules.
    
 - **bex-web**
-  Web Interface for Block-Explorer
- with
+  Web Interface (Control Panel) for Block-Explorer
+
 
 
 

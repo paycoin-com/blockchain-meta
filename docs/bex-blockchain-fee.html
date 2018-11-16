@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Horizontal-Systems Currency Module Docs</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="assets/css/app.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/plugins/jsonpresenter/jquery.jsonPresenter.css">
+    
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#"><small>Docs-Home</small></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="bex-currency.html">Currency API</a></li>
+                    <li class="nav-item"><a class="nav-link" href="bex-blockchain-fee.html">Fee-Estimate</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+      <div class="row">
+
+        <div class="col-lg-12">
+
+          <div class="card mt-4">
+            <div class="card-header">
+                Fee Estimation
+             </div>
+            <div class="card-body">
+            
+                <h5>1. Get latest XRates</h5>
+                <br>
+                <h6>Input: </h6>
+                <div class="alert alert-success">
+                  <strong>URL:</strong> <b>{IPFS-HOST}</b>/ipns/<b>{IPFS-ID}</b>/io-hs/data/blockchain/
+                  <b>{SOURCE_COIN}</b>/<b>{network}</b>/estimatefee/index.json
+                </div>
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>No</th>
+                            <th>Name</th>
+                            <th>Details</th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td>SOURCE_COIN</td>
+                        <td>Requesting crypto coin</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>network</td>
+                        <td>Network for crypto coin (mainnet, rsgtest, testnet )
+                        For Mainnet this parameter is not required</td>
+                      </tr>
+                    </tbody>
+                </table>
+                <h6>Output: </h6>
+                <div class="bg-light" id="json-container1"></div>
+                <hr>
+                <hr>
+                            </div>
+          </div>
+          <!-- /.card -->
+        </div>
+        <!-- /.col-lg-9 -->
+      </div>
+
+    </div>
+    <!-- /.container -->
+    
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="assets/plugins/jquery/jquery.min.js"/></script>
+    <script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"/></script>
+    <script src="assets/plugins/jsonpresenter/jquery.jsonPresenter.js"></script>
+    <script type="text/javascript">
+    
+    $('#json-container1').jsonPresenter({
+    	  json: {"low_priority":"0.00000999","medium_priority":"0.00000999",
+    		  "high_priority":"0.00001041","date_str":"2018-11-16 15:08","date":1542359312628}, // JSON objects here
+    })
+    
+   
+    </script>
+
+  </body>
+
+</html>

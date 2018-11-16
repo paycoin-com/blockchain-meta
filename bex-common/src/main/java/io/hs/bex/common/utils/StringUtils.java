@@ -31,6 +31,11 @@ public class StringUtils
         return DATE_TIME_FORMATTER.format( dateTime );
     }
 
+    public static String localDateTimeToString( LocalDateTime localDate )
+    {
+        return localDate.format( DATE_TIME_FORMATTER );
+    }
+
     public static LocalDateTime stringToDate( String dateStr )
     {
         if( dateStr.length() < 11 )
@@ -38,6 +43,23 @@ public class StringUtils
         else
             return LocalDateTime.parse( dateStr, DATE_TIME_FORMATTER );
     }
+
+    public static Instant stringToInstant( String dateStr, String format )
+    {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern( format )
+                .withZone( ZoneId.systemDefault() );
+
+        return Instant.from( formatter.parse( dateStr ) );
+    }
+    
+    public static Instant stringToInstant( String dateStr )
+    {
+        if( dateStr.length() < 11 )
+            return Instant.from( DATE_FORMATTER.parse( dateStr ) );
+        else
+            return Instant.from( DATE_TIME_FORMATTER.parse( dateStr ) );
+    }
+
 
     public static String doubleToString( double value )
     {
@@ -56,15 +78,15 @@ public class StringUtils
 
         return parts.toArray( new String[0] );
     }
-    
+
     public static String createDirStructure( String text, int size )
     {
         String dir = File.separator;
-        
+
         text = text.replace( File.separator, "" );
 
         int length = text.length();
-        
+
         for( int i = 0; i < length; i += size )
         {
             dir += text.substring( i, Math.min( length, i + size ) ) + File.separator;
@@ -72,39 +94,39 @@ public class StringUtils
 
         return dir;
     }
-    
+
     public static String createDirStructure( String text, int size, int partsCount )
     {
         StringBuilder dir = new StringBuilder( File.separator );
-        
+
         text = text.replace( File.separator, "" );
 
         int length = text.length();
-        
+
         for( int i = 0; i < length; i += size )
         {
-            dir.append( text.substring( i, Math.min( length, i + size ) ) + File.separator);
-            
-            if( ( --partsCount ) == 0) 
+            dir.append( text.substring( i, Math.min( length, i + size ) ) + File.separator );
+
+            if( ( --partsCount) == 0 )
             {
-                dir.append( text.substring( Math.min( length, i + size ) , length ));
-                if(!dir.toString().endsWith( "/" ))
+                dir.append( text.substring( Math.min( length, i + size ), length ) );
+                if( !dir.toString().endsWith( "/" ) )
                     dir.append( File.separator );
-                
+
                 break;
             }
         }
 
         return dir.toString();
     }
-    
+
     public static String toUnicodeValue( String unicode )
     {
-        if(Strings.isNullOrEmpty( unicode ))
+        if( Strings.isNullOrEmpty( unicode ) )
             return "";
-        
+
         unicode = unicode.replace( "U+", "\\u" );
-        
+
         return StringEscapeUtils.unescapeJava( unicode );
     }
 

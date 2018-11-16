@@ -1,4 +1,4 @@
-package io.hs.bex.currency.model.task;
+package io.hs.bex.currency.task;
 
 
 import io.hs.bex.datastore.service.api.DataStoreService;

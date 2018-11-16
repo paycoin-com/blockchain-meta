@@ -12,7 +12,7 @@ import io.hs.bex.common.utils.StringUtils;
 public class FeeRate
 {
     @JsonIgnore
-    private Instant dateFetched = Instant.now();
+    private Instant date = Instant.now();
 
     @JsonIgnore
     public double lowPriorityRate  = 0;
@@ -49,11 +49,29 @@ public class FeeRate
     {
         return StringUtils.doubleToString( highPriorityRate );
     }
+    
+    @JsonIgnore
+    public Instant getDate()
+    {
+        return date;
+    }
 
-    @JsonProperty("date")
+    public void setDate( Instant date )
+    {
+        this.date = date;
+    }
+
+    @JsonProperty("date_str")
     public String getDateStr()
     {
-        return StringUtils.instantToString( dateFetched ); 
+        return StringUtils.instantToString( date ); 
     }
+    
+    @JsonProperty("date")
+    public long getDateEpoch()
+    {
+        return date.toEpochMilli();
+    }
+
 
 }

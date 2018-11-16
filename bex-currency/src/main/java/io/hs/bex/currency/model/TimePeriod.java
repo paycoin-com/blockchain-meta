@@ -32,5 +32,4 @@ public enum TimePeriod
         
         return null;
     }
-
 }
