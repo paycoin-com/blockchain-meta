@@ -4,9 +4,9 @@ package io.hs.bex.common.model;
 public enum DigitalCurrencyType
 {
     UNDEFINED( 0, "UNDEFINED" ),
-    BTC( 1, "Bitcoin" ),
-    BCH( 2, "Bitcoin-Cash" ),
-    ETH( 3 ,"Ethereum" );
+    BTC( 100, "Bitcoin" ),
+    BCH( 200, "Bitcoin-Cash" ),
+    ETH( 300 ,"Ethereum" );
     
     private short id = 0;
 

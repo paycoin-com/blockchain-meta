@@ -50,7 +50,7 @@ public class CurrencyServiceImpl implements CurrencyService
     // ---------------------------------
     
     final int LAST_XRATES_FETCH_PERIOD = 180; //seconds
-    final int HOURLY_XRATES_FETCH_PERIOD = 600; //seconds
+    final int HOURLY_XRATES_FETCH_PERIOD = 1800; //seconds
     
     final String XRATES_ROOT_FOLDER = "/xrates";
     

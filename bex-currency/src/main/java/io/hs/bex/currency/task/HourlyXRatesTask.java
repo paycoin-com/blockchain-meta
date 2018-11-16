@@ -15,6 +15,6 @@ public class HourlyXRatesTask implements Runnable
     @Override
     public void run()
     {
-        currencyService.fetchAndStoreXRates( 1, TimePeriod.MINUTE, 10 );
+        currencyService.fetchAndStoreXRates( 1, TimePeriod.MINUTE, 31 );
     }
 }
