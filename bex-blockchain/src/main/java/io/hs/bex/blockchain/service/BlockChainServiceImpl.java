@@ -34,6 +34,7 @@ public class BlockChainServiceImpl implements BlockChainService
     
     final String BLOCKCHAIN_ROOT_FOLDER = "/blockchain";
     final static int RECENT_BLOCKS_COUNT = 10;
+    final int FEE_ESTIMATE_PERIOD = 180; //seconds
     
     @Autowired
     BlockChainTaskManager taskManager;
@@ -89,7 +90,7 @@ public class BlockChainServiceImpl implements BlockChainService
     @Override
     public void startTasks()
     {
-        taskManager.startScheduledAtFixed( startFeeEstimateTask(), "FeeEstimateTask", 0, 180 );
+        taskManager.startScheduledTask( startFeeEstimateTask(), "FeeEstimateTask", 60, FEE_ESTIMATE_PERIOD );
     }
     
     private FeeEstimateTask startFeeEstimateTask() 
