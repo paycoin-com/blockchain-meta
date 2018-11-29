@@ -238,7 +238,7 @@ public class CurrencyServiceImpl implements CurrencyService
     {
         try 
         {
-            Map<Integer,Float> dataMap = new LinkedHashMap<>();
+            Map<String,Float> dataMap = new LinkedHashMap<>();
             LocalDateTime lastDate = null, localDateTime = null;
             
             int hour = 0;
@@ -260,7 +260,7 @@ public class CurrencyServiceImpl implements CurrencyService
                     }
                 }
                 
-                dataMap.put( localDateTime.getMinute(), xrate.getRate() );
+                dataMap.put( String.format( "%02d", localDateTime.getMinute()), xrate.getRate() );
                 
                 hour = localDateTime.getHour();
                 lastDate = localDateTime;
@@ -278,9 +278,9 @@ public class CurrencyServiceImpl implements CurrencyService
         }
     }
     
-    private void appendData( String path, String fileName,  Map<Integer,Float> dataMap ) throws IOException 
+    private void appendData( String path, String fileName,  Map<String,Float> dataMap ) throws IOException 
     {
-        LinkedHashMap<Integer,Float> contentMap = null;
+        LinkedHashMap<String,Float> contentMap = null;
         
         String content = getFileContent( path, fileName );
         

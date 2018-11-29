@@ -115,7 +115,7 @@ public class BcoinHandler
         {
             logger.error( "Error getting estimated fee from:{}", url, e );
             
-            return null;
+            return new FeeRate(-1,-1,-1);
         }
     }
     
@@ -138,7 +138,7 @@ public class BcoinHandler
         {
         }
         
-        return 0;
+        return -1;
     }
 
 }
