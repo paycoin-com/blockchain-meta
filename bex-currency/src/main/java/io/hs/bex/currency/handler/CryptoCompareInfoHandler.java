@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
 import io.hs.bex.currency.model.CurrencyInfoRequest;
@@ -29,6 +31,7 @@ import com.google.common.base.Strings;
 
 
 //-------------------------------------
+
 @JsonIgnoreProperties( ignoreUnknown = true )
 class InfoResponse
 {
@@ -95,6 +98,27 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
         mapper = new ObjectMapper();
     }
     
+        
+    @Override
+    public List<CurrencyRate> getCurrentXRates( CurrencyInfoRequest request ) 
+    {
+        String url = infoServiceUrl + "/data/pricemulti?fsyms=" + request.joinSourceCurrencies( "," )
+        + "&tsyms=" + request.joinTargetCurrencies( "," );
+        
+        try 
+        {
+            HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET,entity, String.class);
+            
+            return jsonToCurrencyRates( response.getBody() );
+        }
+        catch( Exception e ) 
+        {
+            logger.error( "Error getting Currency rate from:{}",url, e );
+            
+            return null;
+        }
+    }        
 
     @Override
     public CurrencyRate getCurrencyRate( String sourceCurrency, String targetCurrency ) 
@@ -127,7 +151,8 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
             HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
             ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET,entity, String.class);
             
-            return jsonToCurrencyRateList( request.getSourceCurrency(), request.getTargetCurrency(), response.getBody() );
+            return jsonToCurrencyRateList( request.getSourceCurrencies().get( 0 ), 
+                    request.getTargetCurrencies().get( 0 ), response.getBody() );
         }
         catch( Exception e ) 
         {
@@ -151,20 +176,20 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
         }
         else if( request.getPeriod() == TimePeriod.DAY )
         {
-            url = infoServiceUrl + "/data/histoday?aggregate=1&fsym=" + request.getSourceCurrency().getCode() 
-            + "&tsym="+request.getTargetCurrency().getCode()
+            url = infoServiceUrl + "/data/histoday?aggregate=1&fsym=" + request.getSourceCcyCode()
+            + "&tsym=" + request.getTargetCcyCode()
             + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo().getEpochSecond();  
         }
         else if( request.getPeriod() == TimePeriod.HOUR )
         {
-            url = infoServiceUrl + "/data/histohour?aggregate=1&fsym=" + request.getSourceCurrency().getCode()
-            + "&tsym="+request.getTargetCurrency().getCode() 
+            url = infoServiceUrl + "/data/histohour?aggregate=1&fsym=" + request.getSourceCcyCode()
+            + "&tsym=" + request.getTargetCcyCode()
             + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo().getEpochSecond();   
         }
         else if( request.getPeriod() == TimePeriod.MINUTE )
         {
-            url = infoServiceUrl + "/data/histominute?aggregate=1&fsym=" + request.getSourceCurrency().getCode() 
-                + "&tsym="+request.getTargetCurrency().getCode() 
+            url = infoServiceUrl + "/data/histominute?aggregate=1&fsym=" + request.getSourceCcyCode() 
+                + "&tsym=" + request.getTargetCcyCode()
                 + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo().getEpochSecond();
         }
         
@@ -172,7 +197,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
     }
     
     
-    private CurrencyRate jsonToCurrencyRate(String sourceCurrency, String targetCurrency, String json ) 
+    private CurrencyRate jsonToCurrencyRate( String sourceCurrency, String targetCurrency, String json ) 
             throws Exception 
     {
         if(Strings.isNullOrEmpty( json ))
@@ -196,6 +221,45 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
         
         return null;
     }
+    
+    @SuppressWarnings( "unchecked" )
+    private List<CurrencyRate> jsonToCurrencyRates( String json ) 
+            throws Exception 
+    {
+        if(Strings.isNullOrEmpty( json ))
+            return null;
+        try
+        {
+            List<CurrencyRate>  currencyRates = new ArrayList<>();
+            Instant now = Instant.now();
+            Object responseObject = mapper.readValue( json, Object.class);
+            
+            Map<String,Map<String,Double>> sourceCurrencies = (Map<String, Map<String,Double>>) responseObject;
+            
+            for( String sourceCurrencyStr : sourceCurrencies.keySet() ) 
+            {
+                Map<String,Double> targetCurrencies  = sourceCurrencies.get( sourceCurrencyStr );
+                
+                for( String targetCurrencyStr : targetCurrencies.keySet() ) 
+                {
+                    double value = targetCurrencies.get( targetCurrencyStr );
+                    
+                    CurrencyRate currencyRate = new CurrencyRate( now, SysCurrency.find( sourceCurrencyStr ) , 
+                            SysCurrency.find( targetCurrencyStr ), (float) value);
+                    
+                    currencyRates.add( currencyRate );
+                }
+            }
+            
+            return currencyRates;
+        }
+        catch( IOException e )
+        {
+        }
+        
+        return Collections.emptyList();
+    }
+
     
     
     private List<CurrencyRate> jsonToCurrencyRateList( SysCurrency sourceCurrency, SysCurrency targetCurrency, String json ) 

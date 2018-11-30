@@ -163,5 +163,12 @@ public class CoinDeskInfoHandler implements CurrencyInfoService
         }
     }
 
+    @Override
+    public List<CurrencyRate> getCurrentXRates( CurrencyInfoRequest request )
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
  
 }

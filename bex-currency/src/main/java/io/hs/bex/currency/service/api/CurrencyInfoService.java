@@ -10,4 +10,6 @@ public interface CurrencyInfoService
     CurrencyRate getCurrencyRate( String sourceCurrency, String targetCurrency );
 
     List<CurrencyRate> getCurrencyRateBy( CurrencyInfoRequest request );
+
+    List<CurrencyRate> getCurrentXRates( CurrencyInfoRequest request );
 }

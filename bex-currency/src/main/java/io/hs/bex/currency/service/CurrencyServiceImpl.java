@@ -4,7 +4,6 @@ package io.hs.bex.currency.service;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -68,7 +67,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
     CurrencyInfoService defaultInfoService;
     
-    private List<CurrencyInfoRequest> currencyTaskParams = new ArrayList<>();
+    private CurrencyInfoRequest currencyTaskParams = new CurrencyInfoRequest();
 
     @PostConstruct
     public void init() 
@@ -92,22 +91,12 @@ public class CurrencyServiceImpl implements CurrencyService
         return new DataPublishTask( dataStoreService ); 
     }
 
-    
     public void buildTaskParams() 
     {
-        currencyTaskParams.clear();
+        currencyTaskParams.clearCurrencies();
         
-        List<SysCurrency> digitalCurrencies = getSupported( CurrencyType.DIGITAL );
-        List<SysCurrency> fiatCurrencies = getSupported( CurrencyType.FIAT );
-        
-        for( SysCurrency digCurrency: digitalCurrencies ) 
-        {
-            for( SysCurrency fiatCurrency: fiatCurrencies ) 
-            {
-                CurrencyInfoRequest req = new CurrencyInfoRequest( digCurrency, fiatCurrency, TimePeriod.MINUTE, null, 0);
-                currencyTaskParams.add( req );
-            }
-        }
+        currencyTaskParams.getSourceCurrencies().addAll( getSupported( CurrencyType.DIGITAL ));
+        currencyTaskParams.getTargetCurrencies().addAll( getSupported( CurrencyType.FIAT ));
     }
     
     @Override
@@ -238,38 +227,62 @@ public class CurrencyServiceImpl implements CurrencyService
     {
         try 
         {
-            Map<String,Float> dataMap = new LinkedHashMap<>();
-            LocalDateTime lastDate = null, localDateTime = null;
+            String path = "";
             
-            int hour = 0;
-            
-            String rootPath =  "/" + request.getSourceCurrency().getCode() + "/" + request.getTargetCurrency().getCode() +"/";
-            List<CurrencyRate> xrates = defaultInfoService.getCurrencyRateBy( request ) ;
-            
-            for( CurrencyRate xrate: xrates ) 
+            for( SysCurrency sourceCurrency : request.getSourceCurrencies() ) 
             {
-                localDateTime = xrate.getLocalDateTime();
-                
-                if(hour != localDateTime.getHour()) 
+                for(SysCurrency targetCurrency : request.getTargetCurrencies() ) 
                 {
-                    if(dataMap.size() > 0) 
+                    Map<String,Float> dataMap = new LinkedHashMap<>();
+                    LocalDateTime lastDate = null, localDateTime = null;
+                    
+                    int hour = 0;
+                    
+                    String rootPath =  "/" + sourceCurrency.getCode() + "/" + targetCurrency.getCode() +"/";
+                    List<CurrencyRate> xrates = defaultInfoService.getCurrencyRateBy( 
+                            new CurrencyInfoRequest( sourceCurrency, targetCurrency, 
+                                    request.getPeriod(), request.getDateTo(), request.getLimit()) ) ;
+                    
+                    for( CurrencyRate xrate: xrates ) 
                     {
-                        String path = CurrencyUtils.buildDirStructure( TimePeriod.HOUR, rootPath,lastDate );
+                        localDateTime = xrate.getLocalDateTime();
+                        
+                        if( request.getPeriod() == TimePeriod.MINUTE ) 
+                        {
+                            if( hour != localDateTime.getHour()) 
+                            {
+                                if(dataMap.size() > 0) 
+                                {
+                                    path = CurrencyUtils.buildDirStructure( TimePeriod.HOUR, rootPath,lastDate );
+                                    
+                                    appendData( path, "index.json", dataMap );
+                                    dataMap.clear();
+                                }
+                            }
+                            
+                            dataMap.put( String.format( "%02d", localDateTime.getMinute()), xrate.getRate() );
+                        }
+                        else 
+                        {
+                            path = CurrencyUtils.buildDirStructure( request.getPeriod(), rootPath, localDateTime );
+                            saveFile( path, "index.json", Float.toString( xrate.getRate() ));
+                        }
+                      
+                        hour = localDateTime.getHour();
+                        lastDate = localDateTime;
+                    }
+                    
+                    if( dataMap.size() > 0 ) 
+                    {
+                        path = CurrencyUtils.buildDirStructure( TimePeriod.HOUR, rootPath, lastDate );
                         appendData( path, "index.json", dataMap );
-                        dataMap.clear();
                     }
                 }
-                
-                dataMap.put( String.format( "%02d", localDateTime.getMinute()), xrate.getRate() );
-                
-                hour = localDateTime.getHour();
-                lastDate = localDateTime;
-            }
             
-            if(dataMap.size() > 0) 
-            {
-                String path = CurrencyUtils.buildDirStructure( TimePeriod.HOUR, rootPath, lastDate );
-                appendData( path, "index.json", dataMap );
+                //------------------------------------------------------------------------
+                logger.info( "Successfully fetchAndStore XRates for:{}-{}", sourceCurrency.getCode(), 
+                        StringUtils.instantToString( request.getDateTo() ) );
+                //------------------------------------------------------------------------
             }
         }
         catch( Exception e ) 
@@ -286,7 +299,7 @@ public class CurrencyServiceImpl implements CurrencyService
         
         if(!Strings.isNullOrEmpty( content )) 
         {
-            contentMap = mapper.readValue(content, new TypeReference<LinkedHashMap<Integer,Float>>(){});
+            contentMap = mapper.readValue(content, new TypeReference<LinkedHashMap<String,Float>>(){});
             contentMap.putAll( dataMap );
             saveFile( path, fileName, mapper.writeValueAsString( contentMap ) );
         }
@@ -299,38 +312,35 @@ public class CurrencyServiceImpl implements CurrencyService
     {
         try 
         {
-            String rootPath =  "/" + request.getSourceCurrency().getCode() + "/" + request.getTargetCurrency().getCode() +"/";
-            List<CurrencyRate> xrates = defaultInfoService.getCurrencyRateBy( request ) ;
+            List<CurrencyRate> xrates = defaultInfoService.getCurrentXRates( request ) ;
             
             for( CurrencyRate xrate: xrates ) 
             {
+                String rootPath =  "/" + xrate.getCurrency().getCode() 
+                        + "/" + xrate.getTargetCurrency().getCode() +"/";
                 saveFile( rootPath, "index.json", mapper.writeValueAsString( xrate ));
             }
         }
         catch( Exception e ) 
         {
-            logger.error( "Error saving xrates for:{}", request, e );
+            logger.error( "Error saving latest xrates for:{}", request, e );
         }
     }
     
     @Override
     public void fetchAndStoreXRates( int storeType, TimePeriod timePeriod, int fetchSize ) 
     {
-        Instant requestDate = Instant.now();
+        CurrencyInfoRequest request = new CurrencyInfoRequest();
+        request.getSourceCurrencies().addAll( currencyTaskParams.getSourceCurrencies() );
+        request.getTargetCurrencies().addAll( currencyTaskParams.getTargetCurrencies() );
+        request.setPeriod( timePeriod );
+        request.setDateTo( Instant.now() );
+        request.setLimit( fetchSize );
         
-        for( CurrencyInfoRequest request : currencyTaskParams ) 
-        {
-            request.setDateTo( requestDate );
-            request.setLimit( fetchSize );
-            
-            if( storeType == 1 )
-                saveXRates( request );
-            else
-                saveLatestXRates( request );
-        }
-        
-        logger.info( "Successfully fetchAndStore XRates for:{}-{}",storeType ,StringUtils.instantToString( requestDate ) );
-
+        if(storeType == 1) 
+            saveXRates( request );
+        else 
+            saveLatestXRates( request );
     }
     
     private void saveFile( String path, String fileName, String value ) throws JsonProcessingException 

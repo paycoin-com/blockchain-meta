@@ -31,7 +31,7 @@ public class CurrencyRestController
     CurrencyService currencyService;
     
     /**
-     * Get the publihser by AppID
+     * Get latest currency rates
      * 
      * @return
      */
@@ -62,6 +62,7 @@ public class CurrencyRestController
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
     public ResponseEntity<?> saveXRates( @PathVariable("scurrency") String sourceCurrency,
                                          @PathVariable("tcurrency") String targetCurrency,
+                                         @RequestParam( required = false, name = "source" ) String source,
                                          @RequestParam( required = false, name = "period" ) String period,
                                          @RequestParam( required = false, name = "to_date" ) String toDate,
                                          @RequestParam( required = false, name = "limit" ) int limit )
@@ -70,7 +71,7 @@ public class CurrencyRestController
         {
             LOGGER.info( " *** Get RestRequest currency/xrates/save?period = ", period );
             
-            CurrencyInfoRequest request = new CurrencyInfoRequest(sourceCurrency, targetCurrency, period,toDate, limit);
+            CurrencyInfoRequest request = new CurrencyInfoRequest( sourceCurrency, targetCurrency, period,toDate, limit );
             
             currencyService.saveXRates( request );
             
