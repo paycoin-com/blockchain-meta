@@ -44,7 +44,7 @@ public class CurrencyRestController
             LOGGER.info( " *** Get RestRequest currency/rate?period = ", period );
             
             return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService()
-                    .getCurrencyRateBy( new CurrencyInfoRequest() ), HttpStatus.OK );
+                    .getXRatesBy( new CurrencyInfoRequest() ), HttpStatus.OK );
         }
         catch ( NoSuchElementException e )
         {
@@ -102,7 +102,7 @@ public class CurrencyRestController
             
             CurrencyInfoRequest request = new CurrencyInfoRequest(sourceCurrency, targetCurrency, period,toDate, limit);
             
-            return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService().getCurrencyRateBy( request ), 
+            return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService().getXRatesBy( request ), 
                     HttpStatus.OK );
         }
         catch ( NoSuchElementException e )

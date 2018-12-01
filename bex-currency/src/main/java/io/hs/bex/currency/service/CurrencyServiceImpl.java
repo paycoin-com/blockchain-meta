@@ -239,7 +239,7 @@ public class CurrencyServiceImpl implements CurrencyService
                     int hour = 0;
                     
                     String rootPath =  "/" + sourceCurrency.getCode() + "/" + targetCurrency.getCode() +"/";
-                    List<CurrencyRate> xrates = defaultInfoService.getCurrencyRateBy( 
+                    List<CurrencyRate> xrates = defaultInfoService.getXRatesBy( 
                             new CurrencyInfoRequest( sourceCurrency, targetCurrency, 
                                     request.getPeriod(), request.getDateTo(), request.getLimit()) ) ;
                     
@@ -312,7 +312,7 @@ public class CurrencyServiceImpl implements CurrencyService
     {
         try 
         {
-            List<CurrencyRate> xrates = defaultInfoService.getCurrentXRates( request ) ;
+            List<CurrencyRate> xrates = defaultInfoService.getLatestXRates( request ) ;
             
             for( CurrencyRate xrate: xrates ) 
             {

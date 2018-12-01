@@ -100,7 +100,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
     
         
     @Override
-    public List<CurrencyRate> getCurrentXRates( CurrencyInfoRequest request ) 
+    public List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request ) 
     {
         String url = infoServiceUrl + "/data/pricemulti?fsyms=" + request.joinSourceCurrencies( "," )
         + "&tsyms=" + request.joinTargetCurrencies( "," );
@@ -121,7 +121,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
     }        
 
     @Override
-    public CurrencyRate getCurrencyRate( String sourceCurrency, String targetCurrency ) 
+    public CurrencyRate getXRate( String sourceCurrency, String targetCurrency ) 
     {
         String url = infoServiceUrl + "/data/price?fsym=" + sourceCurrency.toUpperCase() 
         + "&tsyms="+sourceCurrency.toUpperCase();
@@ -142,7 +142,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
     }
     
     @Override
-    public List<CurrencyRate> getCurrencyRateBy( CurrencyInfoRequest request ) 
+    public List<CurrencyRate> getXRatesBy( CurrencyInfoRequest request ) 
     {
         String url = constructUrl( request );
         
@@ -253,7 +253,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
             
             return currencyRates;
         }
-        catch( IOException e )
+        catch( Exception e )
         {
         }
         

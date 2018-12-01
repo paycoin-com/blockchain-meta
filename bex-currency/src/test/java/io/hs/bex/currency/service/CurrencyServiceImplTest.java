@@ -97,7 +97,7 @@ public class CurrencyServiceImplTest
         createCurrencyRatesList((float)3.8, "2018-11-30 13:21" );
         createCurrencyRatesList((float)3.8, "2018-11-30 13:32" );
 
-        when( defaultInfoService.getCurrencyRateBy( Mockito.any() )).thenReturn( currencyRates );
+        when( defaultInfoService.getXRatesBy( Mockito.any() )).thenReturn( currencyRates );
         
         when( dataStoreService.getFileContent( Mockito.anyString(), Mockito.anyString() ) )
             .thenAnswer( new Answer<String>()
@@ -138,7 +138,7 @@ public class CurrencyServiceImplTest
     public void  testFetchAndStore()
     {
         currencyService.buildTaskParams();
-        currencyService.fetchAndStoreXRates( 1, TimePeriod.HOUR, 3 );
+        currencyService.fetchAndStoreXRates( 1, TimePeriod.MINUTE, 3 );
         
         assertEquals( savedData.size(), 7 ); //Check If Second date included or not
     }

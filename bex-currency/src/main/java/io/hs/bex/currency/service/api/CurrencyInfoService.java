@@ -7,9 +7,9 @@ import io.hs.bex.currency.model.CurrencyRate;
 
 public interface CurrencyInfoService
 {
-    CurrencyRate getCurrencyRate( String sourceCurrency, String targetCurrency );
+    CurrencyRate getXRate( String sourceCurrency, String targetCurrency );
 
-    List<CurrencyRate> getCurrencyRateBy( CurrencyInfoRequest request );
+    List<CurrencyRate> getXRatesBy( CurrencyInfoRequest request );
 
-    List<CurrencyRate> getCurrentXRates( CurrencyInfoRequest request );
+    List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request );
 }
