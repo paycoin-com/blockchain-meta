@@ -16,6 +16,7 @@ import io.hs.bex.currency.model.TimePeriod;
 import io.hs.bex.currency.service.api.CurrencyInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
@@ -74,18 +76,20 @@ class Data
     public double open = 0;
 }
 
-@Service("CryptoCompareInfoHandler")
-public class CryptoCompareInfoHandler implements CurrencyInfoService
+@Service("CryptoCompareHandler")
+public class CryptoCompareHandler implements CurrencyInfoService
 {
     // ---------------------------------
-    private static final Logger logger = LoggerFactory.getLogger( CryptoCompareInfoHandler.class );
+    private static final Logger logger = LoggerFactory.getLogger( CryptoCompareHandler.class );
     // ---------------------------------
 
     @Value("${service.ccy.cryptocompare.api.url}")
     private String infoServiceUrl;
     
-    private RestTemplate restTemplate;
+    @Autowired
     private ObjectMapper mapper;
+    
+    private RestTemplate restTemplate;
     private HttpHeaders headers;
     
     @PostConstruct
@@ -94,8 +98,6 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
         restTemplate = new RestTemplate();
         headers = new HttpHeaders();
         headers.add("user-agent", "Mozilla/5.0");
-        
-        mapper = new ObjectMapper();
     }
     
         
@@ -222,7 +224,6 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
         return null;
     }
     
-    @SuppressWarnings( "unchecked" )
     private List<CurrencyRate> jsonToCurrencyRates( String json ) 
             throws Exception 
     {
@@ -232,20 +233,20 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
         {
             List<CurrencyRate>  currencyRates = new ArrayList<>();
             Instant now = Instant.now();
-            Object responseObject = mapper.readValue( json, Object.class);
             
-            Map<String,Map<String,Double>> sourceCurrencies = (Map<String, Map<String,Double>>) responseObject;
+            Map<String, Map<String, Double>> sourceCurrencies = 
+                    mapper.readValue(json, new TypeReference<Map<String, Map<String, Double>>>() {});
             
             for( String sourceCurrencyStr : sourceCurrencies.keySet() ) 
             {
-                Map<String,Double> targetCurrencies  = sourceCurrencies.get( sourceCurrencyStr );
+                Map<String, Double> targetCurrencies = sourceCurrencies.get( sourceCurrencyStr );
                 
                 for( String targetCurrencyStr : targetCurrencies.keySet() ) 
                 {
-                    double value = targetCurrencies.get( targetCurrencyStr );
+                    Double value = targetCurrencies.get( targetCurrencyStr );
                     
                     CurrencyRate currencyRate = new CurrencyRate( now, SysCurrency.find( sourceCurrencyStr ) , 
-                            SysCurrency.find( targetCurrencyStr ), (float) value);
+                            SysCurrency.find( targetCurrencyStr ), value.floatValue());
                     
                     currencyRates.add( currencyRate );
                 }
@@ -255,6 +256,7 @@ public class CryptoCompareInfoHandler implements CurrencyInfoService
         }
         catch( Exception e )
         {
+            logger.error( "Error parsing JSON in CryptoCompare:{}", e.toString() );
         }
         
         return Collections.emptyList();

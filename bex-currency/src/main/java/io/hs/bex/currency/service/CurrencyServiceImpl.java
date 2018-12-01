@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import io.hs.bex.common.utils.StringUtils;
-import io.hs.bex.currency.handler.CryptoCompareInfoHandler;
+import io.hs.bex.currency.handler.CryptoCompareHandler;
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.CurrencyType;
@@ -45,7 +45,7 @@ import com.google.common.base.Strings;
 public class CurrencyServiceImpl implements CurrencyService
 {
     // ---------------------------------
-    private static final Logger logger = LoggerFactory.getLogger( CryptoCompareInfoHandler.class );
+    private static final Logger logger = LoggerFactory.getLogger( CryptoCompareHandler.class );
     // ---------------------------------
     
     final int LAST_XRATES_FETCH_PERIOD = 180; //seconds
@@ -72,7 +72,7 @@ public class CurrencyServiceImpl implements CurrencyService
     @PostConstruct
     public void init() 
     {
-        defaultInfoService = (CurrencyInfoService) appContext.getBean( "CryptoCompareInfoHandler" );
+        defaultInfoService = (CurrencyInfoService) appContext.getBean( "CryptoCompareHandler" );
         buildTaskParams();
     }
     
