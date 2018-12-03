@@ -107,5 +107,13 @@ public class CurrencyRate
     {
         this.date = date;
     }
+
+    @Override
+    public String toString()
+    {
+        return "CurrencyRate [currency=" + currency + ", rate=" + rate + ", targetCurrency=" + targetCurrency + "]";
+    }
+    
+    
    
 }

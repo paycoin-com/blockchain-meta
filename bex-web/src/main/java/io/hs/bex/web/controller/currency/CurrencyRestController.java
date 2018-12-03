@@ -31,7 +31,7 @@ public class CurrencyRestController
     CurrencyService currencyService;
     
     /**
-     * Get the publihser by AppID
+     * Get latest currency rates
      * 
      * @return
      */
@@ -44,7 +44,7 @@ public class CurrencyRestController
             LOGGER.info( " *** Get RestRequest currency/rate?period = ", period );
             
             return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService()
-                    .getCurrencyRateBy( new CurrencyInfoRequest() ), HttpStatus.OK );
+                    .getXRatesBy( new CurrencyInfoRequest() ), HttpStatus.OK );
         }
         catch ( NoSuchElementException e )
         {
@@ -62,6 +62,7 @@ public class CurrencyRestController
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
     public ResponseEntity<?> saveXRates( @PathVariable("scurrency") String sourceCurrency,
                                          @PathVariable("tcurrency") String targetCurrency,
+                                         @RequestParam( required = false, name = "source" ) String source,
                                          @RequestParam( required = false, name = "period" ) String period,
                                          @RequestParam( required = false, name = "to_date" ) String toDate,
                                          @RequestParam( required = false, name = "limit" ) int limit )
@@ -70,7 +71,7 @@ public class CurrencyRestController
         {
             LOGGER.info( " *** Get RestRequest currency/xrates/save?period = ", period );
             
-            CurrencyInfoRequest request = new CurrencyInfoRequest(sourceCurrency, targetCurrency, period,toDate, limit);
+            CurrencyInfoRequest request = new CurrencyInfoRequest( sourceCurrency, targetCurrency, period,toDate, limit );
             
             currencyService.saveXRates( request );
             
@@ -101,7 +102,7 @@ public class CurrencyRestController
             
             CurrencyInfoRequest request = new CurrencyInfoRequest(sourceCurrency, targetCurrency, period,toDate, limit);
             
-            return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService().getCurrencyRateBy( request ), 
+            return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService().getXRatesBy( request ), 
                     HttpStatus.OK );
         }
         catch ( NoSuchElementException e )
