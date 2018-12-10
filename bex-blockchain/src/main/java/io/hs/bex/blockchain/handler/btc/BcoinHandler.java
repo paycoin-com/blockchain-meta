@@ -1,6 +1,11 @@
 package io.hs.bex.blockchain.handler.btc;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,52 +22,78 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
+import io.hs.bex.blockchain.handler.btc.model.MempoolInfo;
+import io.hs.bex.blockchain.handler.btc.model.MempoolTx;
 import io.hs.bex.blockchain.model.FeeRate;
+
+@JsonIgnoreProperties( ignoreUnknown = true )
+class MempoolTxResponse
+{
+    public MempoolTxResponse()
+    {}
+    
+    @JsonProperty( "result" )
+    public Map<String, MempoolTx> mempoolTxs;
+
+}
+
+@JsonIgnoreProperties( ignoreUnknown = true )
+class MempoolInfoResponse
+{
+    public MempoolInfoResponse()
+    {}
+    
+    @JsonProperty( "result" )
+    public MempoolInfo memPoolInfo;
+
+}
 
 //-------------------------------------
 @JsonIgnoreProperties( ignoreUnknown = true )
 class Response
 {
-  public Response(){}
-  
-  @JsonProperty("id")
-  public String id;
-  
-  @JsonProperty("error")
-  public ErrorResponse error;
-  
-  @JsonProperty("result")
-  public EstimeFeeResponse result;
-  
+    public Response()
+    {}
+
+    @JsonProperty( "id" )
+    public String id;
+
+    @JsonProperty( "error" )
+    public ErrorResponse error;
+
+    @JsonProperty( "result" )
+    public EstimeFeeResponse result;
+
 }
 
 @JsonIgnoreProperties( ignoreUnknown = true )
 class EstimeFeeResponse
 {
-  public EstimeFeeResponse(){}
-  
-  @JsonProperty("fee")
-  public double fee = 0;
-  
-  @JsonProperty("blocks")
-  public int blocks = 0;
+    public EstimeFeeResponse()
+    {}
+
+    @JsonProperty( "fee" )
+    public double fee = 0;
+
+    @JsonProperty( "blocks" )
+    public int blocks = 0;
 }
 
 @JsonIgnoreProperties( ignoreUnknown = true )
 class ErrorResponse
 {
-  public ErrorResponse(){}
-  
-  @JsonProperty("message")
-  public String message;
-  
-  @JsonProperty("code")
-  public int code = 0;
+    public ErrorResponse()
+    {}
+
+    @JsonProperty( "message" )
+    public String message;
+
+    @JsonProperty( "code" )
+    public int code = 0;
 }
 
-
-@Service("BcoinHandler")
-@Scope("prototype")
+@Service( "BcoinHandler" )
+@Scope( "prototype" )
 public class BcoinHandler
 {
     // ---------------------------------
@@ -71,74 +102,155 @@ public class BcoinHandler
 
     private RestTemplate restTemplate;
     private HttpHeaders headers;
-    
+
     @Autowired
     private ObjectMapper mapper;
 
     private String apiUrl;
-    
-    
-    public void init( String apiUrl ) 
+
+    public void init( String apiUrl )
     {
         this.apiUrl = apiUrl;
-        
+
         restTemplate = new RestTemplate();
         headers = new HttpHeaders();
-        headers.add("user-agent", "Mozilla/5.0");
+        headers.add( "user-agent", "Mozilla/5.0" );
 
     }
-    
-    public FeeRate getEstimedFeeRate() 
+
+    public FeeRate getEstimedFeeRate()
     {
         String url = apiUrl + "/" + "";
-        
-        try 
+
+        try
         {
-            String body = "{\"method\":\"estimatesmartfee\",\"params\":[8]}";
-            HttpEntity<String> entity = new HttpEntity<String>(body, headers);
-            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.POST,entity, String.class);
+            String body = "{\"method\":\"estimatesmartfee\",\"params\":[1]}";
+            HttpEntity<String> entity = new HttpEntity<String>( body, headers );
+            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
             double highPriority = jsonToFeeRate( response.getBody() );
 
-            body = "{\"method\":\"estimatesmartfee\",\"params\":[3]}";
-            entity = new HttpEntity<String>(body, headers);
-            response = restTemplate.exchange( url, HttpMethod.POST,entity, String.class);
-            double mediumPriority = jsonToFeeRate( response.getBody());
-            
-            body = "{\"method\":\"estimatesmartfee\",\"params\":[1]}";
-            entity = new HttpEntity<String>(body, headers);
-            response = restTemplate.exchange( url, HttpMethod.POST,entity, String.class);
-            double lowPriority = jsonToFeeRate( response.getBody());
-            
-            return new FeeRate( highPriority, mediumPriority, lowPriority );
+            body = "{\"method\":\"estimatesmartfee\",\"params\":[6]}";
+            entity = new HttpEntity<String>( body, headers );
+            response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
+            //double mediumPriority = jsonToFeeRate( response.getBody() );
+            double mediumPriority = 0.000080;
+
+            // body = "{\"method\":\"estimatesmartfee\",\"params\":[15]}";
+            // entity = new HttpEntity<String>( body, headers );
+            // response = restTemplate.exchange( url, HttpMethod.POST, entity,
+            // String.class );
+            // double lowPriority = jsonToFeeRate( response.getBody() );
+            double lowPriority = 0.000040;
+
+            return new FeeRate( lowPriority, mediumPriority, highPriority );
         }
-        catch( Exception e ) 
+        catch( Exception e )
         {
             logger.error( "Error getting estimated fee from:{}", url, e );
-            
-            return new FeeRate(-1,-1,-1);
+
+            return new FeeRate( -1, -1, -1 );
         }
     }
-    
-    
-    private double jsonToFeeRate( String json ) 
+
+    private double jsonToFeeRate( String json )
     {
-        if(Strings.isNullOrEmpty( json ))
+        if( Strings.isNullOrEmpty( json ) )
             return 0;
-        
+
         try
         {
             Response response = mapper.readValue( json, Response.class );
-            
-            if( response.error == null ) 
+
+            if( response.error == null )
             {
                 return response.result.fee;
             }
         }
         catch( Exception e )
+        {}
+
+        return -1;
+    }
+
+    public List<MempoolTx> getMempoolTxs( int verbose )
+    {
+        String url = apiUrl + "/" + "";
+
+        try
         {
+            String body = "{\"method\":\"getrawmempool\",\"params\":[" + verbose + "]}";
+            HttpEntity<String> entity = new HttpEntity<String>( body, headers );
+            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
+
+            return jsonToMempoolTxs( response.getBody() );
+
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error getting estimated fee from:{}", url, e );
+
+            return Collections.emptyList();
+        }
+
+    }
+    
+    private List<MempoolTx> jsonToMempoolTxs( String json )
+    {
+        try
+        {
+            MempoolTxResponse response = mapper.readValue( json, MempoolTxResponse.class );
+            
+            List<MempoolTx> responsList = new ArrayList<>(response.mempoolTxs.values());
+            
+            return responsList;
+        }
+        catch( Exception e )
+        {
+            return Collections.emptyList();
         }
         
-        return -1;
+    }
+
+    public MempoolInfo getMempoolInfo()
+    {
+        String url = apiUrl + "/" + "";
+
+        try
+        {
+            String body = "{\"method\":\"getmempoolinfo\"}";
+            HttpEntity<String> entity = new HttpEntity<String>( body, headers );
+            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.POST, entity,
+                    String.class );
+
+            return jsonToMempoolInfo( response.getBody() );
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error getting estimated fee from:{}", url, e );
+
+            return new MempoolInfo();
+        }
+
+    }
+    
+    private MempoolInfo jsonToMempoolInfo( String json )
+    {
+        try
+        {
+            MempoolInfoResponse response = mapper.readValue( json, MempoolInfoResponse.class );
+            
+            return response.memPoolInfo;
+        }
+        catch( Exception e )
+        {
+            return null;
+        }
+        
+    }
+
+    public void setMapper( ObjectMapper mapper )
+    {
+        this.mapper = mapper;
     }
 
 }

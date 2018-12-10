@@ -80,6 +80,11 @@
             <version>${project.version}</version>
         </dependency>
         
+        <!-- Commons-math3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+        </dependency>
         
         <!-- ******* Test ********************** -->
 

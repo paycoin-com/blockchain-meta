@@ -30,6 +30,7 @@
         <slf4j-api.version>1.7.25</slf4j-api.version>
         <logback.version>1.2.3</logback.version>
         <httpclient.version>4.5.4</httpclient.version>
+        <apache.commons.math.version>3.6.1</apache.commons.math.version>
         <commons-io.version>2.6</commons-io.version>
         <commons-net.version>3.3</commons-net.version>
         <commons-text.version>1.2</commons-text.version>
@@ -192,6 +193,13 @@
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
             </dependency>
+            
+            <!-- Commons-math3 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${apache.commons.math.version}</version>
+            </dependency>
 
             <!-- ******** Commons ******************** -->
             <dependency>
@@ -199,6 +207,8 @@
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient.version}</version>
             </dependency>
+            
+            
 
             <dependency>
                 <groupId>commons-io</groupId>

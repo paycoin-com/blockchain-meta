@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.hs.bex.blockchain.handler.btc.utils.FeeEstimateUtil;
 import io.hs.bex.blockchain.model.FeeRate;
 import io.hs.bex.blockchain.service.api.BlockChainHandler;
 import io.hs.bex.blocknode.model.Node;
@@ -14,8 +17,18 @@ import io.hs.bex.blocknode.model.NodeNetworkType;
 @Scope("prototype")
 public class BtcBlockChainHandler implements BlockChainHandler
 {
+    BcoinHandler bcoinHandler;
+    FeeEstimateUtil feeEstimateUtil;
+    ObjectMapper objectMapper;
+    
     @Autowired
-    private BcoinHandler bcoinHandler;
+    public BtcBlockChainHandler( BcoinHandler bcoinHandler, ObjectMapper objectMapper ) 
+    {
+        this.bcoinHandler = bcoinHandler;
+        this.objectMapper = objectMapper;
+        this.feeEstimateUtil = new FeeEstimateUtil( bcoinHandler, objectMapper );
+    }
+    
     
     @Autowired
     private Environment env;
@@ -40,6 +53,7 @@ public class BtcBlockChainHandler implements BlockChainHandler
     @Override
     public FeeRate getEstimatedFee( int nBlocks )
     {
+        //return feeEstimateUtil.getEsimatedFee( nBlocks );
         return bcoinHandler.getEstimedFeeRate();
     }
 

@@ -82,6 +82,8 @@ public class CryptoCompareHandler implements CurrencyInfoService
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( CryptoCompareHandler.class );
     // ---------------------------------
+    
+    private final String STOCK_EXCHANGE_SOURCE = "Coinbase";
 
     @Value("${service.ccy.cryptocompare.api.url}")
     private String infoServiceUrl;
@@ -105,7 +107,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
     public List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request ) 
     {
         String url = infoServiceUrl + "/data/pricemulti?fsyms=" + request.joinSourceCurrencies( "," )
-        + "&tsyms=" + request.joinTargetCurrencies( "," );
+        + "&tsyms=" + request.joinTargetCurrencies( "," ) + "&e=" + STOCK_EXCHANGE_SOURCE;
         
         try 
         {
@@ -126,7 +128,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
     public CurrencyRate getXRate( String sourceCurrency, String targetCurrency ) 
     {
         String url = infoServiceUrl + "/data/price?fsym=" + sourceCurrency.toUpperCase() 
-        + "&tsyms="+sourceCurrency.toUpperCase();
+        + "&tsyms=" + sourceCurrency.toUpperCase() + "&e=" + STOCK_EXCHANGE_SOURCE;
         
         try 
         {
@@ -164,6 +166,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
         }
     }
     
+    
     private String constructUrl( CurrencyInfoRequest request ) 
     {
         String url = "";
@@ -194,6 +197,8 @@ public class CryptoCompareHandler implements CurrencyInfoService
                 + "&tsym=" + request.getTargetCcyCode()
                 + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo().getEpochSecond();
         }
+        
+        url += "&e="+STOCK_EXCHANGE_SOURCE;
         
         return url;
     }
