@@ -8,5 +8,5 @@ public interface BlockChainService
 
     void startTasks();
 
-    void saveFeeEstimateRates();
+    void saveFeeRates();
 }

@@ -16,11 +16,21 @@ public class CurrencyInfoRequest
     private TimePeriod period = TimePeriod.DAY;
     
     private Instant dateTo =  Instant.ofEpochMilli( System.currentTimeMillis() );
+    
     private int limit = 30;
     
+    private String XStockSource;
+    
+    private CurrencyType currencyType = CurrencyType.OTHER;
+   
     public CurrencyInfoRequest() 
     {
         
+    }
+    
+    public CurrencyInfoRequest( CurrencyType currencyType ) 
+    {
+        this.currencyType = currencyType;
     }
     
     public CurrencyInfoRequest( SysCurrency sourceCurrency, SysCurrency targetCurrency, TimePeriod period, Instant dateTo,
@@ -32,6 +42,18 @@ public class CurrencyInfoRequest
         this.dateTo = dateTo;
         this.limit = limit;
     }
+    
+    public CurrencyInfoRequest( SysCurrency sourceCurrency, SysCurrency targetCurrency, TimePeriod period, Instant dateTo,
+            int limit,String XStockSource  )
+    {
+        this.sourceCurrencies.add( sourceCurrency );
+        this.targetCurrencies.add( targetCurrency );
+        this.period = period;
+        this.dateTo = dateTo;
+        this.limit = limit;
+        this.XStockSource = XStockSource;
+    }
+
     
     public CurrencyInfoRequest( String sourceCurrency, String targetCurrency, String periodStr, String toDateStr,
             int limit )
@@ -128,6 +150,26 @@ public class CurrencyInfoRequest
         this.period = period;
     }
     
+    public String getXStockSource()
+    {
+        return XStockSource;
+    }
+
+    public void setXStockSource( String xStockSource )
+    {
+        XStockSource = xStockSource;
+    }
+    
+    public CurrencyType getCurrencyType()
+    {
+        return currencyType;
+    }
+
+    public void setCurrencyType( CurrencyType currencyType )
+    {
+        this.currencyType = currencyType;
+    }
+
     public String joinTargetCurrencies( String separator ) 
     {
         return targetCurrencies.stream().map(currency -> currency.getCode())

@@ -14,7 +14,7 @@ public class FeeEstimateTask implements Runnable
     @Override
     public void run()
     {
-        blockChainService.saveFeeEstimateRates();
+        blockChainService.saveFeeRates();
     }
 
 }

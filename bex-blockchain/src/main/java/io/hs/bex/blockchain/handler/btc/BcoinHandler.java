@@ -128,19 +128,16 @@ public class BcoinHandler
             HttpEntity<String> entity = new HttpEntity<String>( body, headers );
             ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
             double highPriority = jsonToFeeRate( response.getBody() );
-
+            
             body = "{\"method\":\"estimatesmartfee\",\"params\":[6]}";
             entity = new HttpEntity<String>( body, headers );
             response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
-            //double mediumPriority = jsonToFeeRate( response.getBody() );
-            double mediumPriority = 0.000080;
-
-            // body = "{\"method\":\"estimatesmartfee\",\"params\":[15]}";
-            // entity = new HttpEntity<String>( body, headers );
-            // response = restTemplate.exchange( url, HttpMethod.POST, entity,
-            // String.class );
-            // double lowPriority = jsonToFeeRate( response.getBody() );
-            double lowPriority = 0.000040;
+            double mediumPriority = jsonToFeeRate( response.getBody() );
+            
+            body = "{\"method\":\"estimatesmartfee\",\"params\":[15]}";
+            entity = new HttpEntity<String>( body, headers );
+            response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
+            double lowPriority = jsonToFeeRate( response.getBody() );
 
             return new FeeRate( lowPriority, mediumPriority, highPriority );
         }
@@ -191,7 +188,6 @@ public class BcoinHandler
 
             return Collections.emptyList();
         }
-
     }
     
     private List<MempoolTx> jsonToMempoolTxs( String json )

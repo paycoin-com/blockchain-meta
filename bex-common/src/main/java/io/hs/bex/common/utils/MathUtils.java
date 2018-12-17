@@ -1,11 +1,14 @@
 package io.hs.bex.common.utils;
 
 
+import java.util.Map;
+
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 
 public class MathUtils
@@ -23,4 +26,42 @@ public class MathUtils
         else
             return function.value( xi );
     }
+
+    public static double linearRegression( double[] x, double[] y, double xi )
+    {
+        SimpleRegression regression = new SimpleRegression();
+
+        for( int i = 0; i < x.length; i++ )
+        {
+            regression.addData( x[i], y[i] );
+        }
+
+        return regression.predict( xi );
+    }
+
+    public static double linearReg( Map<Long, Double> xyData, double xi )
+    {
+        SimpleRegression regression = new SimpleRegression();
+
+        for( Long xValue: xyData.keySet() )
+        {
+            regression.addData( xValue, xyData.get( xValue ) );
+        }
+
+        return regression.predict( xi );
+    }
+    
+    public static double linearRegAsInt( Map<Long, Integer> xyData, double xi )
+    {
+        SimpleRegression regression = new SimpleRegression();
+
+        for( Long xValue: xyData.keySet() )
+        {
+            regression.addData( xValue, xyData.get( xValue ) );
+        }
+
+        return regression.predict( xi );
+    }
+
+
 }

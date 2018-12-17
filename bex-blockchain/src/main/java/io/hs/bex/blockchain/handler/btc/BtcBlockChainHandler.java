@@ -20,27 +20,28 @@ public class BtcBlockChainHandler implements BlockChainHandler
     BcoinHandler bcoinHandler;
     FeeEstimateUtil feeEstimateUtil;
     ObjectMapper objectMapper;
+    private Node node;
+    
+    @Autowired
+    private Environment env;
     
     @Autowired
     public BtcBlockChainHandler( BcoinHandler bcoinHandler, ObjectMapper objectMapper ) 
     {
         this.bcoinHandler = bcoinHandler;
         this.objectMapper = objectMapper;
-        this.feeEstimateUtil = new FeeEstimateUtil( bcoinHandler, objectMapper );
     }
-    
-    
-    @Autowired
-    private Environment env;
-    
-    private Node node;
     
     @Override
     public Node init( Node node )
     {
         String prefix = ""; 
         
-        if( node.getProvider().getNetworkType() != NodeNetworkType.MAINNET)
+        if( node.getProvider().getNetworkType() == NodeNetworkType.MAINNET ) 
+        {
+            this.feeEstimateUtil = new FeeEstimateUtil( bcoinHandler );
+        }
+        else 
             prefix = "-" + node.getProvider().getNetworkType().name().toLowerCase();
                 
         String apiUrl = env.getProperty( "node.btc" + prefix + ".api.url" );
@@ -53,8 +54,10 @@ public class BtcBlockChainHandler implements BlockChainHandler
     @Override
     public FeeRate getEstimatedFee( int nBlocks )
     {
-        //return feeEstimateUtil.getEsimatedFee( nBlocks );
-        return bcoinHandler.getEstimedFeeRate();
+        if(node.getNetwork().getType() == NodeNetworkType.MAINNET )
+            return feeEstimateUtil.getEsimatedFee( nBlocks );
+        else
+            return bcoinHandler.getEstimedFeeRate();
     }
 
     @Override
