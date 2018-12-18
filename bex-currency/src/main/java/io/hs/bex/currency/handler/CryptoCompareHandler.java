@@ -82,7 +82,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( CryptoCompareHandler.class );
     // ---------------------------------
-
+    
     @Value("${service.ccy.cryptocompare.api.url}")
     private String infoServiceUrl;
     
@@ -107,6 +107,9 @@ public class CryptoCompareHandler implements CurrencyInfoService
         String url = infoServiceUrl + "/data/pricemulti?fsyms=" + request.joinSourceCurrencies( "," )
         + "&tsyms=" + request.joinTargetCurrencies( "," );
         
+        if(!Strings.isNullOrEmpty( request.getXStockSource() ))
+            url += "&e=" + request.getXStockSource();
+        
         try 
         {
             HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
@@ -126,7 +129,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
     public CurrencyRate getXRate( String sourceCurrency, String targetCurrency ) 
     {
         String url = infoServiceUrl + "/data/price?fsym=" + sourceCurrency.toUpperCase() 
-        + "&tsyms="+sourceCurrency.toUpperCase();
+        + "&tsyms=" + sourceCurrency.toUpperCase();
         
         try 
         {
@@ -164,6 +167,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
         }
     }
     
+    
     private String constructUrl( CurrencyInfoRequest request ) 
     {
         String url = "";
@@ -194,6 +198,9 @@ public class CryptoCompareHandler implements CurrencyInfoService
                 + "&tsym=" + request.getTargetCcyCode()
                 + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo().getEpochSecond();
         }
+        
+        if(!Strings.isNullOrEmpty( request.getXStockSource() ))
+            url += "&e=" + request.getXStockSource();
         
         return url;
     }

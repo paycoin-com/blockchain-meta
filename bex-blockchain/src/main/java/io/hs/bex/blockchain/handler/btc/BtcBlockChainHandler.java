@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.hs.bex.blockchain.handler.btc.utils.FeeEstimateUtil;
 import io.hs.bex.blockchain.model.FeeRate;
 import io.hs.bex.blockchain.service.api.BlockChainHandler;
 import io.hs.bex.blocknode.model.Node;
@@ -14,24 +17,36 @@ import io.hs.bex.blocknode.model.NodeNetworkType;
 @Scope("prototype")
 public class BtcBlockChainHandler implements BlockChainHandler
 {
-    @Autowired
-    private BcoinHandler bcoinHandler;
+    BcoinHandler bcoinHandler;
+    FeeEstimateUtil feeEstimateUtil;
+    ObjectMapper objectMapper;
+    private Node node;
     
     @Autowired
     private Environment env;
     
-    private Node node;
+    @Autowired
+    public BtcBlockChainHandler( BcoinHandler bcoinHandler, ObjectMapper objectMapper ) 
+    {
+        this.bcoinHandler = bcoinHandler;
+        this.objectMapper = objectMapper;
+    }
     
     @Override
     public Node init( Node node )
     {
         String prefix = ""; 
         
-        if( node.getProvider().getNetworkType() != NodeNetworkType.MAINNET)
+        if( node.getProvider().getNetworkType() != NodeNetworkType.MAINNET ) 
             prefix = "-" + node.getProvider().getNetworkType().name().toLowerCase();
                 
         String apiUrl = env.getProperty( "node.btc" + prefix + ".api.url" );
         bcoinHandler.init( apiUrl );
+        
+        if( node.getProvider().getNetworkType() == NodeNetworkType.MAINNET ) 
+        {
+            this.feeEstimateUtil = new FeeEstimateUtil( bcoinHandler );
+        }
         
         this.node = node;
         return node;
@@ -40,7 +55,10 @@ public class BtcBlockChainHandler implements BlockChainHandler
     @Override
     public FeeRate getEstimatedFee( int nBlocks )
     {
-        return bcoinHandler.getEstimedFeeRate();
+        if(node.getNetwork().getType() == NodeNetworkType.MAINNET )
+            return feeEstimateUtil.getEsimatedFee( nBlocks );
+        else
+            return bcoinHandler.getEstimedFeeRate();
     }
 
     @Override

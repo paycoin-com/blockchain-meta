@@ -34,7 +34,7 @@ public class BlockChainServiceImpl implements BlockChainService
     
     final String BLOCKCHAIN_ROOT_FOLDER = "/blockchain";
     final static int RECENT_BLOCKS_COUNT = 10;
-    final int FEE_ESTIMATE_PERIOD = 300; //seconds
+    final int FEE_ESTIMATE_PERIOD = 120; //seconds
     
     @Autowired
     BlockChainTaskManager taskManager;
@@ -114,7 +114,7 @@ public class BlockChainServiceImpl implements BlockChainService
     }
 
     @Override
-    public void saveFeeEstimateRates()
+    public void saveFeeRates()
     {
         String feeEstimeteRoot;
         BlockChainHandler bcHandler = null;

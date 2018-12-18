@@ -8,6 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.hs.bex.common.utils.StringUtils;
 
+/**
+ * Data container for Fee rates based on Coin/Bytes (Satoshi for BTC)
+ * @author nisakov
+ *
+ */
 @JsonIgnoreProperties( ignoreUnknown = true )
 public class FeeRate
 {
@@ -72,6 +77,22 @@ public class FeeRate
     {
         return date.toEpochMilli();
     }
+    
+    @JsonIgnore
+    public FeeRate convertToCoinKbytes( long coinRate )
+    {
+        lowPriorityRate = (lowPriorityRate/coinRate) * 1024;
+        mediumPriorityRate = (mediumPriorityRate/coinRate) * 1024; 
+        highPriorityRate = (highPriorityRate/coinRate) * 1024;
+        
+        return this;
+    }
 
+    @Override
+    public String toString()
+    {
+        return "FeeRate [date=" + date + ", lowPriorityRate=" + lowPriorityRate + ", mediumPriorityRate="
+                + mediumPriorityRate + ", highPriorityRate=" + highPriorityRate + "]";
+    }
 
 }

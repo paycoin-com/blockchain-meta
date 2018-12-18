@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.hs.bex.currency.model.CurrencyInfoRequest;
+import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
@@ -28,7 +29,11 @@ public interface CurrencyService
     void fetchAndStoreXRates( int storeType, TimePeriod timePeriod, int fetchSize );
 
     void saveXRates( CurrencyInfoRequest request );
+    
+    List<CurrencyRate> getXRates( CurrencyInfoRequest request );
 
     void saveLatestXRates( CurrencyInfoRequest request );
+
+    List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request );
 
 }
