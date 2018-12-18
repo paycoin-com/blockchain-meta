@@ -19,6 +19,7 @@ import io.hs.bex.blockchain.handler.btc.BcoinHandler;
 import io.hs.bex.blockchain.handler.btc.model.FeeEstimateData;
 import io.hs.bex.blockchain.handler.btc.model.MempoolInfo;
 import io.hs.bex.blockchain.handler.btc.model.MempoolTx;
+import io.hs.bex.blockchain.model.Coin;
 import io.hs.bex.blockchain.model.FeeRate;
 import io.hs.bex.common.utils.MathUtils;
 
@@ -44,7 +45,7 @@ public class FeeEstimateUtil
         this.feeEstimateData = new FeeEstimateData();
 
         // ------------------------------------------
-        startScheduledTask( 0, DATA_FETCH_PERIOD );
+        startScheduledTask( 30, DATA_FETCH_PERIOD );
         // ------------------------------------------
     }
     
@@ -73,14 +74,16 @@ public class FeeEstimateUtil
 
     public FeeRate getEsimatedFee( int nBlocks )
     {
-        return feeEstimateData.getFeeRate();
+        return feeEstimateData.getFeeRate().convertToCoinKbytes( Coin.SATOSHI_RATE );
     }
 
     private void startScheduledTask( int startAfter, int period )
     {
         try
         {
-            timerService.scheduleAtFixedRate( () -> fetchMempoolStats(), 0, period, TimeUnit.SECONDS );
+            timerService.scheduleWithFixedDelay( () -> fetchMempoolStats(), startAfter , period, TimeUnit.SECONDS );
+           
+
         }
         catch( Exception e )
         {

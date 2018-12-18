@@ -37,15 +37,16 @@ public class BtcBlockChainHandler implements BlockChainHandler
     {
         String prefix = ""; 
         
-        if( node.getProvider().getNetworkType() == NodeNetworkType.MAINNET ) 
-        {
-            this.feeEstimateUtil = new FeeEstimateUtil( bcoinHandler );
-        }
-        else 
+        if( node.getProvider().getNetworkType() != NodeNetworkType.MAINNET ) 
             prefix = "-" + node.getProvider().getNetworkType().name().toLowerCase();
                 
         String apiUrl = env.getProperty( "node.btc" + prefix + ".api.url" );
         bcoinHandler.init( apiUrl );
+        
+        if( node.getProvider().getNetworkType() == NodeNetworkType.MAINNET ) 
+        {
+            this.feeEstimateUtil = new FeeEstimateUtil( bcoinHandler );
+        }
         
         this.node = node;
         return node;
