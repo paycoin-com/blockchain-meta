@@ -63,7 +63,6 @@ public class FeeEstimateUtilTest
     @Test
     public void testActualFeeEstimationProcess() throws Exception
     {
-    
         BcoinHandler actBcoinHandler = new BcoinHandler();
         actBcoinHandler.setMapper( mapper );
         actBcoinHandler.init( "https://btc.horizontalsystems.xyz" );
@@ -76,7 +75,7 @@ public class FeeEstimateUtilTest
     }
     
     @Test
-    @Ignore
+    //@Ignore
     public void testFeeEstimationProcess() throws Exception
     {
         //------------------------------------------------------
@@ -107,7 +106,7 @@ public class FeeEstimateUtilTest
     }
 
     
-    //@Ignore
+    @Ignore
     @Test
     public void testEstimateFee() throws Exception
     {

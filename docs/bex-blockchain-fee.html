@@ -27,7 +27,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#"><small>Docs-Home</small></a>
+            <a class="navbar-brand" href="index.html"><small>Docs-Home</small></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
                 aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -47,14 +47,13 @@
       <div class="row">
 
         <div class="col-lg-12">
-
           <div class="card mt-4">
             <div class="card-header">
-                Fee Estimation
-             </div>
+                Get Estimated Fee - API
+            </div>
             <div class="card-body">
             
-                <h5>1. Get latest XRates</h5>
+                <h5>1. Get latest fee rates</h5>
                 <br>
                 <h6>Input: </h6>
                 <div class="alert alert-success">
@@ -78,7 +77,7 @@
                       <tr>
                         <td>2</td>
                         <td>network</td>
-                        <td>Network for crypto coin (mainnet, rsgtest, testnet )
+                        <td>Network for crypto coin (mainnet, regtest, testnet )
                         For Mainnet this parameter is not required</td>
                       </tr>
                     </tbody>
@@ -87,9 +86,88 @@
                 <div class="bg-light" id="json-container1"></div>
                 <hr>
                 <hr>
-                            </div>
+            </div>
           </div>
           <!-- /.card -->
+          <div class="card mt-4">
+            <div class="card-header">
+                <h5><b>How estimated fee rate is calculated ???</b></h5>
+            </div>
+            <div class="card-body">
+                <h5>Overview</h5>
+                <p>Fee estimation is based on Extrapolation (linear-regression) method. 
+                Values calculated by predicting the mempool size.</p>
+                <hr>
+                <h5>Collecting, acquiring required data/info</h5>
+                <p> 
+                Required data (transaction size (bytes) and fee) is collected by fetching from memPool.
+                Periodically (~30 secs), data is fetched from memPool and stored into special table structure.
+                </p>
+                <p>Data is divided into fee groups and sum of the transaction sizes, 
+                for corresponding group is calculated. Every sum is saved against fetch time.  
+                Below table shows the data structure.</p>
+            
+                <div class="row">
+                    <div class="col-lg-4">
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Fee-rate (S/Byte)</th>
+                                    <th colspan="3">Sum Of Tx. size (Bytes)</th>
+                               </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>Time1</th>
+                                    <th>Time2</th>
+                                    <th>Time3</th>
+                               </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>[1700 - 800]</td>
+                                <td>[~100]</td>
+                                <td>[~100]</td>
+                                <td>[~100]</td>
+                              </tr>
+                              <tr>
+                                <td>[800 - ...]</td>
+                                <td>[~100]</td>
+                                <td>[~100]</td>
+                                <td>[~100]</td>
+                              </tr>
+                              <tr>
+                                <td>[... - 5]</td>
+                                <td>[~110]</td>
+                                <td>[~120]</td>
+                                <td>[~130]</td>
+                              </tr>
+                              <tr>
+                                <td>[5 - 0]</td>
+                                <td>[~20]</td>
+                                <td>[~10]</td>
+                                <td>[~15]</td>
+                              </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!-- /.row -->
+                <hr>
+                <h5>Extrapolation (Linear-regression)</h5>
+                <p>After collecting info, Data table is used to predict values by 
+                implementing Linear-Regression algorithm. Data is plotted into X/Y linear graph. 
+                Time and Size is used as x/y axis respectively. Using this graph,
+                we calculate Y value, by estimating X axis to ~20 mins for each FeeRate-group. 
+                Below image shows as simple extrapolation. After predicting values for Y(size) axis,
+                estimated FeeRate is calculated by summing size to ~1MB. Values  (From high to Lower FeeRate group) are summed until they reach ~1MB. 
+                Then the closer point is regarded as "Minimal FeeRate" needed for transaction to be included in the 1 block .
+                 </p>
+                <div>
+                    <img src="assets/images/extrapol.png" width="550px">
+                </div>
+            </div> 
+          </div>
+          <!-- /.card -->
+           
         </div>
         <!-- /.col-lg-9 -->
       </div>
