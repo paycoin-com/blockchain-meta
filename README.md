@@ -29,6 +29,10 @@
   Web Interface (Control Panel) for Block-Explorer
 
 
+## Full Documentation
+
+https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/
+
 
 
 
