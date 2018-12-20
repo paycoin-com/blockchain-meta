@@ -27,7 +27,7 @@ public class FeeEstimateData
     private List<Map<Long, Integer>> prevSizeData = new ArrayList<Map<Long, Integer>>();
     private List<Integer> blocksSizeDiff = new ArrayList<Integer>();
     
-    private FeeRate feeRate;
+    private FeeRate feeRate = new FeeRate( 0, 0, 0 );
 
     public long getFetchStartTime()
     {

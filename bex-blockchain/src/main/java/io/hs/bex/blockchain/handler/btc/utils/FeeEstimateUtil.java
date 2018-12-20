@@ -114,7 +114,11 @@ public class FeeEstimateUtil
             if( feeEstimateData.getFetchStartTime() != 0 )
             {
                 setStatsData();
-                predictValues();
+                
+                if( feeEstimateData.getPrevSizeData().size() > 0 ) 
+                {
+                    predictValues();
+                }
             }
         }
 
@@ -227,7 +231,7 @@ public class FeeEstimateUtil
         try
         {
             long x_period = feeEstimateData.getFetchStartTime() + FeeEstimateData.PREDICTION_PERIOD;
-            double extarpValue = 0;
+            int extarpValue = 0;
             int a = 0, b = 0;
 
             for( Map<Long, Integer> dataMapPrev: feeEstimateData.getPrevSizeData() )
@@ -247,9 +251,9 @@ public class FeeEstimateUtil
                 if( dataMapPrev.size() > 1 )
                 {
                     if( x_period > System.currentTimeMillis() )
-                        extarpValue = MathUtils.linearRegAsInt( dataMapPrev, x_period );
+                        extarpValue = (int) MathUtils.linearRegAsInt( dataMapPrev, x_period );
                     else
-                        extarpValue = (double) dataMapPrev.values().toArray()[dataMapPrev.values().size() - 1];
+                        extarpValue = (int) dataMapPrev.values().toArray()[dataMapPrev.values().size() - 1];
 
                     predictedValues.add( (int) extarpValue );
                 }
@@ -299,7 +303,7 @@ public class FeeEstimateUtil
             }
 
             double highFee = FeeEstimateData.FEE_RANGES[lastIndex];
-            feeRate = new FeeRate( highFee / 4, highFee / 2, highFee );
+            feeRate = new FeeRate( highFee /5 , highFee, highFee * 2);
 
             logger.info( "Estimating Fee Index:{},S/Bytes:{}", lastIndex, feeRate );
         }
