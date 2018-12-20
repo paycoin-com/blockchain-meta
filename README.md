@@ -16,7 +16,7 @@
  
 ## Fiat Currency Module
 
-Allows to store and interact with essential data relevant to fiat currencies like [exchange-rates and other info](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-currency.html). Such information is often critical for any type of crypto currency applications.
+Allows to store and interact with essential data relevant to fiat currencies like exchange-rates and other info. Such information is often critical for any type of crypto currency applications.
 
 Storing Data:
 
@@ -38,23 +38,14 @@ Exchange rate vailability periods:
 
 Refer to the [documentation](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-currency.html) for instructions about reading the stored currency data from IPFS.
 
+## Data Storage Module
 
+Used by other modules to manage data (mainly for store/retrieve operations) on various supported data storage options. For the time being the module support mainly IPFS and FileSystem. 
+
+The support IPLD and various databases will be added soon.
   
-- **bex-datastore**
-  Data storage module. Used by other modules to manage (store/retrieve) data on a various storage options.
-  For now module support mainly IPFS and FileSystem. Support for  IPLD and various databases will be added soon.
   
-- **bex-common** 
-  Common libraries, utilities, tools used by other modules.
-   
-- **bex-web**
-  Web Interface (Control Panel) for Block-Explorer
-
-
-## Full Documentation
-
-https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/
-
-
-
-
+## Other Modules
+  
+- **bex-common**: Common libraries, utilities, tools used by other modules.   
+- **bex-web**: The web interface panel (UI Control Panel) for Block Explorer.
