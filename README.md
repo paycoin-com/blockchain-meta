@@ -66,12 +66,10 @@ Used by other modules to manage data (mainly for store/retrieve operations) on v
 
 For the time being the module support mainly IPFS and FileSystem. The support for storing data in IPLD and other databases will be added in the future.
 
-For illustration purposes review the public IPFS Node by Horizontal Systems 
+For illustration purposes review the [public IPFS Node](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/index.html) by Horizontal Systems.
 
-- https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/index.html
--- currency rates https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-currency.html
--- Blockchain Transaction Estimation Service: https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-blockchain-fee.html
-
+- [Fiat-crypto exchange rates](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-currency.html)
+- [Real-time transaction fee estimator for Bitcoin](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-blockchain-fee.html)
   
 ## Other Modules
   
