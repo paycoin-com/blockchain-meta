@@ -25,7 +25,7 @@ Example: https://bex.horizontalsystems.xyz/node-list
         
 ## Blockchain Manager (bex-blockchain)
 
-This module works with the **blockchain node** module above to parse and manage required blockchain data. 
+This module works with the **blockchain node** module above to parse required blockchain data. 
 
 That data can be pretty much antyhing the can be potentially derived from the given blockchain, including but not limited to:
 
@@ -33,8 +33,21 @@ That data can be pretty much antyhing the can be potentially derived from the gi
 - transaction status
 - transaction details
 - mempool data
-- [transaction fee estimation](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-blockchain-fee.html)
+- transaction fee estimation
 - ...
+
+## Data Storage Module (bex-datastore)
+
+Used by other modules to manage data (mainly for store/retrieve operations) on various supported data storage options. 
+
+For the time being the module support mainly IPFS and FileSystem. The support for storing data in IPLD and other databases will be added in the future.
+
+For illustration purposes review the [public IPFS Node](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/index.html) by Horizontal Systems.
+
+At the time being following information can be requested from Horizontal Systems public IPFS Node.
+
+- [Fiat-crypto exchange rates](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-currency.html)
+- [Real-time transaction fee estimator for Bitcoin](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-blockchain-fee.html)
  
 ## Fiat Currency Module (bex-currency)
 
@@ -47,7 +60,7 @@ Currency data obtained from public data providers and stored on decentralized st
 - Real-time crypto to USD exchange rates (obtained via https://www.cryptocompare.com)
 - Real-time crypto to EUR, RUB, AUD, CAD, CHF, CNY, GBP, JPY exchange rates are calculated by converting USD rate to the other currency (via https://exchangeratesapi.io)
 
-This module uses below mentioned **datastore** module to store exchange rate information above to IPFS node, which is also available for public use. 
+This module uses above mentioned **Data Storage** module to store exchange rate information above to IPFS node, which is also available for public use. 
 
 It essentially enables anyone to get latest crypto to fiat exchange rates (with up-to 3 minute ineterval) as well as lookup historical exchange rates.
 
@@ -59,17 +72,6 @@ Exchange rate availability periods:
 - Up to the minute rates for the period after Nov 23rd, 2018
 
 Refer to the [documentation](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-currency.html) for instructions about reading the stored currency data from IPFS.
-
-## Data Storage Module (bex-datastore)
-
-Used by other modules to manage data (mainly for store/retrieve operations) on various supported data storage options. 
-
-For the time being the module support mainly IPFS and FileSystem. The support for storing data in IPLD and other databases will be added in the future.
-
-For illustration purposes review the [public IPFS Node](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/index.html) by Horizontal Systems.
-
-- [Fiat-crypto exchange rates](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-currency.html)
-- [Real-time transaction fee estimator for Bitcoin](https://ipfs.horizontalsystems.xyz/ipns/Qmd4Gv2YVPqs6dmSy1XEq7pQRSgLihqYKL2JjK7DMUFPVz/io-hs/data/docs/block-explorer/bex-blockchain-fee.html)
   
 ## Other Modules
   
