@@ -4,9 +4,9 @@ True decentralization requires applications to work with decentralized data prov
 
 As a result, directly relying on a third-party API provider is not really an option for a trully decentralized application. At the same time, in some cases the usability of the application to a large extend depends on the availabilty of such information.
 
-As one of the potential solutions to this issue Horizontal Systems runs an IPFS node (decentralized storage) that collects non-private meta data (ex: BTC to USD exchange rate) and stores all that data in a decentralized storage. Should there be an issue with any of the data providers the application will continue functioning without interruption.
+As one of the potential solutions to this issue Horizontal Systems runs an IPFS node (decentralized storage) that collects non-private meta data (ex: BTC to USD exchange rate) and stores all that data in a decentralized storage that is available to  DApps including the BANK Wallet app. Should there be an issue with any of the data providers the application will still continue functioning without interruption.
 
-So, the purpose of this repository is to provide tools for collecting essential meta-data related to crypto currencies (like exchange rates) and store them on a decentralized storage infrustructure. Subsequently, the data stored on IPFS should be available to anyone interested, including the DApps (decentralized applications).
+The purpose of this repository is to provide tools for collecting essential meta-data related to crypto currencies (like exchange rates) and store them on a decentralized storage infrastructure. Subsequently, the data stored on IPFS should be available to anyone interested, including the DApps (decentralized applications).
 
 Requirements:
 
