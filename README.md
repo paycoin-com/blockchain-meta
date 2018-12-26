@@ -8,12 +8,20 @@ As one of the possible solutions to this issue Horizontal Systems runs an IPFS n
 
 The purpose of this repository is to provide tools for collecting much needed meta-data related to crypto currencies (like exchange rates) and subsequently serve that data to DApps from on a decentralized storage infrastructure. The data stored on IPFS is available to anyone interested, including the DApps (decentralized applications).
 
+Moreover, the repository includes open source implementation for running BTC/BCH/ETH block exlorers on any given domain.
+
 Requirements:
 
 - [Maven](http://maven.apache.org/) is used as project management tool
 - JDK 8 or higher to build projects; JRE should be enough on target environments to run project artifacts
 
 The package comes with several modules, each responsible for a particular part of the infrustructure needed for collecting the data required by DApps and storing that data in a decentralized manner.
+
+## Blockchain Explorers
+
+This module includes open source block explorer implementation for a number of blockchains (BTC, BCH, ETH etc). It uses active open source block explorer libraries for each blockchain.
+
+We use this module to run public block explorers on the homepage of horizontalsystems.xyz. 
 
 ## Blockchain Nodes (bex-blocknode)
 
