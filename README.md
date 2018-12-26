@@ -6,9 +6,9 @@ As a result, directly relying on a third-party API provider is not really an opt
 
 As one of the possible solutions to this issue Horizontal Systems runs an IPFS node (decentralized storage) that collects non-private meta data (ex: BTC to USD exchange rate) and stores all that data in a decentralized storage that is available to  DApps (including the BANK Wallet app by Horizontal Systems). Should there be an issue with any of the data providers the application will still continue functioning without interruption.
 
-The purpose of this repository is to provide tools for collecting much needed meta-data related to crypto currencies (like exchange rates) and subsequently serve that data to DApps from on a decentralized storage infrastructure. The data stored on IPFS is available to anyone interested, including the DApps (decentralized applications).
+The purpose of this repository is to provide tools for collecting much needed meta-data related to crypto currencies (like exchange rates) and subsequently serve that data to DApps from on a decentralized storage infrastructure. The data stored on IPFS is available to anyone interested, including the DApps (decentralized applications). 
 
-Moreover, the repository includes open source implementation for running BTC/BCH/ETH block exlorers on any given domain.
+The IPFS implementation for blockchain block explorer is currently work in progress. Therefore, for more straightforward implementation, the repository includes open source implementation for running centralized BTC/BCH/ETH block exlorers on any given domain.
 
 Requirements:
 
