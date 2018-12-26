@@ -95,7 +95,7 @@ public class FeeEstimateUtil
     private void fetchMempoolStats()
     {
         MempoolInfo memPool = bcoinHandler.getMempoolInfo();
-        //logger.info( "*** Fetching mempoolInfo Size:{} *** ", memPool.getSize() );
+        logger.info( "*** Fetching mempoolInfo Size:{} *** ", memPool.getSize() );
 
         if( memPool.getSize() < feeEstimateData.getLastMempoolSize() )
         {
@@ -232,7 +232,7 @@ public class FeeEstimateUtil
         {
             long x_period = feeEstimateData.getFetchStartTime() + FeeEstimateData.PREDICTION_PERIOD;
             int extarpValue = 0;
-            int a = 0, b = 0;
+            int b = 0;
 
             for( Map<Long, Integer> dataMapPrev: feeEstimateData.getPrevSizeData() )
             {
@@ -258,10 +258,9 @@ public class FeeEstimateUtil
                     predictedValues.add( (int) extarpValue );
                 }
 
-                logger.info( "Predicted Values Range:{} = {}", String.format( "%04d", FeeEstimateData.FEE_RANGES[a] ), 
-                        String.format ("%.1f", (float) extarpValue / 1024));
+//                logger.info( "Predicted Values Range:{} = {}", String.format( "%04d", FeeEstimateData.FEE_RANGES[a] ), 
+//                        String.format ("%.1f", (float) extarpValue / 1024));
 
-                a++;
                 b++;
 
             }
@@ -288,13 +287,21 @@ public class FeeEstimateUtil
         {
             for( Integer predValue: predictedValues )
             {
-                newPredictedValues.add( predValue - feeEstimateData.getBlocksSizeDiff().get( b ) );
+                int diffValue = feeEstimateData.getBlocksSizeDiff().get( b );
+                newPredictedValues.add( predValue - diffValue );
+                
+                logger.info( "Pred. Range|Diff|Actual:{} | {} | {} | {}", 
+                        String.format( "%04d", FeeEstimateData.FEE_RANGES[b] ), 
+                        String.format ("%6.2f", (float) predValue / 1024),
+                        String.format ("%6.2f", (float) diffValue / 1024),
+                        String.format ("%6.2f", (float) (predValue - diffValue) / 1024));
+                
                 b++;
             }
 
-            for( int x = 0; x < predictedValues.size(); x++ )
+            for( int x = 0; x < newPredictedValues.size(); x++ )
             {
-                max += predictedValues.get( x );
+                max += newPredictedValues.get( x );
 
                 if( max >= BLOCK_SIZE )
                     break;
@@ -305,7 +312,8 @@ public class FeeEstimateUtil
             double highFee = FeeEstimateData.FEE_RANGES[lastIndex];
             feeRate = new FeeRate( highFee /5 , highFee, highFee * 2);
 
-            logger.info( "Estimating Fee Index:{},S/Bytes:{}", lastIndex, feeRate );
+            logger.info( "Estimating Fee Index|Size|FeeRate:{} | {} | {}", lastIndex,
+                    String.format ("%.1f", (float) max / 1024),feeRate );
         }
         catch( Exception e )
         {

@@ -65,6 +65,24 @@ public class FeeRate
     {
         this.date = date;
     }
+    
+    @JsonIgnore
+    public double getLowPriorityRate()
+    {
+        return lowPriorityRate;
+    }
+
+    @JsonIgnore
+    public double getMediumPriorityRate()
+    {
+        return mediumPriorityRate;
+    }
+
+    @JsonIgnore
+    public double getHighPriorityRate()
+    {
+        return highPriorityRate;
+    }
 
     @JsonProperty("date_str")
     public String getDateStr()
