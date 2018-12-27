@@ -74,8 +74,8 @@ public class FeeEstimateUtilTest
         TimeUnit.SECONDS.sleep( 30000 );
     }
     
-    @Test
     //@Ignore
+    @Test
     public void testFeeEstimationProcess() throws Exception
     {
         //------------------------------------------------------

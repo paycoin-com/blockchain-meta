@@ -129,8 +129,12 @@ public class BlockChainServiceImpl implements BlockChainService
                 if(bcHandler.getNode().getProvider().getNetworkType() != NodeNetworkType.MAINNET)
                     feeEstimeteRoot += "/" + bcHandler.getNode().getProvider().getNetworkType().getName();
                 
-                saveFile( feeEstimeteRoot + "/estimatefee", "index.json", 
-                        mapper.writeValueAsString( bcHandler.getEstimatedFee(0) ) );
+                FeeRate feeRate = bcHandler.getEstimatedFee(0);
+                
+                if( feeRate != null && feeRate.getMediumPriorityRate() > 0 ) 
+                {
+                    saveFile( feeEstimeteRoot + "/estimatefee", "index.json", mapper.writeValueAsString( feeRate ) );
+                }
             }
         }
         catch( Exception e )

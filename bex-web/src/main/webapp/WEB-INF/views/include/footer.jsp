@@ -6,7 +6,7 @@
       </div>
       <div class="ml-auto">
         <span>Powered by</span>
-        <a href="https://coreui.io">Grouvi</a>
+        <a href="https://coreui.io">Horizontal-Systems</a>
       </div>
     </footer>
 <!-- /Footer  -->
