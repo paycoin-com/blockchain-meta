@@ -96,6 +96,12 @@ public class CurrencyRate
     {
         return  StringUtils.instantToString( date );
     }
+    
+    @JsonProperty("rate_str")
+    public String getRateStr()
+    {
+        return StringUtils.floatToString( rate );
+    }
 
     @JsonProperty("date")
     public long getDateEpoch()
@@ -113,7 +119,5 @@ public class CurrencyRate
     {
         return "CurrencyRate [currency=" + currency + ", rate=" + rate + ", targetCurrency=" + targetCurrency + "]";
     }
-    
-    
    
 }

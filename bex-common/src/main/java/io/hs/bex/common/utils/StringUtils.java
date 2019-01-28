@@ -25,6 +25,8 @@ public class StringUtils
             .withZone( ZoneId.systemDefault() );
 
     static DecimalFormat df = new DecimalFormat( "#0.0#########################" );
+    static DecimalFormat df_short = new DecimalFormat("#0.####");
+
 
     public static String instantToString( Instant dateTime )
     {
@@ -65,6 +67,12 @@ public class StringUtils
     {
         return df.format( value );
     }
+    
+    public static String floatToString( float value )
+    {
+        return df_short.format( value );
+    }
+
 
     public static String[] splitToNChar( String text, int size )
     {
