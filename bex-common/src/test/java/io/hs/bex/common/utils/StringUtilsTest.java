@@ -1,6 +1,10 @@
 package io.hs.bex.common.utils;
 
 import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.junit.Test;
 
 public class StringUtilsTest
@@ -66,6 +70,18 @@ public class StringUtilsTest
         System.out.println("StringToNChar Parts Original:" + out1 + " Dir:" + dir );
         
         //assertTrue( dir.charAt( 3 ) == '1' );
+    }
+    
+    @Test
+    public void testStringTimeZoneToDate()
+    {
+        String dateStr = "2018-03-01T06:00:00Z";
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+
+        LocalDateTime dateTime = LocalDateTime.parse( dateStr, formatter );
+        
+        System.out.println( "Zoned String to Date:" + dateTime.toString() );
     }
 
 }

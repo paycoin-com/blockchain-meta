@@ -1,5 +1,6 @@
 package io.hs.bex.web.controller.currency;
 
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -26,10 +27,10 @@ public class CurrencyRestController
     // ---------------------------------
     private static final Logger LOGGER = LoggerFactory.getLogger( CurrencyRestController.class );
     // ---------------------------------
-    
+
     @Autowired
     CurrencyService currencyService;
-    
+
     /**
      * Get latest currency rates
      * 
@@ -42,74 +43,75 @@ public class CurrencyRestController
         try
         {
             LOGGER.info( " *** Get RestRequest currency/rate?period = ", period );
-            
-            return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService()
-                    .getXRatesBy( new CurrencyInfoRequest() ), HttpStatus.OK );
+
+            return new ResponseEntity<List<CurrencyRate>>(
+                    currencyService.getInfoService().getXRatesBy( new CurrencyInfoRequest() ), HttpStatus.OK );
         }
-        catch ( NoSuchElementException e )
+        catch( NoSuchElementException e )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
         }
-        catch ( Exception e )
+        catch( Exception e )
         {
             LOGGER.error( " Error getting currency rates by period:{}", period, e );
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
         }
     }
-    
-    
+
     @RequestMapping( value = "xrates/save/{scurrency}/{tcurrency}", method = {
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> saveXRates( @PathVariable("scurrency") String sourceCurrency,
-                                         @PathVariable("tcurrency") String targetCurrency,
-                                         @RequestParam( required = false, name = "source" ) String source,
-                                         @RequestParam( required = false, name = "period" ) String period,
-                                         @RequestParam( required = false, name = "to_date" ) String toDate,
-                                         @RequestParam( required = false, name = "limit" ) int limit )
+    public ResponseEntity<?> saveXRates( @PathVariable( "scurrency" ) String sourceCurrency,
+            @PathVariable( "tcurrency" ) String targetCurrency,
+            @RequestParam( required = false, name = "source" ) String source,
+            @RequestParam( required = false, name = "period" ) String period,
+            @RequestParam( required = false, name = "to_date" ) String toDate,
+            @RequestParam( required = false, name = "limit" ) int limit )
     {
         try
         {
             LOGGER.info( " *** Get RestRequest currency/xrates/save?period = ", period );
-            
-            CurrencyInfoRequest request = new CurrencyInfoRequest( sourceCurrency, targetCurrency, period,toDate, limit );
-            
+
+            CurrencyInfoRequest request = new CurrencyInfoRequest( sourceCurrency, targetCurrency, period, toDate,
+                    limit, false );
+
             currencyService.saveXRates( request );
-            
+
             return new ResponseEntity<>( HttpStatus.OK );
         }
-        catch ( NoSuchElementException e )
+        catch( NoSuchElementException e )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
         }
-        catch ( Exception e )
+        catch( Exception e )
         {
             LOGGER.error( " Error saving currency rates by period:{}", period, e );
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
         }
     }
-    
+
     @RequestMapping( value = "xrates/{scurrency}/{tcurrency}", method = {
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> getXRates( @PathVariable("scurrency") String sourceCurrency,
-                                         @PathVariable("tcurrency") String targetCurrency,
-                                         @RequestParam( required = false, name = "period" ) String period,
-                                         @RequestParam( required = false, name = "to_date" ) String toDate,
-                                         @RequestParam( required = false, name = "limit" ) int limit )
+    public ResponseEntity<?> getXRates( @PathVariable( "scurrency" ) String sourceCurrency,
+            @PathVariable( "tcurrency" ) String targetCurrency,
+            @RequestParam( required = false, name = "period" ) String period,
+            @RequestParam( required = false, name = "to_date" ) String toDate,
+            @RequestParam( required = false, name = "limit" ) int limit )
     {
         try
         {
             LOGGER.info( " *** Get RestRequest currency/xrates/?period={}&to_date={}&limit={}", period, toDate, limit );
-            
-            CurrencyInfoRequest request = new CurrencyInfoRequest(sourceCurrency, targetCurrency, period,toDate, limit);
-            
-            return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService().getXRatesBy( request ), 
+
+            CurrencyInfoRequest request = new CurrencyInfoRequest( sourceCurrency, targetCurrency, period, toDate,
+                    limit );
+
+            return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService().getXRatesBy( request ),
                     HttpStatus.OK );
         }
-        catch ( NoSuchElementException e )
+        catch( NoSuchElementException e )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
         }
-        catch ( Exception e )
+        catch( Exception e )
         {
             LOGGER.error( " Error getting currency rates by period:{}", period, e );
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );

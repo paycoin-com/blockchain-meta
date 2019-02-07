@@ -270,7 +270,6 @@ public class CryptoCompareHandler implements CurrencyInfoService
     }
 
     
-    
     private List<CurrencyRate> jsonToCurrencyRateList( SysCurrency sourceCurrency, SysCurrency targetCurrency, String json ) 
             throws Exception 
     {

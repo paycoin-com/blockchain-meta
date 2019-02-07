@@ -4,6 +4,7 @@ package io.hs.bex.currency.service;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,11 +52,11 @@ public class CurrencyServiceImpl implements CurrencyService
     // ---------------------------------
 
     final int LAST_XRATES_FETCH_PERIOD = 180; // seconds
-    final int FIAT_XRATES_FETCH_PERIOD = 360; // seconds
+    final int FIAT_XRATES_FETCH_PERIOD = 600; // seconds
     final int HOURLY_XRATES_FETCH_PERIOD = 1800; // seconds
 
     public final SysCurrency BASE_SYSTEM_CURRENCY = SysCurrency.USD;
-    public final String STOCK_EXCHANGE_SOURCE = "Coinbase";
+    public final String STOCK_EXCHANGE_SOURCE = "";
 
     final String XRATES_ROOT_FOLDER = "/xrates";
 
@@ -118,7 +119,8 @@ public class CurrencyServiceImpl implements CurrencyService
     public void startSyncJob()
     {
         taskManager.startScheduledAtFixed( startFiatXRatesTask(), "FiatXRatesTask", 0, FIAT_XRATES_FETCH_PERIOD );
-        taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 30, HOURLY_XRATES_FETCH_PERIOD );
+        taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 30,
+                HOURLY_XRATES_FETCH_PERIOD );
         taskManager.startScheduledAtFixed( startLatesXRatesTask(), "LatesXRatesTask", 35, LAST_XRATES_FETCH_PERIOD );
         taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
     }
@@ -236,7 +238,19 @@ public class CurrencyServiceImpl implements CurrencyService
     }
 
     @Override
+    public void savePeriodicXRates( CurrencyInfoRequest request )
+    {
+        saveXRates( request, currencyTaskParams.getTargetCurrencies() );
+    }
+
+    @Override
     public void saveXRates( CurrencyInfoRequest request )
+    {
+        saveXRates( request, request.getTargetCurrencies() );
+    }
+
+    @Override
+    public void saveXRates( CurrencyInfoRequest request, List<SysCurrency> targetCurrencies )
     {
         try
         {
@@ -248,14 +262,15 @@ public class CurrencyServiceImpl implements CurrencyService
                 Map<String, Float> dataMap = new LinkedHashMap<>();
                 LocalDateTime lastDate = null, localDateTime = null;
 
-                baseXRates = digitalCcyService.getXRatesBy( new CurrencyInfoRequest( sourceCurrency, BASE_SYSTEM_CURRENCY,
-                        request.getPeriod(), request.getDateTo(), request.getLimit(), STOCK_EXCHANGE_SOURCE ) );
+                baseXRates = digitalCcyService
+                        .getXRatesBy( new CurrencyInfoRequest( sourceCurrency, BASE_SYSTEM_CURRENCY,
+                                request.getPeriod(), request.getDateTo(), request.getLimit(), STOCK_EXCHANGE_SOURCE ) );
 
-                for( SysCurrency targetCurrency: currencyTaskParams.getTargetCurrencies() )
+                for( SysCurrency targetCurrency: targetCurrencies )
                 {
                     String rootPath = "/" + sourceCurrency.getCode() + "/" + targetCurrency.getCode() + "/";
 
-                    xrates = calculateXRateDetails( baseXRates, targetCurrency );
+                    xrates = calculateXRateDetails( request, baseXRates, targetCurrency );
 
                     int hour = 0;
 
@@ -359,7 +374,7 @@ public class CurrencyServiceImpl implements CurrencyService
         request.setLimit( fetchSize );
 
         if( storeType == 1 )
-            saveXRates( request );
+            savePeriodicXRates( request );
         else
             saveLatestXRates( request );
     }
@@ -391,7 +406,7 @@ public class CurrencyServiceImpl implements CurrencyService
             List<CurrencyRate> tempXRates = fiatCcyService.getLatestXRates( request );
             fiatXRates.clear();
             fiatXRates.addAll( tempXRates );
-            
+
             return fiatXRates;
         }
         else
@@ -421,8 +436,10 @@ public class CurrencyServiceImpl implements CurrencyService
         return xrateDetails;
     }
 
-    private List<CurrencyRate> calculateXRateDetails( List<CurrencyRate> digitalCcyXrates, SysCurrency targetCurrency )
+    private List<CurrencyRate> calculateXRateDetails( CurrencyInfoRequest request, List<CurrencyRate> digitalCcyXrates,
+            SysCurrency targetCurrency )
     {
+
         List<CurrencyRate> xrateDetails = new ArrayList<>();
 
         if( targetCurrency == BASE_SYSTEM_CURRENCY )
@@ -431,18 +448,39 @@ public class CurrencyServiceImpl implements CurrencyService
         }
         else
         {
-            CurrencyRate fiatXRate = fiatXRates.stream().filter( xRate -> xRate.getTargetCurrency() == targetCurrency )
-                    .findAny().orElse( null );
+            List<CurrencyRate> localFiatXRates = null;
+            Instant lastDate = null;
 
-            if( fiatXRate != null )
+            localFiatXRates = fiatXRates;
+
+            CurrencyRate fiatXRate = localFiatXRates.stream()
+                    .filter( xRate -> xRate.getTargetCurrency() == targetCurrency ).findAny().orElse( null );
+
+            for( CurrencyRate digXRate: digitalCcyXrates )
             {
-                for( CurrencyRate digXRate: digitalCcyXrates )
+                if( digXRate.getTargetCurrency() == BASE_SYSTEM_CURRENCY )
                 {
-                    if( digXRate.getTargetCurrency() == BASE_SYSTEM_CURRENCY )
+                    if( !request.isFastCalculation() )
+                    {
+                        if( lastDate == null || ( ChronoUnit.DAYS.between( lastDate, digXRate.getDate() ) >= 1) )
+                        {
+                            localFiatXRates = fiatCcyService
+                                    .getXRatesBy( new CurrencyInfoRequest( BASE_SYSTEM_CURRENCY, targetCurrency,
+                                            request.getPeriod(), request.getDateTo(), request.getLimit() ) );
+
+                            fiatXRate = localFiatXRates.stream()
+                                    .filter( xRate -> xRate.getTargetCurrency() == targetCurrency ).findAny()
+                                    .orElse( null );
+                        }
+                    }
+
+                    if( fiatXRate != null )
                     {
                         xrateDetails.add( new CurrencyRate( digXRate.getDate(), digXRate.getCurrency(),
                                 fiatXRate.getTargetCurrency(), digXRate.getRate() * fiatXRate.getRate() ) );
                     }
+                    
+                    lastDate = digXRate.getDate();
                 }
             }
         }

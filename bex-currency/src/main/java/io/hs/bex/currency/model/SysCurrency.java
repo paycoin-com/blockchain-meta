@@ -22,6 +22,39 @@ public enum SysCurrency
     ETH( 2, "Ethereum", "U+039E", CurrencyType.DIGITAL ),
     BCH( 3, "Bitcoin-Cash", "U+20BF", CurrencyType.DIGITAL ),
 
+    BAT( 4, "Basic-Attention-Token", "U+039E", CurrencyType.DIGITAL ),
+    BNB( 5, "Binance Coin", "U+039E", CurrencyType.DIGITAL ),
+    BNT( 6, "Bancor", "U+039E",CurrencyType.DIGITAL ),
+    DAI( 7, "Dai", "U+039E",CurrencyType.DIGITAL ),
+    DGD( 8, "DigixDAO", "U+039E",CurrencyType.DIGITAL ),
+    DGX( 9, "Digix-Gold", "U+039E",CurrencyType.DIGITAL ),
+    EURS(10, "STASIS-EURS", "U+039E",CurrencyType.DIGITAL ),
+    GNT( 11, "Golem", "U+039E",CurrencyType.DIGITAL ),
+    GUSD( 12, "Gemini-Dollar", "U+039E",CurrencyType.DIGITAL ),
+    HT(  13, "Huobi-Token", "U+039E",CurrencyType.DIGITAL ),
+    KCS( 14, "KuCoin-Shares", "U+039E",CurrencyType.DIGITAL ),
+    KNC( 15, "Kyber-Network", "U+039E",CurrencyType.DIGITAL ),
+    LINK( 16, "ChainLink", "U+039E",CurrencyType.DIGITAL ),
+    LOOM( 17, "Loom", "U+039E",CurrencyType.DIGITAL ),
+    MANA( 18, "Decentraland", "U+039E",CurrencyType.DIGITAL ),
+    MCO( 19, "Crypto.com", "U+039E",CurrencyType.DIGITAL ),
+    MITH( 20, "Mithril", "U+039E",CurrencyType.DIGITAL ),
+    MKR( 21, "Maker", "U+039E",CurrencyType.DIGITAL ),
+    NEXO( 22, "Nexo", "U+039E",CurrencyType.DIGITAL ),
+    NPXS( 23, "Pundi X", "U+039E",CurrencyType.DIGITAL ),
+    OMG( 24, "OmiseGO", "U+039E",CurrencyType.DIGITAL ),
+    PAX( 25, "Paxos Standard", "U+039E",CurrencyType.DIGITAL ),
+    POLY( 26, "Polymath", "U+039E",CurrencyType.DIGITAL ),
+    PPT( 27, "Populous", "U+039E",CurrencyType.DIGITAL ),
+    R( 28, "Revain", "U+039E",CurrencyType.DIGITAL ),
+    REP( 29, "Reputation", "U+039E",CurrencyType.DIGITAL ),
+    SNT( 30, "StatusNetwork", "U+039E",CurrencyType.DIGITAL ),
+    TUSD( 31, "TrueUSD", "U+039E",CurrencyType.DIGITAL ),
+    USDC( 32, "USD-Coin", "U+039E",CurrencyType.DIGITAL ),
+    WTC( 33, "Walton", "U+039E",CurrencyType.DIGITAL ),
+    ZIL( 34, "Zilliqa", "U+039E",CurrencyType.DIGITAL ),
+    ZRX( 35, "Ox", "U+039E",CurrencyType.DIGITAL ),
+  
     USD( "U+0024" ),
     EUR( "U+20AC" ),
     GBP( "U+00A3" ),
@@ -30,7 +63,9 @@ public enum SysCurrency
     AUD( "U+20B3" ),
     CNY( "U+00A5" ),
     CHF( "U+20A3" ),
-    RUB( "U+20BD" );
+    RUB( "U+20BD" ),
+    KRW( "U+20A9" ),
+    TRY( "U+20BA" );
 
     // ---------------------------------------------------
 
@@ -89,7 +124,12 @@ public enum SysCurrency
     {
         return name().toUpperCase();
     }
-
+    
+    @JsonIgnore
+    public String getUid()
+    {
+        return this.name().toLowerCase() + "-" + this.displayName.toLowerCase();
+    }
 
     @JsonProperty( "symbol_ucode" )
     public String getSymbolUnicode()

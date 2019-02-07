@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
+import io.hs.bex.common.utils.StringUtils;
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.SysCurrency;
@@ -74,8 +75,23 @@ public class ExchangeRatesAPI implements CurrencyInfoService
     @Override
     public List<CurrencyRate> getXRatesBy( CurrencyInfoRequest request )
     {
-        // TODO Auto-generated method stub
-        return null;
+        String url = apiUrl + "/"+ StringUtils.instantToStringShort( request.getDateTo())
+            +"?base=" + request.joinSourceCurrencies( "," )
+            + "&symbols=" + request.joinTargetCurrencies( "," );
+        
+        try 
+        {
+            HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET,entity, String.class);
+            
+            return jsonToCurrencyRates( response.getBody() );
+        }
+        catch( Exception e ) 
+        {
+            logger.error( "Error getting Currency rate from:{}",url, e );
+            
+            return null;
+        }    
     }
 
     @Override
