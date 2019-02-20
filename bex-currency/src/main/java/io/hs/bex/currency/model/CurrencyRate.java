@@ -117,7 +117,8 @@ public class CurrencyRate
     @Override
     public String toString()
     {
-        return "CurrencyRate [currency=" + currency + ", rate=" + rate + ", targetCurrency=" + targetCurrency + "]";
+        return "CurrencyRate [currency=" + currency + ", rate=" + rate + ", targetCurrency=" + targetCurrency 
+                + ", date:" + StringUtils.instantToString( date ) + "]";
     }
    
 }

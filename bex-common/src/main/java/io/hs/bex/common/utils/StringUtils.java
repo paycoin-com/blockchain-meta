@@ -32,11 +32,15 @@ public class StringUtils
 
     public static String instantToString( Instant dateTime )
     {
+        if(dateTime == null)
+            return "";
         return DATE_TIME_FORMATTER.format( dateTime );
     }
     
     public static String instantToStringShort( Instant dateTime )
     {
+        if(dateTime == null)
+            return "";
         return DATE_FORMATTER.format( dateTime );
     }
 

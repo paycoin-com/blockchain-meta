@@ -3,7 +3,9 @@ package io.hs.bex.currency.handler;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -199,6 +201,8 @@ public class CoinPaprikaHandler implements CurrencyInfoService
     private String constructUrl( CurrencyInfoRequest request, String sourceCcy, String targetCcy )
     {
         String url = "";
+        
+        request.setDateTo( adjustDateTime( request.getPeriod(), request.getDateTo() ) );
 
         if( request.getPeriod() == TimePeriod.YEAR )
         {
@@ -231,6 +235,35 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         return url;
     }
 
+    private Instant adjustDateTime( TimePeriod timePeriod, Instant dt )
+    {
+        LocalDateTime ldt = LocalDateTime.ofInstant( dt, ZoneId.systemDefault() );
+        ZoneOffset zof = ZoneOffset.of( ZoneId.systemDefault().getId() );
+        
+        if( timePeriod == TimePeriod.YEAR )
+        {
+
+        }
+        else if( timePeriod == TimePeriod.MONTH )
+        {
+            dt = ldt.withHour( 0 ).withMinute( 0 ).withSecond( 0 ).toInstant( zof);
+        }
+        else if( timePeriod == TimePeriod.DAY )
+        {
+            dt = ldt.withHour( 0 ).withMinute( 0 ).withSecond( 0 ).toInstant( zof );
+        }
+        else if( timePeriod == TimePeriod.HOUR )
+        {
+            dt = ldt.withMinute( 0 ).withSecond( 0 ).toInstant( zof );
+        }
+        else if( timePeriod== TimePeriod.MINUTE )
+        {
+            dt = ldt.withSecond( 0 ).toInstant( zof );
+        }
+        
+        return dt;
+    }
+
     private List<CurrencyRate> jsonToCurrencyRates( String sourceCurrency, String targetCurrency, Instant fetchTime,
             List<CurrencyRate> currencyRates, String json ) throws Exception
     {
@@ -249,12 +282,14 @@ public class CoinPaprikaHandler implements CurrencyInfoService
                 {
                     currencyRates.add( new CurrencyRate( fetchTime, SysCurrency.find( sourceCurrency ),
                             SysCurrency.find( targetCurrency ), (float) data.price ) );
+
+                    fetchTime = StringUtils.stringZonedToInstant( data.timestamp );
                 }
 
             }
             catch( Exception e )
             {
-                logger.error( "(!!!) Error in convering response to object:", e );
+                logger.error( "(!!!) Error in converting response to object:", e );
             }
 
             return currencyRates;
@@ -284,7 +319,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         }
         catch( Exception e )
         {
-            logger.error( "(!!!) Error in convering response to object:", e );
+            logger.error( "(!!!) Error in converting response to object:", e );
         }
 
         return null;
