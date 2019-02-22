@@ -36,4 +36,8 @@ public interface CurrencyService
 
     List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request );
 
+    void savePeriodicXRates( CurrencyInfoRequest request );
+
+    void saveXRates( CurrencyInfoRequest request, List<SysCurrency> targetCurrencies );
+
 }

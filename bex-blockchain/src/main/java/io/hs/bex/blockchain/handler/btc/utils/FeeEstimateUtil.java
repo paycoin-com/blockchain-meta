@@ -82,8 +82,6 @@ public class FeeEstimateUtil
         try
         {
             timerService.scheduleWithFixedDelay( () -> fetchMempoolStats(), startAfter , period, TimeUnit.SECONDS );
-           
-
         }
         catch( Exception e )
         {

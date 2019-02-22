@@ -1,5 +1,6 @@
 package io.hs.bex.blockchain.model;
 
+
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -8,8 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.hs.bex.common.utils.StringUtils;
 
+
 /**
  * Data container for Fee rates based on Coin/Bytes (Satoshi for BTC)
+ * 
  * @author nisakov
  *
  */
@@ -20,16 +23,17 @@ public class FeeRate
     private Instant date = Instant.now();
 
     @JsonIgnore
-    public double lowPriorityRate  = 0;
-    
+    public double lowPriorityRate = 0;
+
     @JsonIgnore
     public double mediumPriorityRate = 0;
-    
+
     @JsonIgnore
-    public double highPriorityRate  = 0;
-    
-    public FeeRate() {}
-    
+    public double highPriorityRate = 0;
+
+    public FeeRate()
+    {}
+
     public FeeRate( double lowPriority, double mediumPriority, double highPriority )
     {
         this.lowPriorityRate = lowPriority;
@@ -37,24 +41,24 @@ public class FeeRate
         this.highPriorityRate = highPriority;
     }
 
-    @JsonProperty("low_priority")
+    @JsonProperty( "low_priority" )
     public String getLowPriorityStr()
     {
         return StringUtils.doubleToString( lowPriorityRate );
     }
 
-    @JsonProperty("medium_priority")
+    @JsonProperty( "medium_priority" )
     public String getMediumPriorityStr()
     {
         return StringUtils.doubleToString( mediumPriorityRate );
     }
-    
-    @JsonProperty("high_priority")
+
+    @JsonProperty( "high_priority" )
     public String getHighPriorityStr()
     {
         return StringUtils.doubleToString( highPriorityRate );
     }
-    
+
     @JsonIgnore
     public Instant getDate()
     {
@@ -65,7 +69,7 @@ public class FeeRate
     {
         this.date = date;
     }
-    
+
     @JsonIgnore
     public double getLowPriorityRate()
     {
@@ -84,26 +88,23 @@ public class FeeRate
         return highPriorityRate;
     }
 
-    @JsonProperty("date_str")
+    @JsonProperty( "date_str" )
     public String getDateStr()
     {
-        return StringUtils.instantToString( date ); 
+        return StringUtils.instantToString( date );
     }
-    
-    @JsonProperty("date")
+
+    @JsonProperty( "date" )
     public long getDateEpoch()
     {
         return date.toEpochMilli();
     }
-    
+
     @JsonIgnore
     public FeeRate convertToCoinKbytes( long coinRate )
     {
-        lowPriorityRate = (lowPriorityRate/coinRate) * 1024;
-        mediumPriorityRate = (mediumPriorityRate/coinRate) * 1024; 
-        highPriorityRate = (highPriorityRate/coinRate) * 1024;
-        
-        return this;
+        return new FeeRate( ( lowPriorityRate / coinRate) * 1024, ( mediumPriorityRate / coinRate) * 1024,
+                ( highPriorityRate / coinRate) * 1024 );
     }
 
     @Override

@@ -18,6 +18,8 @@ import com.google.common.base.Strings;
 
 public class StringUtils
 {
+    static DateTimeFormatter DATE_TIME_FORMATTER_ZONED = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+
     static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm" )
             .withZone( ZoneId.systemDefault() );
 
@@ -30,8 +32,18 @@ public class StringUtils
 
     public static String instantToString( Instant dateTime )
     {
+        if(dateTime == null)
+            return "";
         return DATE_TIME_FORMATTER.format( dateTime );
     }
+    
+    public static String instantToStringShort( Instant dateTime )
+    {
+        if(dateTime == null)
+            return "";
+        return DATE_FORMATTER.format( dateTime );
+    }
+
 
     public static String localDateTimeToString( LocalDateTime localDate )
     {
@@ -52,6 +64,11 @@ public class StringUtils
                 .withZone( ZoneId.systemDefault() );
 
         return Instant.from( formatter.parse( dateStr ) );
+    }
+    
+    public static Instant stringZonedToInstant( String dateStr)
+    {
+        return Instant.from( DATE_TIME_FORMATTER_ZONED.parse( dateStr ) );
     }
     
     public static Instant stringToInstant( String dateStr )
