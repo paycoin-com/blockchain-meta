@@ -3,10 +3,9 @@ package io.hs.bex.currency.handler;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -108,50 +107,6 @@ public class CoinPaprikaHandler implements CurrencyInfoService
     }
 
     @Override
-    public List<CurrencyRate> getXRatesBy( CurrencyInfoRequest request )
-    {
-        String url = "";
-        int requestCount = 0;
-
-        try
-        {
-            List<CurrencyRate> currencyRates = new ArrayList<>();
-
-            for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
-            {
-                url = constructUrl( request, sourceCurrency.getUid(), request.getTargetCcyCode() );
-
-                try
-                {
-                    HttpEntity<String> entity = new HttpEntity<String>( "parameters", headers );
-                    ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET, entity,
-                            String.class );
-
-                    jsonToCurrencyRates( sourceCurrency.getCode(), request.getTargetCcyCode(), request.getDateTo(),
-                            currencyRates, response.getBody() );
-                }
-                catch( HttpClientErrorException e )
-                {
-                    logger.error( "(!!!) Error fetching data for {}:{}, (Ignoring) ", sourceCurrency.getCode(),
-                            request.getTargetCcyCode() );
-                    // ignore
-                }
-
-                requestCount = adjustRequestDelay( requestCount );
-            }
-
-            return currencyRates;
-        }
-        catch( Exception e )
-        {
-            logger.error( "Error getting Currency rate from:{}", url, e );
-
-            return Collections.emptyList();
-        }
-
-    }
-
-    @Override
     public List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request )
     {
         String url = "";
@@ -162,7 +117,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         try
         {
             List<CurrencyRate> currencyRates = new ArrayList<>();
-            Instant fetchTime = Instant.now();
+            request.setDateTo( Instant.now() );
 
             for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
             {
@@ -175,7 +130,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
                     ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET, entity,
                             String.class );
 
-                    jsonToCurrencyRates( sourceCurrency.getCode(), request.getTargetCcyCode(), fetchTime, currencyRates,
+                    jsonToCurrencyRates( request, sourceCurrency.getCode(), request.getTargetCcyCode(), currencyRates,
                             response.getBody() );
                 }
                 catch( HttpClientErrorException e )
@@ -198,11 +153,54 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         }
     }
 
+    @Override
+    public List<CurrencyRate> getXRatesBy( CurrencyInfoRequest request )
+    {
+        String url = "";
+        int requestCount = 0;
+
+        try
+        {
+            List<CurrencyRate> currencyRates = new ArrayList<>();
+            adjustStartDateTime( request );
+
+            for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
+            {
+                url = constructUrl( request, sourceCurrency.getUid(), request.getTargetCcyCode() );
+
+                try
+                {
+                    HttpEntity<String> entity = new HttpEntity<String>( "parameters", headers );
+                    ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET, entity,
+                            String.class );
+
+                    jsonToCurrencyRates( request, sourceCurrency.getCode(), request.getTargetCcyCode(), currencyRates,
+                            response.getBody() );
+                }
+                catch( HttpClientErrorException e )
+                {
+                    logger.error( "(!!!) Error fetching data for {}:{}, (Ignoring) ", sourceCurrency.getCode(),
+                            request.getTargetCcyCode() );
+                    // ignore
+                }
+
+                requestCount = adjustRequestDelay( requestCount );
+            }
+
+            return currencyRates;
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error getting Currency rate from:{}", url, e );
+
+            return Collections.emptyList();
+        }
+
+    }
+
     private String constructUrl( CurrencyInfoRequest request, String sourceCcy, String targetCcy )
     {
         String url = "";
-        
-        request.setDateTo( adjustDateTime( request.getPeriod(), request.getDateTo() ) );
 
         if( request.getPeriod() == TimePeriod.YEAR )
         {
@@ -215,81 +213,101 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         else if( request.getPeriod() == TimePeriod.DAY )
         {
             url = infoServiceUrl + "/v1/tickers/" + sourceCcy + "/historical?interval=1d" + "&quote=" + targetCcy
-                    + "&limit=" + request.getLimit() + "&start="
-                    + request.getDateTo().minus( Duration.ofDays( request.getLimit() ) );
+                    + "&limit=" + (request.getLimit()+1) + "&start=" + request.getDateTo().getEpochSecond();
         }
         else if( request.getPeriod() == TimePeriod.HOUR )
         {
             url = infoServiceUrl + "/v1/tickers/" + sourceCcy + "/historical?interval=1h" + "&quote=" + targetCcy
-                    + "&limit=" + request.getLimit() + "&start="
-                    + request.getDateTo().minus( Duration.ofHours( request.getLimit() ) );
+                    + "&limit=" + (request.getLimit()+1) + "&start=" + request.getDateTo().getEpochSecond();
         }
         else if( request.getPeriod() == TimePeriod.MINUTE )
         {
-            int limit = ( request.getLimit() / 5) + 1;
+            int limit = ( request.getLimit() / 5) + 2;
             url = infoServiceUrl + "/v1/tickers/" + sourceCcy + "/historical?interval=5m" + "&quote=" + targetCcy
-                    + "&limit=" + limit + "&start="
-                    + request.getDateTo().minus( Duration.ofMinutes( request.getLimit() ) );
+                    + "&limit=" + limit + "&start=" + request.getDateTo().getEpochSecond();
         }
 
         return url;
     }
 
+    private void adjustStartDateTime( CurrencyInfoRequest request )
+    {
+        int limit = request.getLimit() <= 0 ? 1 : request.getLimit();
+
+        if( request.getPeriod() == TimePeriod.YEAR )
+        {}
+        else if( request.getPeriod() == TimePeriod.MONTH )
+        {}
+        else if( request.getPeriod() == TimePeriod.DAY )
+        {
+            request.setDateTo( request.getDateTo().minus( Duration.ofDays( limit ) ).truncatedTo( ChronoUnit.DAYS ) );
+        }
+        else if( request.getPeriod() == TimePeriod.HOUR )
+        {
+            request.setDateTo( request.getDateTo().minus( Duration.ofHours( limit ) ).truncatedTo( ChronoUnit.HOURS ) );
+            request.setDateTo( request.getDateTo().minus( Duration.ofHours( limit ) ) );
+        }
+        else if( request.getPeriod() == TimePeriod.MINUTE )
+        {
+            request.setDateTo(
+                    request.getDateTo().minus( Duration.ofMinutes( limit ) ).truncatedTo( ChronoUnit.MINUTES ) );
+        }
+    }
+
     private Instant adjustDateTime( TimePeriod timePeriod, Instant dt )
     {
-        LocalDateTime ldt = LocalDateTime.ofInstant( dt, ZoneId.systemDefault() );
-        ZoneOffset zof = ZoneOffset.of( ZoneId.systemDefault().getId() );
-        
         if( timePeriod == TimePeriod.YEAR )
-        {
-
-        }
+        {}
         else if( timePeriod == TimePeriod.MONTH )
-        {
-            dt = ldt.withHour( 0 ).withMinute( 0 ).withSecond( 0 ).toInstant( zof);
-        }
+        {}
         else if( timePeriod == TimePeriod.DAY )
         {
-            dt = ldt.withHour( 0 ).withMinute( 0 ).withSecond( 0 ).toInstant( zof );
+            return dt.plus( Duration.ofDays( 1 ) );
         }
         else if( timePeriod == TimePeriod.HOUR )
         {
-            dt = ldt.withMinute( 0 ).withSecond( 0 ).toInstant( zof );
+            return dt.plus( Duration.ofHours( 1 ) );
         }
-        else if( timePeriod== TimePeriod.MINUTE )
+        else if( timePeriod == TimePeriod.MINUTE )
         {
-            dt = ldt.withSecond( 0 ).toInstant( zof );
+            return dt.plus( Duration.ofMinutes( 1 ) );
         }
-        
+
         return dt;
+
     }
 
-    private List<CurrencyRate> jsonToCurrencyRates( String sourceCurrency, String targetCurrency, Instant fetchTime,
-            List<CurrencyRate> currencyRates, String json ) throws Exception
+    private List<CurrencyRate> jsonToCurrencyRates( CurrencyInfoRequest request, String sourceCurrency,
+            String targetCurrency, List<CurrencyRate> currencyRates, String json ) throws Exception
     {
         if( Strings.isNullOrEmpty( json ) )
             return null;
         try
         {
-            if( Strings.isNullOrEmpty( json ) )
-                return null;
-            try
+
+            List<CoinPResponse> responseList = mapper.readValue( json, new TypeReference<List<CoinPResponse>>() {} );
+            Instant fetchTime = null;
+            int index = 0;
+            float lastRate = 0;
+            Instant dateTime = Instant.ofEpochMilli( request.getDateTo().toEpochMilli() );
+
+            for( int x = 0; x <= request.getLimit(); x++ )
             {
-                List<CoinPResponse> responseList = mapper.readValue( json,
-                        new TypeReference<List<CoinPResponse>>() {} );
-
-                for( CoinPResponse data: responseList )
+                if( index < responseList.size()) 
                 {
-                    currencyRates.add( new CurrencyRate( fetchTime, SysCurrency.find( sourceCurrency ),
-                            SysCurrency.find( targetCurrency ), (float) data.price ) );
-
+                    CoinPResponse data = responseList.get( index );
                     fetchTime = StringUtils.stringZonedToInstant( data.timestamp );
+                    lastRate = (float) data.price;
                 }
 
-            }
-            catch( Exception e )
-            {
-                logger.error( "(!!!) Error in converting response to object:", e );
+                if( dateTime.compareTo( fetchTime ) == 0 )
+                    index++;
+
+                currencyRates.add( new CurrencyRate( dateTime, SysCurrency.find( sourceCurrency ),
+                        SysCurrency.find( targetCurrency ), lastRate ) );
+
+                dateTime = adjustDateTime( request.getPeriod(), dateTime );
+
             }
 
             return currencyRates;

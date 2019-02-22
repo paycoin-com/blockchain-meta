@@ -295,4 +295,16 @@ public class CryptoCompareHandler implements CurrencyInfoService
             return Collections.emptyList();
         }
     }
+
+    public void setMapper( ObjectMapper mapper )
+    {
+        this.mapper = mapper;
+    }
+
+    public void setInfoServiceUrl( String infoServiceUrl )
+    {
+        this.infoServiceUrl = infoServiceUrl;
+    }
+    
+    
 }

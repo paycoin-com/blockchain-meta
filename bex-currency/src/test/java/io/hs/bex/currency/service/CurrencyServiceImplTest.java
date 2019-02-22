@@ -69,42 +69,48 @@ public class CurrencyServiceImplTest
     private List<CurrencyRate> currencyRatesUSD = new ArrayList<>();
     private List<CurrencyRate> currencyRatesEUR = new ArrayList<>();
 
-    private Map<Integer, Float> savedData = null;
+    private List<Map<Integer, Float>> savedData = new ArrayList<>();
 
-    private List<CurrencyRate> createCurrencyRatesList( SysCurrency currency, float value, String date )
+    private List<CurrencyRate> createCurrencyRatesList( SysCurrency sc, SysCurrency tc, float value, String date )
     {
         CurrencyRate cr = new CurrencyRate();
-        cr.setTargetCurrency( currency );
+        cr.setTargetCurrency( tc );
         cr.setRate( value );
         cr.setDate( StringUtils.stringToInstant( date ) );
-        cr.setCurrency( SysCurrency.BTC );
-        
-        if(currency == SysCurrency.USD) 
-            currencyRatesUSD.add( cr );
-        else 
-            currencyRatesEUR.add( cr );
+        cr.setCurrency( sc );
 
-        return currencyRatesUSD;
+        if( tc == SysCurrency.USD )
+        {
+            currencyRatesUSD.add( cr );
+            return currencyRatesUSD;
+        }
+        else
+        {
+            currencyRatesEUR.add( cr );
+            return currencyRatesEUR;
+        }
+
     }
 
     @Before
     public void setUp() throws Exception
     {
-        createCurrencyRatesList( SysCurrency.USD, (float) 104, "2018-12-30 23:58" );
-        createCurrencyRatesList( SysCurrency.USD, (float) 105, "2018-12-30 23:59" );
-        createCurrencyRatesList( SysCurrency.USD, (float) 106, "2018-12-31 00:00" );
-        createCurrencyRatesList( SysCurrency.USD, (float) 107, "2018-12-31 00:01" );
-        createCurrencyRatesList( SysCurrency.USD, (float) 108, "2018-12-31 00:02" );
-        createCurrencyRatesList( SysCurrency.USD, (float) 109, "2018-12-31 00:03" );
-        createCurrencyRatesList( SysCurrency.USD, (float) 110, "2018-12-31 00:04" );
         
-        createCurrencyRatesList( SysCurrency.EUR, (float) 3.4, "2018-12-30 23:58" );
-        createCurrencyRatesList( SysCurrency.EUR, (float) 3.5, "2018-12-30 23:59" );
-        createCurrencyRatesList( SysCurrency.EUR, (float) 3.6, "2018-12-31 00:00" );
-        createCurrencyRatesList( SysCurrency.EUR, (float) 3.7, "2018-12-31 00:01" );
-        createCurrencyRatesList( SysCurrency.EUR, (float) 3.8, "2018-12-31 00:02" );
-        createCurrencyRatesList( SysCurrency.EUR, (float) 3.9, "2018-12-31 00:03" );
-        createCurrencyRatesList( SysCurrency.EUR, (float) 4.0, "2018-12-31 00:04" );
+        createCurrencyRatesList( SysCurrency.BTC, SysCurrency.USD, (float) 104, "2018-12-30 23:58" );
+        createCurrencyRatesList( SysCurrency.BTC, SysCurrency.USD, (float) 105, "2018-12-30 23:59" );
+        createCurrencyRatesList( SysCurrency.BTC, SysCurrency.USD, (float) 106, "2018-12-31 00:00" );
+        createCurrencyRatesList( SysCurrency.BTC, SysCurrency.USD, (float) 107, "2018-12-31 00:01" );
+        createCurrencyRatesList( SysCurrency.BTC, SysCurrency.USD, (float) 108, "2018-12-31 00:02" );
+        createCurrencyRatesList( SysCurrency.BTC, SysCurrency.USD, (float) 109, "2018-12-31 00:03" );
+        createCurrencyRatesList( SysCurrency.BTC, SysCurrency.USD, (float) 110, "2018-12-31 00:04" );
+        
+        createCurrencyRatesList( SysCurrency.USD, SysCurrency.EUR, (float) 3.4, "2018-12-30 23:58" );
+        createCurrencyRatesList( SysCurrency.USD, SysCurrency.EUR, (float) 3.5, "2018-12-30 23:59" );
+        createCurrencyRatesList( SysCurrency.USD, SysCurrency.EUR, (float) 3.6, "2018-12-31 00:00" );
+        createCurrencyRatesList( SysCurrency.USD, SysCurrency.EUR, (float) 3.7, "2018-12-31 00:01" );
+        createCurrencyRatesList( SysCurrency.USD, SysCurrency.EUR, (float) 3.8, "2018-12-31 00:02" );
+        createCurrencyRatesList( SysCurrency.USD, SysCurrency.EUR, (float) 3.9, "2018-12-31 00:03" );
+        createCurrencyRatesList( SysCurrency.USD, SysCurrency.EUR, (float) 4.0, "2018-12-31 00:04" );
 
         //when( defaultInfoService.getXRatesBy( Mockito.any() ) ).thenReturn( currencyRates );
         
@@ -116,12 +122,15 @@ public class CurrencyServiceImplTest
 
                 System.out.println( "getXRatesBy:" + request.getSourceCcyCode() );
 
-                if("USD".equals( request.getTargetCcyCode() )) 
-                {
-                    return currencyRatesUSD;
-                }
-                else
-                    return currencyRatesEUR;
+//                if("USD".equals( request.getTargetCcyCode() )) 
+//                {
+//                    return currencyRatesUSD;
+//                }
+//                else
+//                    return currencyRatesEUR;
+                
+                return currencyRatesUSD;
+
             }
         } );
 
@@ -163,7 +172,7 @@ public class CurrencyServiceImplTest
                         System.out.println( "Saving Data Path:" + path );
                         System.out.println( "Saving Data:" + data );
 
-                        savedData = mapper.readValue( data, new TypeReference<LinkedHashMap<Integer, Float>>() {} );
+                        savedData.add( mapper.readValue( data, new TypeReference<LinkedHashMap<Integer, Float>>() {} ));
 
                         return null;
                     }
@@ -174,16 +183,19 @@ public class CurrencyServiceImplTest
     @Test
     public void testFetchAndStore()
     {
+        //---------------------------------------
         currencyService.buildTaskParams();
+        currencyService.setFiatXRates( currencyRatesEUR );
+        //---------------------------------------
+        
         CurrencyInfoRequest request = new CurrencyInfoRequest();
         request.setLimit( 3 );
         request.setDateTo( Instant.now() );
         request.setPeriod( TimePeriod.MINUTE );
         request.getSourceCurrencies().add( SysCurrency.BTC );
-        //List<SysCurrency> currencies = currencyService. currencyTaskParams.getTargetCurrencies();
         currencyService.savePeriodicXRates( request );
 
-        assertEquals( savedData.size(), 7 ); // Check If Second date included or
+        assertEquals( savedData.size(), 4 ); // Check If Second date included or
                                              // not
     }
 
