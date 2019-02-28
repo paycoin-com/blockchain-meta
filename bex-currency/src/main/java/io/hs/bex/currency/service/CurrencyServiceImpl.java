@@ -20,6 +20,7 @@ import io.hs.bex.common.utils.StringUtils;
 import io.hs.bex.currency.handler.CryptoCompareHandler;
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.CurrencyRate;
+import io.hs.bex.currency.model.CurrencyRateStack;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
@@ -351,13 +352,13 @@ public class CurrencyServiceImpl implements CurrencyService
             List<CurrencyRate> xrates = digitalCcyService.getLatestXRates( request );
 
             // ---------- Add other currency rates ----------
-            xrates = calculateXRateDetails( xrates );
+            List<CurrencyRateStack> rateStockList = calculateXRateDetails( xrates );
             // ----------------------------------------------
 
-            for( CurrencyRate xrate: xrates )
+            for( CurrencyRateStack rateStack: rateStockList )
             {
-                String rootPath = "/" + xrate.getCurrency().getCode() + "/" + xrate.getTargetCurrency().getCode() + "/";
-                saveFile( rootPath, "index.json", mapper.writeValueAsString( xrate ) );
+                String rootPath = "/" + rateStack.getCurrency().getCode() + "/";
+                saveFile( rootPath, "index.json", mapper.writeValueAsString( rateStack ) );
             }
         }
         catch( Exception e )
@@ -410,6 +411,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
             List<CurrencyRate> tempXRates = fiatCcyService.getLatestXRates( request );
             fiatXRates.clear();
+            fiatXRates.add( new CurrencyRate( BASE_SYSTEM_CURRENCY,BASE_SYSTEM_CURRENCY, 1 ));
             fiatXRates.addAll( tempXRates );
 
             return fiatXRates;
@@ -420,25 +422,30 @@ public class CurrencyServiceImpl implements CurrencyService
         }
     }
 
-    private List<CurrencyRate> calculateXRateDetails( List<CurrencyRate> digitalCcyXrates )
+    private List<CurrencyRateStack> calculateXRateDetails( List<CurrencyRate> digitalCcyXrates )
     {
-        List<CurrencyRate> xrateDetails = new ArrayList<>();
+        CurrencyRateStack xrateStack = null;
+        
+        List<CurrencyRateStack> xrateStackList = new ArrayList<>();
 
-        for( CurrencyRate digXRate: digitalCcyXrates )
+        for( CurrencyRate fiatXRate: fiatXRates )
         {
-            xrateDetails.add( digXRate );
-
-            if( digXRate.getTargetCurrency() == BASE_SYSTEM_CURRENCY )
+            xrateStack = new CurrencyRateStack();
+            xrateStack.setCurrency( fiatXRate.getTargetCurrency() );
+            xrateStackList.add( xrateStack );
+            
+            for( CurrencyRate digXRate: digitalCcyXrates )
             {
-                for( CurrencyRate fiatXRate: fiatXRates )
+                if(fiatXRate.getCurrency() ==  digXRate.getTargetCurrency()) 
                 {
-                    xrateDetails.add( new CurrencyRate( digXRate.getDate(), digXRate.getCurrency(),
-                            fiatXRate.getTargetCurrency(), digXRate.getRate() * fiatXRate.getRate() ) );
+                    xrateStack.setTime( digXRate.getDate());
+                    xrateStack.getRates().put( digXRate.getCurrency(), digXRate.getRate() * fiatXRate.getRate() );
                 }
-            }
+            }                
         }
+            
 
-        return xrateDetails;
+        return xrateStackList;
     }
 
     private List<CurrencyRate> calculateXRateDetails( CurrencyInfoRequest request, List<CurrencyRate> digitalCcyXrates,
