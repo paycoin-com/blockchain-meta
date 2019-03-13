@@ -8,7 +8,8 @@ import io.hs.bex.blockchain.model.FeeRate;
 
 public class FeeEstimateData
 {
-    public static final long PREDICTION_PERIOD = 20 * 60 * 1000;  // 20 MINS
+    public static final long PREDICTION_PERIOD_20M = 20 * 60 * 1000;  // 20 MINS
+    public static final long PREDICTION_PERIOD_60M = 60 * 60 * 1000;  // 60 MINS
     
     public static short[] FEE_RANGES = { 
                            1700,1200,  800, 500, 400,  300,  

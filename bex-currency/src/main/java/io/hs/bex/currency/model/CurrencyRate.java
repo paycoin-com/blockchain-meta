@@ -59,11 +59,19 @@ public class CurrencyRate
         this.currency = currency;
     }
 
+    @JsonIgnore
     public float getRate()
     {
         return rate;
     }
+    
+    @JsonProperty("rate")
+    public String getRateStr()
+    {
+        return StringUtils.floatToString( rate );
+    }
 
+    @JsonIgnore
     public void setRate( float rate )
     {
         this.rate = rate;
@@ -97,12 +105,6 @@ public class CurrencyRate
         return  StringUtils.instantToString( date );
     }
     
-    @JsonProperty("rate_str")
-    public String getRateStr()
-    {
-        return StringUtils.floatToString( rate );
-    }
-
     @JsonProperty("date")
     public long getDateEpoch()
     {

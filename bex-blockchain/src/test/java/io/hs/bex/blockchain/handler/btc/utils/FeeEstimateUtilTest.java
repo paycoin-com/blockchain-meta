@@ -27,7 +27,6 @@ import io.hs.bex.blockchain.handler.btc.BcoinHandler;
 import io.hs.bex.blockchain.handler.btc.model.FeeEstimateData;
 import io.hs.bex.blockchain.handler.btc.model.MempoolInfo;
 import io.hs.bex.blockchain.handler.btc.model.MempoolTx;
-import io.hs.bex.blockchain.model.FeeRate;
 
 
 @RunWith( MockitoJUnitRunner.class )
@@ -130,9 +129,9 @@ public class FeeEstimateUtilTest
         feeEstimateUtil = new FeeEstimateUtil( bcoinHandler, feeEstimateData, 0 );
 
         
-        FeeRate feeRate = feeEstimateUtil.estimeFee( predictedValues );
+        double feeRate = feeEstimateUtil.estimateFee( predictedValues );
         
-        assertTrue( feeRate.highPriorityRate == 800);
+        assertTrue( feeRate == 800);
     }
 
 

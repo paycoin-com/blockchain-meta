@@ -1,13 +1,9 @@
 package io.hs.bex.blockchain.model;
 
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.hs.bex.common.utils.StringUtils;
 
 
 /**
@@ -20,21 +16,25 @@ import io.hs.bex.common.utils.StringUtils;
 public class FeeRate
 {
     @JsonIgnore
-    private Instant date = Instant.now();
+    public long lowPriorityRate = 0;
 
     @JsonIgnore
-    public double lowPriorityRate = 0;
+    public long mediumPriorityRate = 0;
 
     @JsonIgnore
-    public double mediumPriorityRate = 0;
-
-    @JsonIgnore
-    public double highPriorityRate = 0;
+    public long highPriorityRate = 0;
 
     public FeeRate()
     {}
 
     public FeeRate( double lowPriority, double mediumPriority, double highPriority )
+    {
+        this.lowPriorityRate = (long) ( ( lowPriority * Coin.SATOSHI_RATE) / 1024);
+        this.mediumPriorityRate = (long) ( mediumPriority * Coin.SATOSHI_RATE) / 1024;;
+        this.highPriorityRate = (long) ( highPriority * Coin.SATOSHI_RATE) / 1024;;
+    }
+    
+    public FeeRate( long lowPriority, long mediumPriority, long highPriority )
     {
         this.lowPriorityRate = lowPriority;
         this.mediumPriorityRate = mediumPriority;
@@ -42,63 +42,38 @@ public class FeeRate
     }
 
     @JsonProperty( "low_priority" )
-    public String getLowPriorityStr()
-    {
-        return StringUtils.doubleToString( lowPriorityRate );
-    }
-
-    @JsonProperty( "medium_priority" )
-    public String getMediumPriorityStr()
-    {
-        return StringUtils.doubleToString( mediumPriorityRate );
-    }
-
-    @JsonProperty( "high_priority" )
-    public String getHighPriorityStr()
-    {
-        return StringUtils.doubleToString( highPriorityRate );
-    }
-
-    @JsonIgnore
-    public Instant getDate()
-    {
-        return date;
-    }
-
-    public void setDate( Instant date )
-    {
-        this.date = date;
-    }
-
-    @JsonIgnore
-    public double getLowPriorityRate()
+    public long getLowPriorityRate()
     {
         return lowPriorityRate;
     }
 
-    @JsonIgnore
-    public double getMediumPriorityRate()
+    @JsonProperty( "medium_priority" )
+    public long getMediumPriorityRate()
     {
         return mediumPriorityRate;
     }
 
-    @JsonIgnore
-    public double getHighPriorityRate()
+    @JsonProperty( "high_priority" )
+    public long getHighPriorityRate()
     {
         return highPriorityRate;
     }
-
-    @JsonProperty( "date_str" )
-    public String getDateStr()
+    
+    public void setLowPriorityRate( long lowPriorityRate )
     {
-        return StringUtils.instantToString( date );
+        this.lowPriorityRate = lowPriorityRate;
     }
 
-    @JsonProperty( "date" )
-    public long getDateEpoch()
+    public void setMediumPriorityRate( long mediumPriorityRate )
     {
-        return date.toEpochMilli();
+        this.mediumPriorityRate = mediumPriorityRate;
     }
+
+    public void setHighPriorityRate( long highPriorityRate )
+    {
+        this.highPriorityRate = highPriorityRate;
+    }
+
 
     @JsonIgnore
     public FeeRate convertToCoinKbytes( long coinRate )
@@ -106,11 +81,11 @@ public class FeeRate
         return new FeeRate( ( lowPriorityRate / coinRate) * 1024, ( mediumPriorityRate / coinRate) * 1024,
                 ( highPriorityRate / coinRate) * 1024 );
     }
-
+    
     @Override
     public String toString()
     {
-        return "FeeRate [date=" + date + ", lowPriorityRate=" + lowPriorityRate + ", mediumPriorityRate="
+        return "FeeRate [ lowPriorityRate=" + lowPriorityRate + ", mediumPriorityRate="
                 + mediumPriorityRate + ", highPriorityRate=" + highPriorityRate + "]";
     }
 

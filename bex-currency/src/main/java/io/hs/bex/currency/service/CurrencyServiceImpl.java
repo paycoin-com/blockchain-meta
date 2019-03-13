@@ -52,9 +52,9 @@ public class CurrencyServiceImpl implements CurrencyService
     private static final Logger logger = LoggerFactory.getLogger( CryptoCompareHandler.class );
     // ---------------------------------
 
-    final int LAST_XRATES_FETCH_PERIOD = 180; // seconds
+    final int LAST_XRATES_FETCH_PERIOD = 210; // seconds
     final int FIAT_XRATES_FETCH_PERIOD = 600; // seconds
-    final int HOURLY_XRATES_FETCH_PERIOD = 1800; // seconds
+    final int HOURLY_XRATES_FETCH_PERIOD = 3600; // seconds
 
     public final SysCurrency BASE_SYSTEM_CURRENCY = SysCurrency.USD;
 
@@ -126,7 +126,7 @@ public class CurrencyServiceImpl implements CurrencyService
         taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 30,
                 HOURLY_XRATES_FETCH_PERIOD );
         taskManager.startScheduledAtFixed( startLatesXRatesTask(), "LatesXRatesTask", 35, LAST_XRATES_FETCH_PERIOD );
-        taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
+        taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 120 );
     }
 
     @Override
@@ -260,7 +260,7 @@ public class CurrencyServiceImpl implements CurrencyService
         {
             String path = "";
             List<CurrencyRate> baseXRates, xrates;
-            Map<String, Float> dataMap = new LinkedHashMap<>();
+            Map<String, String> dataMap = new LinkedHashMap<>();
 
             for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
             {
@@ -273,7 +273,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
                 for( SysCurrency targetCurrency: targetCurrencies )
                 {
-                    String rootPath = "/" + sourceCurrency.getCode() + "/" + targetCurrency.getCode() + "/";
+                    String rootPath = "/historical/" + sourceCurrency.getCode() + "/" + targetCurrency.getCode() + "/";
 
                     xrates = calculateXRateDetails( request, baseXRates, targetCurrency );
 
@@ -296,7 +296,7 @@ public class CurrencyServiceImpl implements CurrencyService
                                 }
                             }
 
-                            dataMap.put( String.format( "%02d", localDateTime.getMinute() ), xrate.getRate() );
+                            dataMap.put( String.format( "%02d", localDateTime.getMinute() ), xrate.getRateStr() );
                         }
                         else
                         {
@@ -328,15 +328,15 @@ public class CurrencyServiceImpl implements CurrencyService
         }
     }
 
-    private void appendData( String path, String fileName, Map<String, Float> dataMap ) throws IOException
+    private void appendData( String path, String fileName, Map<String, String> dataMap ) throws IOException
     {
-        LinkedHashMap<String, Float> contentMap = null;
+        LinkedHashMap<String, String> contentMap = null;
 
         String content = getFileContent( path, fileName );
 
         if( !Strings.isNullOrEmpty( content ) )
         {
-            contentMap = mapper.readValue( content, new TypeReference<LinkedHashMap<String, Float>>() {} );
+            contentMap = mapper.readValue( content, new TypeReference<LinkedHashMap<String, String>>() {} );
             contentMap.putAll( dataMap );
             saveFile( path, fileName, mapper.writeValueAsString( contentMap ) );
         }
@@ -357,7 +357,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
             for( CurrencyRateStack rateStack: rateStockList )
             {
-                String rootPath = "/" + rateStack.getCurrency().getCode() + "/";
+                String rootPath = "/latest/" + rateStack.getCurrency().getCode() + "/";
                 saveFile( rootPath, "index.json", mapper.writeValueAsString( rateStack ) );
             }
         }
@@ -439,7 +439,7 @@ public class CurrencyServiceImpl implements CurrencyService
                 if(fiatXRate.getCurrency() ==  digXRate.getTargetCurrency()) 
                 {
                     xrateStack.setTime( digXRate.getDate());
-                    xrateStack.getRates().put( digXRate.getCurrency(), digXRate.getRate() * fiatXRate.getRate() );
+                    xrateStack.addRatesAsFloat( digXRate.getCurrency(), digXRate.getRate() * fiatXRate.getRate() );
                 }
             }                
         }

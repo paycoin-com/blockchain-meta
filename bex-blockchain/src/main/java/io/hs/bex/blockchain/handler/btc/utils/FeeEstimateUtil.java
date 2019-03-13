@@ -31,7 +31,7 @@ public class FeeEstimateUtil
     // ---------------------------------
 
     private final int DATA_FETCH_PERIOD = 35; // SECONDS
-    private final int BLOCK_SIZE = 1048576; // in bytes (1MB) 
+    private final int BLOCK_SIZE = 1048576; // in bytes (1MB)
 
     private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
 
@@ -39,16 +39,19 @@ public class FeeEstimateUtil
 
     private FeeEstimateData feeEstimateData;
 
+    private EconomFeeEstimation ecFeeEstimation;
+
     public FeeEstimateUtil( BcoinHandler bcoinHandler )
     {
         this.bcoinHandler = bcoinHandler;
         this.feeEstimateData = new FeeEstimateData();
+        // this.ecFeeEstimation = new EconomFeeEstimation(bcoinHandler);
 
         // ------------------------------------------
         startScheduledTask( 30, DATA_FETCH_PERIOD );
         // ------------------------------------------
     }
-    
+
     public FeeEstimateUtil( BcoinHandler bcoinHandler, int dataFetchPeriod )
     {
         this.bcoinHandler = bcoinHandler;
@@ -59,7 +62,7 @@ public class FeeEstimateUtil
             startScheduledTask( 0, dataFetchPeriod );
         // ------------------------------------------
     }
-    
+
     public FeeEstimateUtil( BcoinHandler bcoinHandler, FeeEstimateData feeEstimateData, int dataFetchPeriod )
     {
         this.bcoinHandler = bcoinHandler;
@@ -71,7 +74,6 @@ public class FeeEstimateUtil
         // ------------------------------------------
     }
 
-
     public FeeRate getEsimatedFee( int nBlocks )
     {
         return feeEstimateData.getFeeRate().convertToCoinKbytes( Coin.SATOSHI_RATE );
@@ -81,7 +83,7 @@ public class FeeEstimateUtil
     {
         try
         {
-            timerService.scheduleWithFixedDelay( () -> fetchMempoolStats(), startAfter , period, TimeUnit.SECONDS );
+            timerService.scheduleWithFixedDelay( () -> fetchMempoolStats(), startAfter, period, TimeUnit.SECONDS );
         }
         catch( Exception e )
         {
@@ -112,10 +114,11 @@ public class FeeEstimateUtil
             if( feeEstimateData.getFetchStartTime() != 0 )
             {
                 setStatsData();
-                
-                if( feeEstimateData.getPrevSizeData().size() > 0 ) 
+
+                if( feeEstimateData.getPrevSizeData().size() > 0 )
                 {
-                    predictValues();
+                    predictValues( FeeEstimateData.PREDICTION_PERIOD_20M );
+                    predictValues( FeeEstimateData.PREDICTION_PERIOD_60M );
                 }
             }
         }
@@ -130,7 +133,7 @@ public class FeeEstimateUtil
         int sum = 0;
 
         long time = System.currentTimeMillis();
-        
+
         try
         {
             // ------------- fetch mempool TX ----------------------------
@@ -140,14 +143,14 @@ public class FeeEstimateUtil
             for( int x = 0; x < FeeEstimateData.FEE_RANGES.length; x++ )
             {
                 maxValue = FeeEstimateData.FEE_RANGES[x];
-    
+
                 if( ( x + 1) == FeeEstimateData.FEE_RANGES.length )
                     minValue = FeeEstimateData.FEE_RANGES[x] * 1024;
                 else
                     minValue = FeeEstimateData.FEE_RANGES[x + 1];
-    
+
                 sum = (int) getFilteredSum( memPoolTxs, minValue, maxValue );
-    
+
                 if( feeEstimateData.getCurrSizeData().size() > x )
                 {
                     feeEstimateData.getCurrSizeData().get( x ).put( time, sum );
@@ -158,15 +161,16 @@ public class FeeEstimateUtil
                     dataMap.put( time, (int) sum );
                     feeEstimateData.getCurrSizeData().add( dataMap );
                 }
-    
-                //logger.info( "Tx Sum Values Range:{} = {}", String.format( "%04d", FeeEstimateData.FEE_RANGES[x] ),
-                //         String.format ("%.1f", (double) sum / 1024)  );
-    
+
+                // logger.info( "Tx Sum Values Range:{} = {}", String.format(
+                // "%04d", FeeEstimateData.FEE_RANGES[x] ),
+                // String.format ("%.1f", (double) sum / 1024) );
+
             }
-    
+
             logger.info( "Size of the CURRENT_BLOCK: {}", feeEstimateData.getCurrSizeData().get( 0 ).size() );
-    
-            if( feeEstimateData.getCurrSizeData().get( 0 ).size() == 1 && feeEstimateData.getPrevSizeData().size() > 0)
+
+            if( feeEstimateData.getCurrSizeData().get( 0 ).size() == 1 && feeEstimateData.getPrevSizeData().size() > 0 )
             {
                 setBlockSizeDiff();
             }
@@ -177,13 +181,13 @@ public class FeeEstimateUtil
         }
 
     }
-    
+
     private void setBlockSizeDiff()
     {
-        try 
+        try
         {
             feeEstimateData.getBlocksSizeDiff().clear();
-            
+
             List<Integer> lastPrevData = new ArrayList<>();
             List<Integer> lastCurrentData = new ArrayList<>();
 
@@ -202,33 +206,33 @@ public class FeeEstimateUtil
 
             for( int prevValue: lastPrevData )
             {
-
                 int diff = prevValue - lastCurrentData.get( i );
 
                 if( diff < 0 )
                     diff = 0;
 
                 feeEstimateData.getBlocksSizeDiff().add( diff );
-                //logger.info( "Diff Values Range:{} , Size: {}", String.format( "%04d", FeeEstimateData.FEE_RANGES[i] ),
-                //        String.format ("%.1f", (double) diff / 1024) );
+                // logger.info( "Diff Values Range:{} , Size: {}",
+                // String.format( "%04d", FeeEstimateData.FEE_RANGES[i] ),
+                // String.format ("%.1f", (double) diff / 1024) );
                 i++;
             }
 
         }
-        catch(Exception e ) 
+        catch( Exception e )
         {
-            
+
         }
     }
 
-    private void predictValues()
+    private void predictValues( long predictionPreriod )
     {
         List<Integer> predictedValues = new ArrayList<>();
         Map<Long, Integer> tempDataMapCurrent = new LinkedHashMap<>();
 
         try
         {
-            long x_period = feeEstimateData.getFetchStartTime() + FeeEstimateData.PREDICTION_PERIOD;
+            long x_period = feeEstimateData.getFetchStartTime() + predictionPreriod;
             int extarpValue = 0;
             int b = 0;
 
@@ -241,7 +245,7 @@ public class FeeEstimateUtil
 
                 for( Long key: dataMapCurrent.keySet() )
                 {
-                    tempDataMapCurrent.put( key, (int) ( diffValue + dataMapCurrent.get( key ) ));
+                    tempDataMapCurrent.put( key, (int) ( diffValue + dataMapCurrent.get( key )) );
                 }
 
                 dataMapPrev.putAll( tempDataMapCurrent );
@@ -256,15 +260,26 @@ public class FeeEstimateUtil
                     predictedValues.add( (int) extarpValue );
                 }
 
-//                logger.info( "Predicted Values Range:{} = {}", String.format( "%04d", FeeEstimateData.FEE_RANGES[a] ), 
-//                        String.format ("%.1f", (float) extarpValue / 1024));
+                // logger.info( "Predicted Values Range:{} = {}", String.format(
+                // "%04d", FeeEstimateData.FEE_RANGES[a] ),
+                // String.format ("%.1f", (float) extarpValue / 1024));
 
                 b++;
 
             }
 
             // ----------------------------
-            feeEstimateData.setFeeRate( estimeFee( predictedValues ) );
+
+            if( predictionPreriod == FeeEstimateData.PREDICTION_PERIOD_20M )
+                feeEstimateData.getFeeRate().setMediumPriorityRate( estimateFee( predictedValues ) );
+            else
+            {
+                feeEstimateData.getFeeRate().setHighPriorityRate( estimateFee( predictedValues ) );
+                // feeEstimateData.getFeeRate().setLowPriorityRate(
+                // ecFeeEstimation.getEstimatedFeeRate() );
+                feeEstimateData.getFeeRate()
+                        .setLowPriorityRate( feeEstimateData.getFeeRate().getMediumPriorityRate() / 2 );
+            }
             // ----------------------------
         }
         catch( Exception e )
@@ -274,12 +289,13 @@ public class FeeEstimateUtil
 
     }
 
-    public FeeRate estimeFee( List<Integer> predictedValues )
+    public long estimateFee( List<Integer> predictedValues )
     {
         List<Integer> newPredictedValues = new ArrayList<>();
         int lastIndex = 0, b = 0;
-        double max = 0;
+        long max = 0;
         FeeRate feeRate = null;
+        long fee = 0;
 
         try
         {
@@ -287,13 +303,13 @@ public class FeeEstimateUtil
             {
                 int diffValue = feeEstimateData.getBlocksSizeDiff().get( b );
                 newPredictedValues.add( predValue - diffValue );
-                
-                logger.info( "Pred. Range|Diff|Actual:{} | {} | {} | {}", 
-                        String.format( "%04d", FeeEstimateData.FEE_RANGES[b] ), 
-                        String.format ("%6.2f", (float) predValue / 1024),
-                        String.format ("%6.2f", (float) diffValue / 1024),
-                        String.format ("%6.2f", (float) (predValue - diffValue) / 1024));
-                
+
+//                logger.info( "Pred. Range|Diff|Actual:{} | {} | {} | {}",
+//                        String.format( "%04d", FeeEstimateData.FEE_RANGES[b] ),
+//                        String.format( "%6.2f", (float) predValue / 1024 ),
+//                        String.format( "%6.2f", (float) diffValue / 1024 ),
+//                        String.format( "%6.2f", (float) ( predValue - diffValue) / 1024 ) );
+
                 b++;
             }
 
@@ -307,18 +323,18 @@ public class FeeEstimateUtil
                 lastIndex = x;
             }
 
-            double highFee = FeeEstimateData.FEE_RANGES[lastIndex];
-            feeRate = new FeeRate( highFee /5 , highFee, highFee * 2);
+            fee = FeeEstimateData.FEE_RANGES[lastIndex];
+            // feeRate = new FeeRate( highFee / 5, highFee, highFee * 2 );
 
             logger.info( "Estimating Fee Index|Size|FeeRate:{} | {} | {}", lastIndex,
-                    String.format ("%.1f", (float) max / 1024),feeRate );
+                    String.format( "%.1f", (float) max / 1024 ), feeRate );
         }
         catch( Exception e )
         {
             logger.info( "Error Estimating Fee", e );
         }
 
-        return feeRate;
+        return fee;
     }
 
     private double getFilteredSum( List<MempoolTx> memPoolTxs, double minValue, double maxValue )
@@ -327,5 +343,4 @@ public class FeeEstimateUtil
                 .mapToDouble( o -> o.getSize() ).sum();
     }
 
-  
 }

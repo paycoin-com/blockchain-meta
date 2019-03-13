@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.hs.bex.common.utils.StringUtils;
+
 @JsonIgnoreProperties( ignoreUnknown = true )
 @JsonInclude( Include.NON_NULL )
 public class CurrencyRateStack
@@ -20,7 +22,7 @@ public class CurrencyRateStack
     @JsonIgnore
     private Instant time;
     
-    private Map<SysCurrency, Float> rates = new LinkedHashMap<SysCurrency, Float>();
+    private Map<SysCurrency, String> rates = new LinkedHashMap<SysCurrency, String>();
 
     public SysCurrency getCurrency()
     {
@@ -60,14 +62,21 @@ public class CurrencyRateStack
         this.time = time;
     }
 
-    public Map<SysCurrency, Float> getRates()
+    public Map<SysCurrency, String> getRates()
     {
         return rates;
     }
 
-    public void setRates( Map<SysCurrency, Float> rates )
+    public void setRates( Map<SysCurrency, String> rates )
     {
         this.rates = rates;
     }
+    
+    @JsonIgnore
+    public void addRatesAsFloat(SysCurrency currency, Float rate )
+    {
+        this.rates.put( currency, StringUtils.floatToString( rate ) );
+    }
+
     
 }
