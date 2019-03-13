@@ -5,38 +5,33 @@
         <groupId>io.hs.bex</groupId>
         <artifactId>bex-parent</artifactId>
         <version>1.2-SNAPSHOT</version>
-    </parent>    
+    </parent>
     <artifactId>bex-blockchain</artifactId>
     <name>HS-BE Block-Data</name>
     <dependencies>
-        
-       <!-- ******* Spring dependencies -->
+
+        <!-- ******* Spring dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
         </dependency>
-        
+
         <!-- ******* Spring-WEB dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
-     
-        <!-- Bitcoin-core 
-        <dependency>
-            <groupId>org.bitcoinj</groupId>
-            <artifactId>bitcoinj-core</artifactId>
-        </dependency>
-        --> 
-        
-        
+
+        <!-- Bitcoin-core <dependency> <groupId>org.bitcoinj</groupId> <artifactId>bitcoinj-core</artifactId> </dependency> -->
+
+
         <!-- ehcache -->
         <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
         </dependency>
-        
-         <!-- Spring data -->
+
+        <!-- Spring data -->
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -48,6 +43,13 @@
             <artifactId>spring-data-jpa</artifactId>
         </dependency>
 
+        <!-- JSON RPC -->
+        <dependency>
+            <groupId>com.github.briandilley.jsonrpc4j</groupId>
+            <artifactId>jsonrpc4j</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+
         <!-- ******** Hibernate ******************** -->
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -57,35 +59,35 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
-                
-             
+
+
         <!-- ****** Bex Common ********** -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>bex-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <!-- ****** Bex Block-Node ********** -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>bex-blocknode</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <!-- ****** Bex-Datanode ********** -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>bex-datastore</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <!-- Commons-math3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
         </dependency>
-        
+
         <!-- ******* Test ********************** -->
 
         <dependency>
@@ -99,8 +101,8 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-     
-                 
+
+
     </dependencies>
-   
+
 </project>

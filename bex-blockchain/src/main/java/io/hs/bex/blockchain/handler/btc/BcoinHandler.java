@@ -22,8 +22,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
+import io.hs.bex.blockchain.handler.btc.model.BlockInfo;
 import io.hs.bex.blockchain.handler.btc.model.MempoolInfo;
 import io.hs.bex.blockchain.handler.btc.model.MempoolTx;
+import io.hs.bex.blockchain.handler.btc.model.PeerInfo;
 import io.hs.bex.blockchain.model.FeeRate;
 
 @JsonIgnoreProperties( ignoreUnknown = true )
@@ -134,12 +136,14 @@ public class BcoinHandler
             response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
             double mediumPriority = jsonToFeeRate( response.getBody() );
             
-            body = "{\"method\":\"estimatesmartfee\",\"params\":[15]}";
-            entity = new HttpEntity<String>( body, headers );
-            response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
-            double lowPriority = jsonToFeeRate( response.getBody() );
+//            body = "{\"method\":\"estimatesmartfee\",\"params\":[15]}";
+//            entity = new HttpEntity<String>( body, headers );
+//            response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
+//            jsonToFeeRate( response.getBody() );
+            
+            double lowPriority = mediumPriority/2; 
 
-            return new FeeRate( lowPriority, mediumPriority, highPriority );
+            return new FeeRate( lowPriority , mediumPriority, highPriority );
         }
         catch( Exception e )
         {
@@ -209,7 +213,7 @@ public class BcoinHandler
 
     public MempoolInfo getMempoolInfo()
     {
-        String url = apiUrl + "/" + "";
+        String url = apiUrl + "/";
 
         try
         {
@@ -222,12 +226,46 @@ public class BcoinHandler
         }
         catch( Exception e )
         {
-            logger.error( "Error getting estimated fee from:{}", url, e );
+            logger.error( "Error getting mempool info from:{}", url, e );
 
             return new MempoolInfo();
         }
-
     }
+    
+    public PeerInfo getPeerInfo()
+    {
+        String url = apiUrl + "/";
+
+        try
+        {
+            ResponseEntity<PeerInfo> response = restTemplate.getForEntity( url, PeerInfo.class );
+            return response.getBody();
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error getting peer info from:{}", url, e );
+
+            return null;
+        }
+    }
+    
+    public BlockInfo getBlock( long height )
+    {
+        String url = apiUrl + "/block/" + height;
+
+        try
+        {
+            ResponseEntity<BlockInfo> response = restTemplate.getForEntity( url, BlockInfo.class );
+            return response.getBody();
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error getting block info from:{}", url, e );
+
+            return null;
+        }
+    }
+
     
     private MempoolInfo jsonToMempoolInfo( String json )
     {
@@ -241,8 +279,9 @@ public class BcoinHandler
         {
             return null;
         }
-        
     }
+    
+    
 
     public void setMapper( ObjectMapper mapper )
     {

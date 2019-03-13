@@ -17,15 +17,15 @@ public class FeeRateTest
     {
         DecimalFormat decimalFormat = new DecimalFormat("#.######################");
         
-        double lp = 0.00000000123456; 
-        double mp = 0.00000000123456789; 
-        double hp = 0.0000000012345678912;
+        long lp = 123456; 
+        long mp = 123456789; 
+        long hp = 1234567891;
         
         FeeRate feeRate = new FeeRate(lp, mp, hp);
         
         System.out.println( "Fee LP:" + decimalFormat.format( lp ) );
-        System.out.println( "Fee MP:" + feeRate.getMediumPriorityStr() );
-        System.out.println( "Fee HP:" + feeRate.getHighPriorityStr() );
+        System.out.println( "Fee MP:" + feeRate.getMediumPriorityRate() );
+        System.out.println( "Fee HP:" + feeRate.getHighPriorityRate() );
         
     }
 

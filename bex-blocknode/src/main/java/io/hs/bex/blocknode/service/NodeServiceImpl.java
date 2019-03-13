@@ -42,6 +42,9 @@ public class NodeServiceImpl implements NodeService
     @PostConstruct
     public void init()
     {
+        if(0 != Integer.parseInt(env.getProperty( "node.eth.status.active" ))) 
+            initNode( new NodeProvider(DigitalCurrencyType.ETH, NodeNetworkType.MAINNET ));
+        
         if(0 != Integer.parseInt(env.getProperty( "node.btc.status.active" ))) 
             initNode( new NodeProvider(DigitalCurrencyType.BTC, NodeNetworkType.MAINNET ));
         

@@ -118,7 +118,7 @@ public class IpfsHandler implements DataStoreHandler
             if(!Strings.isNullOrEmpty( path ))
                 path = rootDir + "/" + path;
             else
-                path = "/";
+                path = rootDir + "/";
             
             url += "?arg=" + path + "&hash=true";
 
