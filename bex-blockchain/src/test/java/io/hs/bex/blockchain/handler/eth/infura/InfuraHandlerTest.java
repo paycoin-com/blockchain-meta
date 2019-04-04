@@ -6,7 +6,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 
-
 public class InfuraHandlerTest
 {
     String apiUrl = "https://mainnet.infura.io/v3"; 
@@ -27,10 +26,7 @@ public class InfuraHandlerTest
         infuraHandler.init( apiUrl, apiKey );
         String hex = infuraHandler.getInfuraAPI().eth_gasPrice();
         
-        System.out.print( "Hex:" + hex );
-        
         System.out.print( "Int:" + Long.decode( hex ) );
-        
     }
 
 }

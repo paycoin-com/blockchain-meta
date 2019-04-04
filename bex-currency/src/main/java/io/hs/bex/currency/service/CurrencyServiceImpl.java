@@ -54,7 +54,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
     final int LAST_XRATES_FETCH_PERIOD = 210; // seconds
     final int FIAT_XRATES_FETCH_PERIOD = 600; // seconds
-    final int HOURLY_XRATES_FETCH_PERIOD = 3600; // seconds
+    final int HOURLY_XRATES_FETCH_PERIOD = 2400; // seconds
 
     public final SysCurrency BASE_SYSTEM_CURRENCY = SysCurrency.USD;
 
@@ -126,7 +126,7 @@ public class CurrencyServiceImpl implements CurrencyService
         taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 30,
                 HOURLY_XRATES_FETCH_PERIOD );
         taskManager.startScheduledAtFixed( startLatesXRatesTask(), "LatesXRatesTask", 35, LAST_XRATES_FETCH_PERIOD );
-        taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 120 );
+        taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
     }
 
     @Override
@@ -301,7 +301,7 @@ public class CurrencyServiceImpl implements CurrencyService
                         else
                         {
                             path = CurrencyUtils.buildDirStructure( request.getPeriod(), rootPath, localDateTime );
-                            saveFile( path, "index.json", Float.toString( xrate.getRate() ) );
+                            saveFile( path, "index.json", "\""+Float.toString( xrate.getRate() ) + "\"");
                         }
 
                         hour = localDateTime.getHour();

@@ -8,17 +8,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties( ignoreUnknown = true )
 public class TxInfo implements Comparable<TxInfo>
 {
-    @JsonProperty( "fee" )
-    private long fee = 0;
-
-    public long getFee()
+    @JsonProperty( "rate" )
+    private long feeRate = 0;
+    
+    public long getFeeRate()
     {
-        return fee;
+        return feeRate;
     }
 
-    public void setFee( long fee )
+    public void setFeeRate( long feeRate )
     {
-        this.fee = fee;
+        this.feeRate = feeRate;
     }
 
     @Override
@@ -27,13 +27,13 @@ public class TxInfo implements Comparable<TxInfo>
         if( tx == null)
             return 0;
         
-        return Long.compare( fee, tx.getFee() );
+        return Long.compare( feeRate, tx.getFeeRate() );
     }
 
     @Override
     public String toString()
     {
-        return "TxInfo [fee=" + fee + "]";
+        return "TxInfo [fee=" + feeRate + "]";
     }
     
 }

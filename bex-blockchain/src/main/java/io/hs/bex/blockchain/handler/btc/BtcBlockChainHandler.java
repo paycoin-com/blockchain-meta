@@ -1,5 +1,7 @@
 package io.hs.bex.blockchain.handler.btc;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
@@ -7,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.hs.bex.blockchain.dao.FeeRateDataDAO;
 import io.hs.bex.blockchain.handler.btc.utils.FeeEstimateUtil;
 import io.hs.bex.blockchain.model.FeeRate;
 import io.hs.bex.blockchain.service.api.BlockChainHandler;
@@ -15,6 +18,7 @@ import io.hs.bex.blocknode.model.NodeNetworkType;
 
 @Service("BTC-BlockChainHandler")
 @Scope("prototype")
+@Transactional
 public class BtcBlockChainHandler implements BlockChainHandler
 {
     BcoinHandler bcoinHandler;
@@ -24,6 +28,9 @@ public class BtcBlockChainHandler implements BlockChainHandler
     
     @Autowired
     private Environment env;
+    
+    @Autowired
+    FeeRateDataDAO feeRateDataDAO;
     
     @Autowired
     public BtcBlockChainHandler( BcoinHandler bcoinHandler, ObjectMapper objectMapper ) 
@@ -45,7 +52,7 @@ public class BtcBlockChainHandler implements BlockChainHandler
         
         if( node.getProvider().getNetworkType() == NodeNetworkType.MAINNET ) 
         {
-            this.feeEstimateUtil = new FeeEstimateUtil( bcoinHandler );
+            this.feeEstimateUtil = new FeeEstimateUtil( feeRateDataDAO, bcoinHandler );
         }
         
         this.node = node;
