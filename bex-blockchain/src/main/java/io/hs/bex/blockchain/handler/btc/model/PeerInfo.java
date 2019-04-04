@@ -45,6 +45,4 @@ public class PeerInfo
         this.chainInfo = chainInfo;
     }
     
-    
-    
 }

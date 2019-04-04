@@ -67,7 +67,7 @@ public class FeeEstimateUtilTest
         actBcoinHandler.init( "https://btc.horizontalsystems.xyz" );
       
         FeeEstimateUtil actFeeEstimateUtil;      
-        actFeeEstimateUtil = new FeeEstimateUtil( actBcoinHandler );
+        actFeeEstimateUtil = new FeeEstimateUtil( null, actBcoinHandler );
 
         actFeeEstimateUtil.getEsimatedFee( 10 );
         TimeUnit.SECONDS.sleep( 30000 );

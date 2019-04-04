@@ -13,18 +13,20 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.zaxxer.hikari.HikariDataSource;
 
 
-//@Configuration
-//@EnableTransactionManagement
-//@EnableJpaRepositories(  {"io.hs.bex.blockchain.dao.api"})
+@Configuration
+@EnableTransactionManagement
+@EnableJpaRepositories(  {"io.hs.bex.blockchain.dao"})
 public class DbConfig
 {
     // ---------------------------------

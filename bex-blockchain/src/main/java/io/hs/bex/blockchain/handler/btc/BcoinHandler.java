@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 
 import io.hs.bex.blockchain.handler.btc.model.BlockInfo;
 import io.hs.bex.blockchain.handler.btc.model.MempoolInfo;
@@ -122,56 +121,56 @@ public class BcoinHandler
 
     public FeeRate getEstimedFeeRate()
     {
-        String url = apiUrl + "/" + "";
+        //String url = apiUrl + "/" + "";
 
         try
         {
-            String body = "{\"method\":\"estimatesmartfee\",\"params\":[1]}";
-            HttpEntity<String> entity = new HttpEntity<String>( body, headers );
-            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
-            double highPriority = jsonToFeeRate( response.getBody() );
-            
-            body = "{\"method\":\"estimatesmartfee\",\"params\":[6]}";
-            entity = new HttpEntity<String>( body, headers );
-            response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
-            double mediumPriority = jsonToFeeRate( response.getBody() );
-            
-//            body = "{\"method\":\"estimatesmartfee\",\"params\":[15]}";
+//            String body = "{\"method\":\"estimatesmartfee\",\"params\":[1]}";
+//            HttpEntity<String> entity = new HttpEntity<String>( body, headers );
+//            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
+//            double highPriority = jsonToFeeRate( response.getBody() );
+//            
+//            body = "{\"method\":\"estimatesmartfee\",\"params\":[6]}";
 //            entity = new HttpEntity<String>( body, headers );
 //            response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
-//            jsonToFeeRate( response.getBody() );
-            
-            double lowPriority = mediumPriority/2; 
+//            double mediumPriority = jsonToFeeRate( response.getBody() );
+//            
+////            body = "{\"method\":\"estimatesmartfee\",\"params\":[15]}";
+////            entity = new HttpEntity<String>( body, headers );
+////            response = restTemplate.exchange( url, HttpMethod.POST, entity, String.class );
+////            jsonToFeeRate( response.getBody() );
+//            
+//            double lowPriority = mediumPriority/2; 
 
-            return new FeeRate( lowPriority , mediumPriority, highPriority );
+            return new FeeRate( 1 , 2, 3 );
         }
         catch( Exception e )
         {
-            logger.error( "Error getting estimated fee from:{}", url, e );
+            logger.error( "Error getting estimated fee from:{}",  e );
 
             return new FeeRate( -1, -1, -1 );
         }
     }
 
-    private double jsonToFeeRate( String json )
-    {
-        if( Strings.isNullOrEmpty( json ) )
-            return 0;
-
-        try
-        {
-            Response response = mapper.readValue( json, Response.class );
-
-            if( response.error == null )
-            {
-                return response.result.fee;
-            }
-        }
-        catch( Exception e )
-        {}
-
-        return -1;
-    }
+//    private double jsonToFeeRate( String json )
+//    {
+//        if( Strings.isNullOrEmpty( json ) )
+//            return 0;
+//
+//        try
+//        {
+//            Response response = mapper.readValue( json, Response.class );
+//
+//            if( response.error == null )
+//            {
+//                return response.result.fee;
+//            }
+//        }
+//        catch( Exception e )
+//        {}
+//
+//        return -1;
+//    }
 
     public List<MempoolTx> getMempoolTxs( int verbose )
     {

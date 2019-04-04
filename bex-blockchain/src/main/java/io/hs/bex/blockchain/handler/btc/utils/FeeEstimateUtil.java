@@ -15,11 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
+import io.hs.bex.blockchain.dao.FeeRateDataDAO;
 import io.hs.bex.blockchain.handler.btc.BcoinHandler;
 import io.hs.bex.blockchain.handler.btc.model.FeeEstimateData;
 import io.hs.bex.blockchain.handler.btc.model.MempoolInfo;
 import io.hs.bex.blockchain.handler.btc.model.MempoolTx;
-import io.hs.bex.blockchain.model.Coin;
 import io.hs.bex.blockchain.model.FeeRate;
 import io.hs.bex.common.utils.MathUtils;
 
@@ -29,23 +29,23 @@ public class FeeEstimateUtil
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( FeeEstimateUtil.class );
     // ---------------------------------
-
+    
     private final int DATA_FETCH_PERIOD = 35; // SECONDS
     private final int BLOCK_SIZE = 1048576; // in bytes (1MB)
 
     private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
 
     private BcoinHandler bcoinHandler;
-
+    
     private FeeEstimateData feeEstimateData;
 
     private EconomFeeEstimation ecFeeEstimation;
 
-    public FeeEstimateUtil( BcoinHandler bcoinHandler )
+    public FeeEstimateUtil( FeeRateDataDAO feeRateDataDAO, BcoinHandler bcoinHandler )
     {
         this.bcoinHandler = bcoinHandler;
         this.feeEstimateData = new FeeEstimateData();
-        // this.ecFeeEstimation = new EconomFeeEstimation(bcoinHandler);
+        this.ecFeeEstimation = new EconomFeeEstimation( feeRateDataDAO, bcoinHandler );
 
         // ------------------------------------------
         startScheduledTask( 30, DATA_FETCH_PERIOD );
@@ -76,7 +76,7 @@ public class FeeEstimateUtil
 
     public FeeRate getEsimatedFee( int nBlocks )
     {
-        return feeEstimateData.getFeeRate().convertToCoinKbytes( Coin.SATOSHI_RATE );
+        return feeEstimateData.getFeeRate();
     }
 
     private void startScheduledTask( int startAfter, int period )
@@ -275,10 +275,7 @@ public class FeeEstimateUtil
             else
             {
                 feeEstimateData.getFeeRate().setHighPriorityRate( estimateFee( predictedValues ) );
-                // feeEstimateData.getFeeRate().setLowPriorityRate(
-                // ecFeeEstimation.getEstimatedFeeRate() );
-                feeEstimateData.getFeeRate()
-                        .setLowPriorityRate( feeEstimateData.getFeeRate().getMediumPriorityRate() / 2 );
+                feeEstimateData.getFeeRate().setLowPriorityRate( ecFeeEstimation.getEstimatedFeeRate() );
             }
             // ----------------------------
         }

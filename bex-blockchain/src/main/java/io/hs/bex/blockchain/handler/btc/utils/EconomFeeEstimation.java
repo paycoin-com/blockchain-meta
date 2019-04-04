@@ -1,55 +1,66 @@
 package io.hs.bex.blockchain.handler.btc.utils;
 
+
+import java.time.Instant;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
+import io.hs.bex.blockchain.dao.FeeRateDataDAO;
 import io.hs.bex.blockchain.handler.btc.BcoinHandler;
-import io.hs.bex.blockchain.handler.btc.model.BlockFeeData;
 import io.hs.bex.blockchain.handler.btc.model.BlockInfo;
 import io.hs.bex.blockchain.handler.btc.model.TxInfo;
+import io.hs.bex.blockchain.model.store.FeeRateData;
+
 
 public class EconomFeeEstimation
 {
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( EconomFeeEstimation.class );
     // ---------------------------------
-    
+
     private BcoinHandler bcoinHandler;
 
-    private final int DATA_FETCH_PERIOD = 60; // SECONDS
-    
-    private final int FEE_ORDER_PERCENTAGE = 20; // SECONDS
-    
-    private int CURRENT_BLOCK_HEIGHT = 0;
-    
-    private double esimatedFeeRate = 0;
-    
-    private final int BLOCKS_TO_PROCESS = 10;
-    
-    private Map<Integer,BlockFeeData> blockFeeDataMap = new LinkedHashMap<>();
-    
-    private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
-    
+    private FeeRateDataDAO feeRateDataDAO;
 
-    public EconomFeeEstimation( BcoinHandler bcoinHandler)
+    private final int DATA_FETCH_PERIOD = 120; // SECONDS    
+    private final int DATA_CALCULATE_TASK_PERIOD = 600; // SECONDS
+
+    private final long OVERALL_BLOCK_PROC_PERIOD = 24 * 10 * 60; // DAYS
+    // private final long BLOCK_PROC_PERIOD = 1 * 60;// HOURS
+    private final int FEE_ORDER_PERCENTAGE_10 = 10;
+    private final int FEE_ORDER_PERCENTAGE_20 = 20;
+    private final int FEE_ORDER_PERCENTAGE_40 = 40;
+
+    private long FULL_FETCH_RANGE = 0;
+
+    private long LAST_BLOCK_HEIGHT = 0;
+
+    private long esimatedFeeRate = 0;
+
+    private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
+
+    public EconomFeeEstimation( FeeRateDataDAO feeRateDataDAO, BcoinHandler bcoinHandler )
     {
         this.bcoinHandler = bcoinHandler;
+        this.feeRateDataDAO = feeRateDataDAO;
+
         initData();
-        
+
         // ------------------------------------------
-        startScheduledTask( 30, DATA_FETCH_PERIOD );
+        startInfoFetchTask( 50, DATA_FETCH_PERIOD );
+        startCalculationTask( 180, DATA_CALCULATE_TASK_PERIOD );
         // ------------------------------------------
     }
-    
-    private void startScheduledTask( int startAfter, int period )
+
+    private void startInfoFetchTask( int startAfter, int period )
     {
         try
         {
@@ -61,97 +72,166 @@ public class EconomFeeEstimation
         }
     }
     
-    private void initData()
+    private void startCalculationTask( int startAfter, int period )
     {
-        CURRENT_BLOCK_HEIGHT = getLastBlockHeight() - BLOCKS_TO_PROCESS;
-    }
-    
-    private void fethBlockInfo()
-    {
-        int blockHeight = getLastBlockHeight();
-        int currentHeight = CURRENT_BLOCK_HEIGHT;
-        
-        logger.info( "Getting peer info blockHeight:{} ,currentHeight:{} ", blockHeight, currentHeight );
-        
-        if( blockHeight != currentHeight) 
+        try
         {
-            for(  ;blockHeight > currentHeight ; blockHeight -- ) 
-            {
-                processBlockInfo( bcoinHandler.getBlock( blockHeight ));
-                CURRENT_BLOCK_HEIGHT = blockHeight;
-            }
+            timerService.scheduleWithFixedDelay( () -> calculateRate(), startAfter, period, TimeUnit.SECONDS );
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error starting calculation task for Fee Estimate: {}", e.toString() );
         }
     }
-    
-//    private void truncateFeeData( int maxRecords ) 
-//    {
-//        if(blockFeeDataMap.size() < maxRecords) 
-//        {
-//            //blockFeeDataMap. put( block.getHeight(), processFeeInfo( block.getTime(), block.getTxs() )  ); 
-//        }
-//    }
 
-    
-    private void processBlockInfo( BlockInfo block ) 
-    {
-        logger.info( "Processing Block:{} ", block.getHeight());
 
-        blockFeeDataMap.put( block.getHeight(), processFeeInfo( block.getTime(), block.getTxs() )  ); 
-    }
-    
-    private BlockFeeData processFeeInfo( long timeEpochSec, List<TxInfo> txs ) 
-    {
-        BlockFeeData blockFeeData = new BlockFeeData( timeEpochSec );
-        blockFeeData.setFee( getFeeByPercentage( FEE_ORDER_PERCENTAGE, txs ) );
-        
-        logger.info( "Processing Fee  --> BlockFeeData:{} ", blockFeeData );
-        
-        return blockFeeData;
-    }
-    
-    private long getFeeByPercentage( float percentage, List<TxInfo> txs ) 
+    private void initData()
     {
         try 
         {
-            logger.info( "getFeeByPercentage Before clearing:{} ", txs.size() );
+            Page<FeeRateData> feeData = feeRateDataDAO.getLatest( PageRequest.of( 0, 1 ));
 
-            //-------Clear fee == 0 -----------
-            txs.removeIf( c -> 0 == c.getFee() );
-            Collections.sort( txs );
+            if( feeData == null || !feeData.hasContent() )
+                FULL_FETCH_RANGE = ( System.currentTimeMillis() / 1000) - OVERALL_BLOCK_PROC_PERIOD;
+            else
+                LAST_BLOCK_HEIGHT = feeData.getContent().get( 0 ).getHeight();
             
-            logger.info( "getFeeByPercentage After clearing:{} ", txs.size() );
-            logger.info( "getFeeByPercentage After Sort:{} ", txs );
-            
-            int index = txs.size();
-            
-            index = index * FEE_ORDER_PERCENTAGE /100;
-            //---------------------------------
-            logger.info( "Index:{}, Fee:{} ", index, txs.get( index ).getFee());
-
-            
-            return txs.get( index ).getFee();
         }
         catch( Exception e ) 
         {
-            //ignore
+            logger.error( "Error initializing data from DB :", e );
         }
-        
-        return 0;
     }
     
-    private int getLastBlockHeight() 
+    private void calculateRate() 
+    {
+        try 
+        {
+            Long rate = feeRateDataDAO.calculateRate();
+            
+            if( rate != null && rate.longValue() > 0) 
+            {
+                logger.info( "Estimated ECONOM Fee :{} S/Byte", rate);
+                esimatedFeeRate = rate/1024;
+            }
+        }
+        catch( Exception e ) 
+        {
+            logger.error( "Error running calculation task :", e );
+        }
+    }
+
+    private void fethBlockInfo()
+    {
+        long value = 0;
+        long fetchUntil = 0;
+        int blockHeight = getLastBlockHeight();
+        int startHeight = blockHeight;
+
+        if( LAST_BLOCK_HEIGHT != blockHeight )
+        {
+            BlockInfo blockInfo = null;
+
+            logger.info( "Getting peer info blockHeight:{}", blockHeight );
+
+            if( FULL_FETCH_RANGE != 0 ) 
+            {
+                fetchUntil = FULL_FETCH_RANGE;
+                value = System.currentTimeMillis() / 1000;
+            }
+            else 
+            {
+                fetchUntil = LAST_BLOCK_HEIGHT;
+                value = blockHeight;
+            }
+
+            for( ; fetchUntil < value; blockHeight-- )
+            {
+                blockInfo = bcoinHandler.getBlock( blockHeight );
+                processBlockInfo( blockInfo );
+
+                if( FULL_FETCH_RANGE != 0 )
+                    value = blockInfo.getTime();
+                else
+                    value = blockInfo.getHeight();
+            }
+
+            FULL_FETCH_RANGE = 0;
+            LAST_BLOCK_HEIGHT = startHeight;
+        }
+    }
+
+    private void saveFeeData( FeeRateData feeData )
+    {
+        feeRateDataDAO.save( feeData );
+    }
+
+    private void processBlockInfo( BlockInfo block )
+    {
+        logger.info( "Processing Block:{} ", block.getHeight() );
+        
+        try 
+        {
+            saveFeeData( processFeeInfo( block.getHeight(), block.getTime(), block.getTxs() ) );
+        }
+        catch( Exception e ) 
+        {
+            logger.error( "Error processing block Info:", e );
+        }
+
+    }
+
+    private FeeRateData processFeeInfo( long height, long timeEpochSec, List<TxInfo> txs )
+    {
+        FeeRateData feeRateData = getFeeByPercentage( txs );
+        feeRateData.setHeight( height );
+        feeRateData.setDate( Instant.ofEpochSecond( timeEpochSec ) );
+
+        // -------------------------------
+        LAST_BLOCK_HEIGHT = height;
+        // -------------------------------
+
+        return feeRateData;
+    }
+
+    private FeeRateData getFeeByPercentage( List<TxInfo> txs )
+    {
+        try
+        {
+            FeeRateData feeRateData = new FeeRateData();
+
+            //logger.info( "getFeeByPercentage Before clearing:{} ", txs.size() );
+
+            // -------Clear fee == 0 -----------
+            txs.removeIf( c -> 0 == c.getFeeRate() );
+            Collections.sort( txs );
+
+            int index_10 = txs.size() * FEE_ORDER_PERCENTAGE_10 / 100;
+            int index_20 = txs.size() * FEE_ORDER_PERCENTAGE_20 / 100;
+            int index_40 = txs.size() * FEE_ORDER_PERCENTAGE_40 / 100;
+            // ---------------------------------
+            feeRateData.setValue1( txs.get( index_10 ).getFeeRate() );
+            feeRateData.setValue2( txs.get( index_20 ).getFeeRate() );
+            feeRateData.setValue3( txs.get( index_40 ).getFeeRate() );
+
+            return feeRateData;
+        }
+        catch( Exception e )
+        {
+            // ignore
+        }
+
+        return null;
+    }
+
+    private int getLastBlockHeight()
     {
         return bcoinHandler.getPeerInfo().getChainInfo().getLastBlockHeight();
     }
-    
-    public double getEstimatedFeeRate() 
+
+    public long getEstimatedFeeRate()
     {
         return esimatedFeeRate;
     }
 
-    public Map<Integer, BlockFeeData> getBlockFeeDataMap()
-    {
-        return blockFeeDataMap;
-    }
-    
 }
