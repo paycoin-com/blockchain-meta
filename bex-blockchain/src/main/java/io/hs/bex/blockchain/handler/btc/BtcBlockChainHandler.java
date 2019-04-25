@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.hs.bex.blockchain.dao.EstimateFeeRateDAO;
 import io.hs.bex.blockchain.dao.FeeRateDataDAO;
 import io.hs.bex.blockchain.handler.btc.utils.FeeEstimateUtil;
 import io.hs.bex.blockchain.model.FeeRate;
@@ -33,6 +34,9 @@ public class BtcBlockChainHandler implements BlockChainHandler
     FeeRateDataDAO feeRateDataDAO;
     
     @Autowired
+    EstimateFeeRateDAO estimatefeeRateDAO;
+    
+    @Autowired
     public BtcBlockChainHandler( BcoinHandler bcoinHandler, ObjectMapper objectMapper ) 
     {
         this.bcoinHandler = bcoinHandler;
@@ -52,7 +56,7 @@ public class BtcBlockChainHandler implements BlockChainHandler
         
         if( node.getProvider().getNetworkType() == NodeNetworkType.MAINNET ) 
         {
-            this.feeEstimateUtil = new FeeEstimateUtil( feeRateDataDAO, bcoinHandler );
+            this.feeEstimateUtil = new FeeEstimateUtil( estimatefeeRateDAO, feeRateDataDAO, bcoinHandler );
         }
         
         this.node = node;

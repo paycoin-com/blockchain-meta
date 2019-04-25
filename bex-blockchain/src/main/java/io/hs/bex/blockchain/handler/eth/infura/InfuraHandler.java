@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import com.googlecode.jsonrpc4j.ProxyUtil;
 
-import io.hs.bex.blockchain.model.Coin;
 import io.hs.bex.blockchain.model.FeeRate;
 
 
@@ -71,10 +70,10 @@ public class InfuraHandler
         try
         {
             String response = infuraAPI.eth_gasPrice();
-            int price = Coin.getAsGwei(Long.decode( response ));
-            int lPrice = (int) Math.ceil( (float)price/2 );
+            long price = Long.decode( response );
+            long lPrice = (int) Math.ceil( (float)price/2 );
             
-            return new FeeRate( lPrice == 0?1:lPrice, price, price * 2 );
+            return new FeeRate( lPrice == 0?1000000000:lPrice, price, price * 2 );
         }
         catch( Exception e )
         {

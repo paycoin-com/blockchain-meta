@@ -27,7 +27,6 @@ import io.hs.bex.currency.model.TimePeriod;
 import io.hs.bex.currency.task.HourlyXRatesTask;
 import io.hs.bex.currency.task.LatestXRatesTask;
 import io.hs.bex.currency.utils.CurrencyUtils;
-import io.hs.bex.currency.task.DataPublishTask;
 import io.hs.bex.currency.task.FiatXRatesTask;
 import io.hs.bex.currency.service.api.CurrencyInfoService;
 import io.hs.bex.currency.service.api.CurrencyService;
@@ -37,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -51,7 +51,16 @@ public class CurrencyServiceImpl implements CurrencyService
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( CryptoCompareHandler.class );
     // ---------------------------------
+    
+//    @Value( "${node.ipfs.key.xrates.latest}" )
+//    private String KEY_XRATES_LATEST;
+//
+//    @Value( "${node.ipfs.key.xrates.historical}" )
+//    private String KEY_XRATES_HISTORICAL;
 
+     @Value( "${node.ipfs.key.secondary}" )
+     private String KEY_SECONDARY;
+    
     final int LAST_XRATES_FETCH_PERIOD = 210; // seconds
     final int FIAT_XRATES_FETCH_PERIOD = 600; // seconds
     final int HOURLY_XRATES_FETCH_PERIOD = 2400; // seconds
@@ -106,10 +115,10 @@ public class CurrencyServiceImpl implements CurrencyService
         return new FiatXRatesTask( this );
     }
 
-    private DataPublishTask startDataPublishTask()
-    {
-        return new DataPublishTask( dataStoreService );
-    }
+//    private DataPublishTask startDataPublishTask()
+//    {
+//        return new DataPublishTask( dataStoreService , KEY_SECONDARY );
+//    }
 
     public void buildTaskParams()
     {
@@ -126,7 +135,7 @@ public class CurrencyServiceImpl implements CurrencyService
         taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 30,
                 HOURLY_XRATES_FETCH_PERIOD );
         taskManager.startScheduledAtFixed( startLatesXRatesTask(), "LatesXRatesTask", 35, LAST_XRATES_FETCH_PERIOD );
-        taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
+        //taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
     }
 
     @Override
@@ -321,6 +330,11 @@ public class CurrencyServiceImpl implements CurrencyService
                         StringUtils.instantToString( request.getDateTo() ) );
                 // ------------------------------------------------------------------------
             }
+            
+            //-----------------------------------------------
+            //dataStoreService.publishNS( KEY_XRATES_HISTORICAL, "xrates/historical", "" );
+            //-----------------------------------------------
+
         }
         catch( Exception e )
         {
@@ -360,6 +374,10 @@ public class CurrencyServiceImpl implements CurrencyService
                 String rootPath = "/latest/" + rateStack.getCurrency().getCode() + "/";
                 saveFile( rootPath, "index.json", mapper.writeValueAsString( rateStack ) );
             }
+            
+            //-----------------------------------------------
+            dataStoreService.publishNS( "", "", "" );
+            //-----------------------------------------------
         }
         catch( Exception e )
         {

@@ -17,9 +17,9 @@ public interface DataStoreService
 
     FileInfo getFileInfo( String path, String fileName );
 
-    String publishNS( String path, String fileName );
+    String publishNS( String key, String path, String fileName );
 
-    String publishNS( String nsValue );
+    String publishNS( String key, String nsValue );
 
     String publishNSAsync( String path, String fileName );
 

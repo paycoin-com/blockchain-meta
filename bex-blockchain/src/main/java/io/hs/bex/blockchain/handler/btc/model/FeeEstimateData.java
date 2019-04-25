@@ -11,10 +11,16 @@ public class FeeEstimateData
     public static final long PREDICTION_PERIOD_20M = 20 * 60 * 1000;  // 20 MINS
     public static final long PREDICTION_PERIOD_60M = 60 * 60 * 1000;  // 60 MINS
     
+//    public static final short PREDICTION_PERIOD_20M = 20;  // 20 MINS
+//    public static final short PREDICTION_PERIOD_60M = 60;  // 60 MINS
+    
     public static short[] FEE_RANGES = { 
-                           1700,1200,  800, 500, 400,  300,  
-                            250, 200,  170, 140, 120,  100,
-                             80,  70,   65,  60,  55,   50,   
+                           1700,1500,  1300, 1200, 1100, 1000, 
+                           900,  800,  700,  600, 500, 400, 350, 
+                           300,  250,  200,  190, 180, 170, 160, 
+                           150,  145,  140,  135, 130, 125, 120, 115, 
+                           110,  105,  100,  95,  90,
+                             85,  80,  75,   70,  65,  60,  55, 50,   
                              45,  40,   35,  30,  28,   26, 
                              24,  22,   20,  19,  18,   17,   
                              16,  15,   14,  13,  12,   11,     

@@ -1,6 +1,7 @@
 package io.hs.bex.blockchain.handler.btc.utils;
 
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,15 +13,23 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import com.google.common.collect.Iterables;
 
+import io.hs.bex.blockchain.dao.EstimateFeeRateDAO;
 import io.hs.bex.blockchain.dao.FeeRateDataDAO;
 import io.hs.bex.blockchain.handler.btc.BcoinHandler;
 import io.hs.bex.blockchain.handler.btc.model.FeeEstimateData;
 import io.hs.bex.blockchain.handler.btc.model.MempoolInfo;
 import io.hs.bex.blockchain.handler.btc.model.MempoolTx;
 import io.hs.bex.blockchain.model.FeeRate;
+import io.hs.bex.blockchain.model.store.EstimateFeeRate;
+import io.hs.bex.blockchain.model.store.EstimateFeeRateDetails;
+import io.hs.bex.blockchain.model.store.FeeEstimationData;
+import io.hs.bex.blockchain.model.store.PredictedFeeValues;
+import io.hs.bex.common.model.DigitalCurrencyType;
 import io.hs.bex.common.utils.MathUtils;
 
 
@@ -29,21 +38,31 @@ public class FeeEstimateUtil
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( FeeEstimateUtil.class );
     // ---------------------------------
-    
+
     private final int DATA_FETCH_PERIOD = 35; // SECONDS
     private final int BLOCK_SIZE = 1048576; // in bytes (1MB)
 
     private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
 
     private BcoinHandler bcoinHandler;
-    
+
     private FeeEstimateData feeEstimateData;
 
     private EconomFeeEstimation ecFeeEstimation;
 
-    public FeeEstimateUtil( FeeRateDataDAO feeRateDataDAO, BcoinHandler bcoinHandler )
+    private EstimateFeeRate estimateFeeRate = new EstimateFeeRate();
+
+    private EstimateFeeRateDAO estimateFeeRateDAO;
+    
+    private FeeRateDataDAO feeRateDataDAO;
+    
+
+    public FeeEstimateUtil( EstimateFeeRateDAO estimateFeeRateDAO, FeeRateDataDAO feeRateDataDAO,
+            BcoinHandler bcoinHandler )
     {
         this.bcoinHandler = bcoinHandler;
+        this.estimateFeeRateDAO = estimateFeeRateDAO;
+        this.feeRateDataDAO = feeRateDataDAO;
         this.feeEstimateData = new FeeEstimateData();
         this.ecFeeEstimation = new EconomFeeEstimation( feeRateDataDAO, bcoinHandler );
 
@@ -76,7 +95,15 @@ public class FeeEstimateUtil
 
     public FeeRate getEsimatedFee( int nBlocks )
     {
-        return feeEstimateData.getFeeRate();
+        Page<EstimateFeeRate> dataPage = estimateFeeRateDAO.getLatest( PageRequest.of( 0, 1 ) );
+
+        if( dataPage != null && dataPage.hasContent() )
+        {
+            EstimateFeeRate rate = dataPage.getContent().get( 0 );
+            return new FeeRate( rate.getLowPriority(), rate.getMeidumPriority(), rate.getHighPriority() );
+        }
+        else
+            return null;
     }
 
     private void startScheduledTask( int startAfter, int period )
@@ -119,6 +146,13 @@ public class FeeEstimateUtil
                 {
                     predictValues( FeeEstimateData.PREDICTION_PERIOD_20M );
                     predictValues( FeeEstimateData.PREDICTION_PERIOD_60M );
+
+                    // -------save data ------------
+                    estimateFeeRate.setCoinId( DigitalCurrencyType.BTC.getId() );
+                    estimateFeeRate.setTimestamp( Instant.now() );
+                    estimateFeeRateDAO.save( estimateFeeRate );
+                    estimateFeeRate = new EstimateFeeRate();
+                    // -----------------------------
                 }
             }
         }
@@ -152,19 +186,17 @@ public class FeeEstimateUtil
                 sum = (int) getFilteredSum( memPoolTxs, minValue, maxValue );
 
                 if( feeEstimateData.getCurrSizeData().size() > x )
-                {
                     feeEstimateData.getCurrSizeData().get( x ).put( time, sum );
-                }
                 else
                 {
                     Map<Long, Integer> dataMap = new LinkedHashMap<Long, Integer>();
-                    dataMap.put( time, (int) sum );
+                    dataMap.put( time, sum );
                     feeEstimateData.getCurrSizeData().add( dataMap );
                 }
 
-                // logger.info( "Tx Sum Values Range:{} = {}", String.format(
-                // "%04d", FeeEstimateData.FEE_RANGES[x] ),
-                // String.format ("%.1f", (double) sum / 1024) );
+                // **** save data ***************************
+                estimateFeeRate.addDetails( new EstimateFeeRateDetails( FeeEstimateData.FEE_RANGES[x], time, sum ) );
+                // ******************************************
 
             }
 
@@ -225,21 +257,21 @@ public class FeeEstimateUtil
         }
     }
 
-    private void predictValues( long predictionPreriod )
+    private void predictValues( long predictionPeriod )
     {
         List<Integer> predictedValues = new ArrayList<>();
         Map<Long, Integer> tempDataMapCurrent = new LinkedHashMap<>();
 
         try
         {
-            long x_period = feeEstimateData.getFetchStartTime() + predictionPreriod;
-            int extarpValue = 0;
+            long x_period = feeEstimateData.getFetchStartTime() + predictionPeriod;
+            int extrapValue = 0;
             int b = 0;
 
             for( Map<Long, Integer> dataMapPrev: feeEstimateData.getPrevSizeData() )
             {
                 Map<Long, Integer> dataMapCurrent = feeEstimateData.getCurrSizeData().get( b );
-                double diffValue = feeEstimateData.getBlocksSizeDiff().get( b );
+                int diffValue = feeEstimateData.getBlocksSizeDiff().get( b );
 
                 tempDataMapCurrent.clear();
 
@@ -253,12 +285,17 @@ public class FeeEstimateUtil
                 if( dataMapPrev.size() > 1 )
                 {
                     if( x_period > System.currentTimeMillis() )
-                        extarpValue = (int) MathUtils.linearRegAsInt( dataMapPrev, x_period );
+                        extrapValue = (int) MathUtils.linearRegAsInt( dataMapPrev, x_period );
                     else
-                        extarpValue = (int) dataMapPrev.values().toArray()[dataMapPrev.values().size() - 1];
+                        extrapValue = (int) dataMapPrev.values().toArray()[dataMapPrev.values().size() - 1];
 
-                    predictedValues.add( (int) extarpValue );
+                    predictedValues.add( (int) extrapValue );
                 }
+
+                // ******** save data ****************
+                estimateFeeRate.addPredcitedValues( new PredictedFeeValues( FeeEstimateData.FEE_RANGES[b], extrapValue,
+                        diffValue, predictionPeriod ) );
+                // ***********************************
 
                 // logger.info( "Predicted Values Range:{} = {}", String.format(
                 // "%04d", FeeEstimateData.FEE_RANGES[a] ),
@@ -270,14 +307,15 @@ public class FeeEstimateUtil
 
             // ----------------------------
 
-            if( predictionPreriod == FeeEstimateData.PREDICTION_PERIOD_20M )
-                feeEstimateData.getFeeRate().setMediumPriorityRate( estimateFee( predictedValues ) );
+            if( predictionPeriod == FeeEstimateData.PREDICTION_PERIOD_20M )
+                estimateFeeRate.setMeidumPriority( estimateFee( FeeEstimateData.PREDICTION_PERIOD_20M, predictedValues ) );
             else
             {
-                feeEstimateData.getFeeRate().setHighPriorityRate( estimateFee( predictedValues ) );
-                feeEstimateData.getFeeRate().setLowPriorityRate( ecFeeEstimation.getEstimatedFeeRate() );
+                estimateFeeRate
+                        .setHighPriority( estimateFee( FeeEstimateData.PREDICTION_PERIOD_60M, predictedValues ) );
+                estimateFeeRate.setLowPriority( ecFeeEstimation.getEstimatedFeeRate() );
             }
-            // ----------------------------
+
         }
         catch( Exception e )
         {
@@ -286,26 +324,37 @@ public class FeeEstimateUtil
 
     }
 
-    public long estimateFee( List<Integer> predictedValues )
+    public long estimateFee( long period, List<Integer> predictedValues )
     {
         List<Integer> newPredictedValues = new ArrayList<>();
         int lastIndex = 0, b = 0;
         long max = 0;
-        FeeRate feeRate = null;
-        long fee = 0;
+        int fee = 0;
 
         try
         {
+            try 
+            {
+                String param  = String.valueOf( period/60/1000) + " minutes";
+                Object[] responseObj = (Object[]) feeRateDataDAO.estimateRate( param );
+                
+                if(responseObj != null) 
+                {
+                    FeeEstimationData data = new FeeEstimationData( (int)responseObj[0], (double)responseObj[1] ); 
+                    
+                    if(data != null) 
+                        estimateFeeRate.addEstimationData( data );
+                }
+            }
+            catch( Exception e ) 
+            {
+                //ignore
+            }
+            
             for( Integer predValue: predictedValues )
             {
                 int diffValue = feeEstimateData.getBlocksSizeDiff().get( b );
                 newPredictedValues.add( predValue - diffValue );
-
-//                logger.info( "Pred. Range|Diff|Actual:{} | {} | {} | {}",
-//                        String.format( "%04d", FeeEstimateData.FEE_RANGES[b] ),
-//                        String.format( "%6.2f", (float) predValue / 1024 ),
-//                        String.format( "%6.2f", (float) diffValue / 1024 ),
-//                        String.format( "%6.2f", (float) ( predValue - diffValue) / 1024 ) );
 
                 b++;
             }
@@ -321,10 +370,9 @@ public class FeeEstimateUtil
             }
 
             fee = FeeEstimateData.FEE_RANGES[lastIndex];
-            // feeRate = new FeeRate( highFee / 5, highFee, highFee * 2 );
+            
+            logger.info( "Estimating Fee Index|Size: {} | {}", fee,String.format( "%.1f", (float) max / 1024 ) );
 
-            logger.info( "Estimating Fee Index|Size|FeeRate:{} | {} | {}", lastIndex,
-                    String.format( "%.1f", (float) max / 1024 ), feeRate );
         }
         catch( Exception e )
         {

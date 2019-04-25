@@ -1,0 +1,33 @@
+Initializing daemon...
+go-ipfs version: 0.4.19-
+Repo version: 7
+System version: amd64/darwin
+Golang version: go1.11.5
+badger 2019/04/11 16:38:43 INFO: All 1 tables opened in 1ms
+badger 2019/04/11 16:38:43 INFO: Replaying file id: 0 at offset: 46707
+badger 2019/04/11 16:38:43 INFO: Replay took: 60.968765ms
+Swarm listening on /ip4/127.0.0.1/tcp/4001
+Swarm listening on /ip4/192.168.4.24/tcp/4001
+Swarm listening on /ip6/::1/tcp/4001
+Swarm listening on /p2p-circuit
+Swarm announcing /ip4/127.0.0.1/tcp/4001
+Swarm announcing /ip6/::1/tcp/4001
+API server listening on /ip4/127.0.0.1/tcp/5001
+WebUI: http://127.0.0.1:5001/webui
+Gateway (readonly) server listening on /ip4/127.0.0.1/tcp/8080
+Daemon is ready
+panic: counter already signaled done. use a new counter.
+
+goroutine 43941326 [running]:
+gx/ipfs/QmQNQhNmY4STU1MURjH9vYEMpx2ncMS4gbwxXWtrEjzVAq/go-todocounter.(*todoCounter).Increment(0xc012eb5350, 0xc000000001)
+	/home/steb/projects/go/src/github.com/ipfs/distributions/dists/go-ipfs/gopath/src/gx/ipfs/QmQNQhNmY4STU1MURjH9vYEMpx2ncMS4gbwxXWtrEjzVAq/go-todocounter/counter.go:86 +0xaf
+gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht.(*dhtQueryRunner).addPeerToQuery(0xc007af3080, 0xc01eb3a6f0, 0x22)
+	/home/steb/projects/go/src/github.com/ipfs/distributions/dists/go-ipfs/gopath/src/gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht/query.go:200 +0x109
+gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht.(*dhtQueryRunner).Run(0xc007af3080, 0x1fc35e0, 0xc014ab60c0, 0xc009fef8c0, 0x3, 0x3, 0x0, 0x0, 0x0)
+	/home/steb/projects/go/src/github.com/ipfs/distributions/dists/go-ipfs/gopath/src/gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht/query.go:136 +0x143
+gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht.(*dhtQuery).Run(0xc009fef920, 0x1fc35e0, 0xc014ab60c0, 0xc009fef8c0, 0x3, 0x3, 0x0, 0x0, 0x0)
+	/home/steb/projects/go/src/github.com/ipfs/distributions/dists/go-ipfs/gopath/src/gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht/query.go:70 +0x102
+gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht.(*IpfsDHT).GetClosestPeers.func2(0xc015f06120, 0xc015271680, 0xc009fef920, 0x1fc3660, 0xc01d6e2360, 0xc009fef8c0, 0x3, 0x3, 0xc01fab1800, 0x22)
+	/home/steb/projects/go/src/github.com/ipfs/distributions/dists/go-ipfs/gopath/src/gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht/lookup.go:96 +0xdb
+created by gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht.(*IpfsDHT).GetClosestPeers
+	/home/steb/projects/go/src/github.com/ipfs/distributions/dists/go-ipfs/gopath/src/gx/ipfs/QmdR6WN3TUEAVQ9KWE2UiFJikWTbUvgBJay6mjB4yUJebq/go-libp2p-kad-dht/lookup.go:92 +0x2f6

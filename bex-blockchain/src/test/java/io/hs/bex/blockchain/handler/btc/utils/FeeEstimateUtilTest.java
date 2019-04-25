@@ -67,7 +67,7 @@ public class FeeEstimateUtilTest
         actBcoinHandler.init( "https://btc.horizontalsystems.xyz" );
       
         FeeEstimateUtil actFeeEstimateUtil;      
-        actFeeEstimateUtil = new FeeEstimateUtil( null, actBcoinHandler );
+        actFeeEstimateUtil = new FeeEstimateUtil( null, null, actBcoinHandler );
 
         actFeeEstimateUtil.getEsimatedFee( 10 );
         TimeUnit.SECONDS.sleep( 30000 );
@@ -129,7 +129,7 @@ public class FeeEstimateUtilTest
         feeEstimateUtil = new FeeEstimateUtil( bcoinHandler, feeEstimateData, 0 );
 
         
-        double feeRate = feeEstimateUtil.estimateFee( predictedValues );
+        double feeRate = feeEstimateUtil.estimateFee( FeeEstimateData.PREDICTION_PERIOD_20M, predictedValues );
         
         assertTrue( feeRate == 800);
     }

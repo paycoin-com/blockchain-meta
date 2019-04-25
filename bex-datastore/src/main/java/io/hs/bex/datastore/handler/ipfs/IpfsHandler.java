@@ -63,27 +63,29 @@ public class IpfsHandler implements DataStoreHandler
     }
     
     @Override
-    public String publishNS( String path, String fileName )
+    public String publishNS( String key, String path, String fileName )
     {
         FileInfo fileInfo = getFileInfo( path, fileName );
         
         if( fileInfo != null ) 
         {
-            return publishNS( fileInfo.getHash() );
+            return publishNS( key, fileInfo.getHash() );
         }
         
         return "";
     }
     
-    
     @Override
-    public String publishNS( String nsValue )
+    public String publishNS( String key, String nsValue )
     {
         String url = apiUrl + API_SUB_URL + "/name/publish";
 
         try
         {
             url += "?arg=" + nsValue;
+            
+            if(!Strings.isNullOrEmpty( key ))
+                url += "&key=" + key;
 
             HttpEntity<String> entity = new HttpEntity<String>( "parameters",
                     createHeader( MediaType.APPLICATION_JSON ) );

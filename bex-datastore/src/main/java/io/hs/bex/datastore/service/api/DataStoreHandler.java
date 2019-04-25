@@ -14,7 +14,7 @@ public interface DataStoreHandler
 
     FileInfo getFileInfo( String pathStr, String fileName );
 
-    String publishNS( String nsValue );
+    String publishNS( String key, String nsValue );
 
-    String publishNS( String pathStr, String fileName );
+    String publishNS( String key, String pathStr, String fileName );
 }
