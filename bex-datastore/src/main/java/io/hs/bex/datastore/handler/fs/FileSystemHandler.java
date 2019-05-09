@@ -93,13 +93,13 @@ public class FileSystemHandler implements DataStoreHandler
     }
 
     @Override
-    public String publishNS( String nsValue )
+    public String publishNS( String key, String nsValue )
     {
         return null;
     }
 
     @Override
-    public String publishNS( String path, String fileName )
+    public String publishNS( String key, String path, String fileName )
     {
         return null;
     }

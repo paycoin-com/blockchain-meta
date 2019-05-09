@@ -7,15 +7,19 @@ public class DataPublishTask implements Runnable
 {
     private DataStoreService dataStoreService;
     
-    public DataPublishTask( DataStoreService dataStoreService )
+    @SuppressWarnings( "unused" )
+    private String keySecondary;
+    
+    public DataPublishTask( DataStoreService dataStoreService, String keySecondary )
     {
         this.dataStoreService = dataStoreService;
+        this.keySecondary = keySecondary;
     }
 
     @Override
     public void run()
     {
-        dataStoreService.publishNS( "", "" );
+        dataStoreService.publishNS( "", "", "" );
     }
 
 }

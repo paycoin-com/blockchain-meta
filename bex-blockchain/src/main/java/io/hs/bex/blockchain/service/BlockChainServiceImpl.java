@@ -35,6 +35,9 @@ public class BlockChainServiceImpl implements BlockChainService
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( BlockChainServiceImpl.class );
     // ---------------------------------
+    
+//    @Value( "${node.ipfs.key.blockchain}" )
+//    private String KEY_BLOCKCHAIN;
 
     final String BLOCKCHAIN_ROOT_FOLDER = "/blockchain";
     final static int RECENT_BLOCKS_COUNT = 10;
@@ -145,7 +148,10 @@ public class BlockChainServiceImpl implements BlockChainService
 
             FEE_RATE_STACK.setTime( Instant.now() );
             saveFile( "/estimatefee", "index.json", mapper.writeValueAsString( FEE_RATE_STACK ) );
-
+            
+            //-----------------------------------------------
+            //dataStoreService.publishNS( KEY_BLOCKCHAIN, "blockchain", "" );
+            //-----------------------------------------------
         }
         catch( Exception e )
         {

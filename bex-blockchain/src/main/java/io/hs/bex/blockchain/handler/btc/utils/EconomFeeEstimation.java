@@ -43,7 +43,7 @@ public class EconomFeeEstimation
 
     private long LAST_BLOCK_HEIGHT = 0;
 
-    private long esimatedFeeRate = 0;
+    private long esimatedFeeRate = 1;
 
     private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
 
@@ -112,7 +112,10 @@ public class EconomFeeEstimation
             if( rate != null && rate.longValue() > 0) 
             {
                 logger.info( "Estimated ECONOM Fee :{} S/Byte", rate);
-                esimatedFeeRate = rate/1024;
+                esimatedFeeRate = (long) Math.ceil( (float)rate/1024);
+                
+                if(esimatedFeeRate < 1)
+                    esimatedFeeRate = 1;
             }
         }
         catch( Exception e ) 
@@ -163,7 +166,8 @@ public class EconomFeeEstimation
 
     private void saveFeeData( FeeRateData feeData )
     {
-        feeRateDataDAO.save( feeData );
+        if( feeData != null )
+            feeRateDataDAO.save( feeData );
     }
 
     private void processBlockInfo( BlockInfo block )
@@ -184,13 +188,13 @@ public class EconomFeeEstimation
     private FeeRateData processFeeInfo( long height, long timeEpochSec, List<TxInfo> txs )
     {
         FeeRateData feeRateData = getFeeByPercentage( txs );
-        feeRateData.setHeight( height );
-        feeRateData.setDate( Instant.ofEpochSecond( timeEpochSec ) );
-
-        // -------------------------------
-        LAST_BLOCK_HEIGHT = height;
-        // -------------------------------
-
+        
+        if(feeRateData != null) 
+        {
+            feeRateData.setHeight( height );
+            feeRateData.setDate( Instant.ofEpochSecond( timeEpochSec ) );
+        }
+        
         return feeRateData;
     }
 
