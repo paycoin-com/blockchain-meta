@@ -69,7 +69,7 @@ public class FeeEstimateUtilTest
         FeeEstimateUtil actFeeEstimateUtil;      
         actFeeEstimateUtil = new FeeEstimateUtil( null, null, actBcoinHandler );
 
-        actFeeEstimateUtil.getEsimatedFee( 10 );
+        actFeeEstimateUtil.getEstimatedFee( 10 );
         TimeUnit.SECONDS.sleep( 30000 );
     }
     
@@ -99,7 +99,7 @@ public class FeeEstimateUtilTest
         
         //------------------------------------------------------
         FeeEstimateUtil feeEstimateUtil = new FeeEstimateUtil( bcoinHandler, 6 );
-        feeEstimateUtil.getEsimatedFee( 10 );
+        feeEstimateUtil.getEstimatedFee( 10 );
         
         TimeUnit.SECONDS.sleep( 30000 );
     }

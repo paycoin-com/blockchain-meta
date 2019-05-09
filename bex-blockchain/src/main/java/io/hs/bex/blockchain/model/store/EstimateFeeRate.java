@@ -60,6 +60,31 @@ public class EstimateFeeRate
     @OneToMany( mappedBy="estimateFeeRate", fetch = FetchType.LAZY , cascade = CascadeType.ALL )
     private List<FeeEstimationData> feeEstimationDatas;
     // *********************************************
+    
+    public EstimateFeeRate() {}
+    
+    public EstimateFeeRate( long lowPriority, long meidumPriority, long highPriority )
+    {
+        this.lowPriority = lowPriority;
+        this.meidumPriority = meidumPriority;
+        this.highPriority = highPriority;
+    }
+    
+    public EstimateFeeRate( EstimateFeeRate eFeeRate )
+    {
+        this.lowPriority = eFeeRate.getLowPriority();
+        this.meidumPriority = eFeeRate.getMeidumPriority();
+        this.highPriority = eFeeRate.getHighPriority();
+    }
+    
+    
+    @JsonIgnore
+    public void setValues( EstimateFeeRate eFeeRate )
+    {
+        this.lowPriority = eFeeRate.getLowPriority();
+        this.meidumPriority = eFeeRate.getMeidumPriority();
+        this.highPriority = eFeeRate.getHighPriority();
+    }
 
     public long getId()
     {

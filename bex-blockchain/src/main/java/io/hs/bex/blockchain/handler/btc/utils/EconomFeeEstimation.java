@@ -43,7 +43,7 @@ public class EconomFeeEstimation
 
     private long LAST_BLOCK_HEIGHT = 0;
 
-    private long esimatedFeeRate = 0;
+    private long esimatedFeeRate = 1;
 
     private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
 

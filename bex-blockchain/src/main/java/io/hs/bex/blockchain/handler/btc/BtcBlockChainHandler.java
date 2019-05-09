@@ -67,7 +67,7 @@ public class BtcBlockChainHandler implements BlockChainHandler
     public FeeRate getEstimatedFee( int nBlocks )
     {
         if(node.getNetwork().getType() == NodeNetworkType.MAINNET )
-            return feeEstimateUtil.getEsimatedFee( nBlocks );
+            return feeEstimateUtil.getEstimatedFee( nBlocks );
         else
             return bcoinHandler.getEstimedFeeRate();
     }
