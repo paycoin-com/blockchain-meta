@@ -213,12 +213,12 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         else if( request.getPeriod() == TimePeriod.DAY )
         {
             url = infoServiceUrl + "/v1/tickers/" + sourceCcy + "/historical?interval=1d" + "&quote=" + targetCcy
-                    + "&limit=" + (request.getLimit()+1) + "&start=" + request.getDateTo().getEpochSecond();
+                    + "&limit=" + ( request.getLimit() + 1) + "&start=" + request.getDateTo().getEpochSecond();
         }
         else if( request.getPeriod() == TimePeriod.HOUR )
         {
             url = infoServiceUrl + "/v1/tickers/" + sourceCcy + "/historical?interval=1h" + "&quote=" + targetCcy
-                    + "&limit=" + (request.getLimit()+1) + "&start=" + request.getDateTo().getEpochSecond();
+                    + "&limit=" + ( request.getLimit() + 1) + "&start=" + request.getDateTo().getEpochSecond();
         }
         else if( request.getPeriod() == TimePeriod.MINUTE )
         {
@@ -293,7 +293,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
 
             for( int x = 0; x <= request.getLimit(); x++ )
             {
-                if( index < responseList.size()) 
+                if( index < responseList.size() )
                 {
                     CoinPResponse data = responseList.get( index );
                     fetchTime = StringUtils.stringZonedToInstant( data.timestamp );

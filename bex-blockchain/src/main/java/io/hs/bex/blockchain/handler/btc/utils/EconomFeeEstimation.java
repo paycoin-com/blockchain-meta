@@ -33,7 +33,7 @@ public class EconomFeeEstimation
     private final int DATA_FETCH_PERIOD = 120; // SECONDS    
     private final int DATA_CALCULATE_TASK_PERIOD = 600; // SECONDS
 
-    private final long OVERALL_BLOCK_PROC_PERIOD = 24 * 10 * 60; // DAYS
+    private final long OVERALL_BLOCK_PROC_PERIOD = 10 * 60 * 60; // HOURS
     // private final long BLOCK_PROC_PERIOD = 1 * 60;// HOURS
     private final int FEE_ORDER_PERCENTAGE_10 = 10;
     private final int FEE_ORDER_PERCENTAGE_20 = 20;

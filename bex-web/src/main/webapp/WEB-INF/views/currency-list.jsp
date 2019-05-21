@@ -52,7 +52,7 @@
                     <div class="card-header">
                         <i class="fa fa-align-justify"></i> Currencies </div>
                         <div class="card-body">
-                        <form class="form-horizontal" action="<c:url value = "/currency-update"/>" method="get">
+                        <form class="form-horizontal" action="<c:url value = "/currency-update"/>" method="POST">
                         <span class="input-group-prepend">
                             <button class="btn-sm btn-primary" type="submit">
                                 <i class="fa fa-edit"></i> Update Supported</button>&nbsp;&nbsp;

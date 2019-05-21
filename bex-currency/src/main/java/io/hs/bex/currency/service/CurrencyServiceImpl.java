@@ -84,8 +84,8 @@ public class CurrencyServiceImpl implements CurrencyService
     DataStoreService dataStoreService;
 
     @Autowired
-    //@Qualifier( "CoinPaprikaHandler" )
-    @Qualifier( "CryptoCompareHandler" )
+    @Qualifier( "CoinPaprikaHandler" )
+    //@Qualifier( "CryptoCompareHandler" )
     CurrencyInfoService digitalCcyService;
 
     @Autowired
@@ -150,6 +150,11 @@ public class CurrencyServiceImpl implements CurrencyService
         try
         {
             HashSet<SysCurrency> currencies = new HashSet<>( Arrays.asList( SysCurrency.values() ) );
+            
+            for(SysCurrency currency: SysCurrency.values()) 
+            {
+                currency.setSupported( false );
+            }
 
             String data = getFileContent( "", "index.json" );
 
