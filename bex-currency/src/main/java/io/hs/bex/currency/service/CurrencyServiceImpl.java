@@ -84,8 +84,8 @@ public class CurrencyServiceImpl implements CurrencyService
     DataStoreService dataStoreService;
 
     @Autowired
-    @Qualifier( "CoinPaprikaHandler" )
-    //@Qualifier( "CryptoCompareHandler" )
+    //@Qualifier( "CoinPaprikaHandler" )
+    @Qualifier( "CryptoCompareHandler" )
     CurrencyInfoService digitalCcyService;
 
     @Autowired
