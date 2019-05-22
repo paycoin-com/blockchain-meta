@@ -41,61 +41,41 @@ public class FeeEstimateUtilTest
     @Spy
     private ObjectMapper mapper;
     
-    private FeeEstimateTestData testData;
 
-    String apiUrl = "https://btc.horizontalsystems.xyz";
+    //String apiUrl = "https://btc.horizontalsystems.xyz";
 
     //@InjectMocks
     //private FeeEstimateUtil feeEstimateUtil;
 
-    public FeeEstimateUtilTest()
-    {
-        testData = new FeeEstimateTestData();
-    }
-
+    
     @Before
     public void before() throws Exception
     {
-    }
-    
-    @Ignore
-    @Test
-    public void testActualFeeEstimationProcess() throws Exception
-    {
-        BcoinHandler actBcoinHandler = new BcoinHandler();
-        actBcoinHandler.setMapper( mapper );
-        actBcoinHandler.init( "https://btc.horizontalsystems.xyz" );
-      
-        FeeEstimateUtil actFeeEstimateUtil;      
-        actFeeEstimateUtil = new FeeEstimateUtil( null, null, actBcoinHandler );
-
-        actFeeEstimateUtil.getEstimatedFee( 10 );
-        TimeUnit.SECONDS.sleep( 30000 );
     }
     
     //@Ignore
     @Test
     public void testFeeEstimationProcess() throws Exception
     {
-        //------------------------------------------------------
-        when( bcoinHandler.getMempoolInfo() )
-        .thenAnswer( new Answer<MempoolInfo>()
-        {
-            public MempoolInfo answer( InvocationOnMock invocation ) throws Throwable
-            {
-                return testData.getMemPoolInfo();
-            }
-        } );
-        
-        
-        when(  bcoinHandler.getMempoolTxs( Mockito.anyInt() ))
-        .thenAnswer( new Answer<List<MempoolTx>>()
-        {
-            public List<MempoolTx> answer( InvocationOnMock invocation ) throws Throwable
-            {
-                return testData.getMempoolTxData();
-            }
-        } );
+//        //------------------------------------------------------
+//        when( bcoinHandler.getMempoolInfo() )
+//        .thenAnswer( new Answer<MempoolInfo>()
+//        {
+//            public MempoolInfo answer( InvocationOnMock invocation ) throws Throwable
+//            {
+//                return testData.getMemPoolInfo();
+//            }
+//        } );
+//        
+//        
+//        when(  bcoinHandler.getMempoolTxs( Mockito.anyInt() ))
+//        .thenAnswer( new Answer<List<MempoolTx>>()
+//        {
+//            public List<MempoolTx> answer( InvocationOnMock invocation ) throws Throwable
+//            {
+//                return testData.getMempoolTxData();
+//            }
+//        } );
         
         //------------------------------------------------------
         FeeEstimateUtil feeEstimateUtil = new FeeEstimateUtil( bcoinHandler, 6 );
@@ -105,34 +85,6 @@ public class FeeEstimateUtilTest
     }
 
     
-    @Ignore
-    @Test
-    public void testEstimateFee() throws Exception
-    {
-        List<Integer> predictedValues = new ArrayList<>();
-        
-        predictedValues.add( 200000 );
-        predictedValues.add( 500000 );
-        predictedValues.add( 200000 ); // Tx to be included, Ranges = {800 > 500}
-        predictedValues.add( 300000 );
-        predictedValues.add( 100000 );
-        predictedValues.add( 100000 );
-        
-        FeeEstimateUtil feeEstimateUtil;
-        FeeEstimateData feeEstimateData = new FeeEstimateData();
-        
-        for( int x=0;x < predictedValues.size(); x++ ) 
-        {
-            feeEstimateData.getBlocksSizeDiff().add( 0 );
-        }
-        
-        feeEstimateUtil = new FeeEstimateUtil( bcoinHandler, feeEstimateData, 0 );
-
-        
-        double feeRate = feeEstimateUtil.estimateFee( FeeEstimateData.PREDICTION_PERIOD_20M, predictedValues );
-        
-        assertTrue( feeRate == 800);
-    }
 
 
 }

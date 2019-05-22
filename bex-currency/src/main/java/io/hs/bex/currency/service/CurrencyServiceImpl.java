@@ -150,6 +150,11 @@ public class CurrencyServiceImpl implements CurrencyService
         try
         {
             HashSet<SysCurrency> currencies = new HashSet<>( Arrays.asList( SysCurrency.values() ) );
+            
+            for(SysCurrency currency: SysCurrency.values()) 
+            {
+                currency.setSupported( false );
+            }
 
             String data = getFileContent( "", "index.json" );
 

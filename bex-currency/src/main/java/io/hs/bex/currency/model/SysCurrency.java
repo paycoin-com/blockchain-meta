@@ -23,7 +23,7 @@ public enum SysCurrency
     BCH( 3, "Bitcoin-Cash", "U+20BF", CurrencyType.DIGITAL ),
     DASH( 4, "Dash", "U+20BF", CurrencyType.DIGITAL ),
 
-    AURA( 5, "aurora-dao", "U+039E", CurrencyType.DIGITAL ),
+    //AURA( 5, "aurora-dao", "U+039E", CurrencyType.DIGITAL ),
     BAT( 6, "Basic-Attention-Token", "U+039E", CurrencyType.DIGITAL ),
     BNB( 7, "Binance-coin", "U+039E", CurrencyType.DIGITAL ),
     BNT( 8, "Bancor", "U+039E",CurrencyType.DIGITAL ),
