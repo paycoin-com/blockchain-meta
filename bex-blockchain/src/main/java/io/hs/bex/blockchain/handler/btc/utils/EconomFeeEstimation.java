@@ -34,7 +34,6 @@ public class EconomFeeEstimation
     private final int DATA_CALCULATE_TASK_PERIOD = 600; // SECONDS
 
     private final long OVERALL_BLOCK_PROC_PERIOD = 10 * 60 * 60; // HOURS
-    // private final long BLOCK_PROC_PERIOD = 1 * 60;// HOURS
     private final int FEE_ORDER_PERCENTAGE_10 = 10;
     private final int FEE_ORDER_PERCENTAGE_20 = 20;
     private final int FEE_ORDER_PERCENTAGE_40 = 40;
@@ -126,48 +125,66 @@ public class EconomFeeEstimation
 
     private void fethBlockInfo()
     {
-        long value = 0;
-        long fetchUntil = 0;
-        int blockHeight = getLastBlockHeight();
-        int startHeight = blockHeight;
-
-        if( LAST_BLOCK_HEIGHT != blockHeight )
+        try 
         {
-            BlockInfo blockInfo = null;
-
-            logger.info( "Getting peer info blockHeight:{}", blockHeight );
-
-            if( FULL_FETCH_RANGE != 0 ) 
+            
+            long value = 0;
+            long fetchUntil = 0;
+            int blockHeight = getLastBlockHeight();
+            int startHeight = blockHeight;
+    
+            if( LAST_BLOCK_HEIGHT != blockHeight )
             {
-                fetchUntil = FULL_FETCH_RANGE;
-                value = System.currentTimeMillis() / 1000;
+                BlockInfo blockInfo = null;
+    
+                logger.info( "Getting peer info blockHeight:{}", blockHeight );
+    
+                if( FULL_FETCH_RANGE != 0 ) 
+                {
+                    fetchUntil = FULL_FETCH_RANGE;
+                    value = System.currentTimeMillis() / 1000;
+                }
+                else 
+                {
+                    fetchUntil = LAST_BLOCK_HEIGHT;
+                    value = blockHeight;
+                }
+    
+                for( ; fetchUntil < value; blockHeight-- )
+                {
+                    blockInfo = bcoinHandler.getBlock( blockHeight );
+                    processBlockInfo( blockInfo );
+    
+                    if( FULL_FETCH_RANGE != 0 )
+                        value = blockInfo.getTime();
+                    else
+                        value = blockInfo.getHeight();
+                }
+    
+                FULL_FETCH_RANGE = 0;
+                LAST_BLOCK_HEIGHT = startHeight;
             }
-            else 
-            {
-                fetchUntil = LAST_BLOCK_HEIGHT;
-                value = blockHeight;
-            }
-
-            for( ; fetchUntil < value; blockHeight-- )
-            {
-                blockInfo = bcoinHandler.getBlock( blockHeight );
-                processBlockInfo( blockInfo );
-
-                if( FULL_FETCH_RANGE != 0 )
-                    value = blockInfo.getTime();
-                else
-                    value = blockInfo.getHeight();
-            }
-
-            FULL_FETCH_RANGE = 0;
-            LAST_BLOCK_HEIGHT = startHeight;
+            
+        }
+        catch( Exception e ) 
+        {
+            //ignore and retry
+            logger.error( "Encountered error:{} , but ignoring. Operation will retry", e.toString() );
         }
     }
 
     private void saveFeeData( FeeRateData feeData )
     {
-        if( feeData != null )
-            feeRateDataDAO.save( feeData );
+        try 
+        {
+            if( feeData != null )
+                feeRateDataDAO.save( feeData );
+            
+        }
+        catch( Exception e ) 
+        {
+            logger.error( "Error on saving fee data:{}, ignoring will retry", e.toString() );
+        }
     }
 
     private void processBlockInfo( BlockInfo block )

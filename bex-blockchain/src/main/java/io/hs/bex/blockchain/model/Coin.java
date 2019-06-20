@@ -4,7 +4,7 @@ public class Coin
 {
     public static final long SATOSHI_RATE = 100000000; // BTC/SATOSHI
     
-    public static final long GWEI_RATE = 1000000000; // BTC/SATOSHI
+    public static final long GWEI_RATE = 1000000000; // ETH/GWEI
 
     
     public static double getAsBtc(double value)

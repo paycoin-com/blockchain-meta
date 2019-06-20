@@ -142,7 +142,7 @@ public class BcoinHandler
 //            
 //            double lowPriority = mediumPriority/2; 
 
-            return new FeeRate( 1 , 2, 3 );
+            return new FeeRate( 1, 2, 3 );
         }
         catch( Exception e )
         {

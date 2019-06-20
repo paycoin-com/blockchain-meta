@@ -2,7 +2,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Horizontal-Systems BLockExplorer Parent</name>
+    <name>Horizontal-Systems BlockExplorer Parent</name>
 
     <groupId>io.hs.bex</groupId>
     <artifactId>bex-parent</artifactId>
@@ -20,13 +20,13 @@
 
         <spring.version>5.0.7.RELEASE</spring.version>
         <spring.security.version>4.0.1.RELEASE</spring.security.version>
-        <spring.data.version>2.0.14.RELEASE</spring.data.version>
+        <spring.data.version>2.1.8.RELEASE</spring.data.version>
         <spring.data.redis.version>2.0.3.RELEASE</spring.data.redis.version>
         <hibernate.version>5.2.11.Final</hibernate.version>
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         <jstl.version>1.2</jstl.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
-        <jackson.version>2.9.8</jackson.version>
+        <jackson.version>2.9.9</jackson.version>
         <slf4j-api.version>1.7.25</slf4j-api.version>
         <logback.version>1.2.3</logback.version>
         <httpclient.version>4.5.4</httpclient.version>

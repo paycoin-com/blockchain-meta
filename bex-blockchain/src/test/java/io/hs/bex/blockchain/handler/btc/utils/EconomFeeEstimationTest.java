@@ -1,9 +1,12 @@
 package io.hs.bex.blockchain.handler.btc.utils;
 
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -27,20 +30,54 @@ public class EconomFeeEstimationTest
     
     @Mock
     FeeRateDataDAO feeRateDataDAO;
+    
+    private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
+    
+    BcoinHandler actBcoinHandler = new BcoinHandler();
 
-    //@Ignore
+
+    @Ignore
     @Test
-    public void testActualFeeEstimationProcess() throws Exception
+    public void testFeeEstimationProcess() throws Exception
     {
-        BcoinHandler actBcoinHandler = new BcoinHandler();
         actBcoinHandler.setMapper( mapper );
-        actBcoinHandler.init( "https://btc.horizontalsystems.xyz/apg" );
+        actBcoinHandler.init( "http://btc-testnet.horizontalsystems.xyz/apg" );
+        
+        startInfoFetchTask( 20, 180 );
       
-        EconomFeeEstimation eFeeEstimateUtil;      
-        eFeeEstimateUtil = new EconomFeeEstimation( feeRateDataDAO, actBcoinHandler );
-
-        //eFeeEstimateUtil.getEsimatedFee( 10 );
-        TimeUnit.SECONDS.sleep( 30000 );
+    }
+    
+    
+    private void startInfoFetchTask( int startAfter, int period )
+    {
+        try
+        {
+            timerService.scheduleWithFixedDelay( () -> fethBlockInfo(), startAfter, period, TimeUnit.SECONDS );
+        }
+        catch( Exception e )
+        {
+            System.out.println( "Error starting test thread:" + e );
+        }
+    }
+    
+    private void fethBlockInfo()
+    {
+        try 
+        {
+            int blockHeight = getLastBlockHeight();
+            
+            System.out.println( "BlockHeight:" + blockHeight );
+        }
+        catch( Exception  e ) 
+        {
+            // Thread should retry operation 
+            System.out.println( "Error fetching data from Bcoin:" + e );
+        }
+    }
+    
+    private int getLastBlockHeight()
+    {
+        return actBcoinHandler.getPeerInfo().getChainInfo().getLastBlockHeight();
     }
 
 }
