@@ -38,7 +38,7 @@ public class FeeEstimateUtil
     private static final Logger logger = LoggerFactory.getLogger( FeeEstimateUtil.class );
     // ---------------------------------
 
-    private final int DATA_FETCH_PERIOD = 35; // SECONDS
+    private final int DATA_FETCH_PERIOD = 30; // SECONDS
 
     private final ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
 

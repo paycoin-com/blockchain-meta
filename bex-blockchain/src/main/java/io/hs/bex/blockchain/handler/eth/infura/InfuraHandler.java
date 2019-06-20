@@ -71,7 +71,7 @@ public class InfuraHandler
         {
             String response = infuraAPI.eth_gasPrice();
             long price = Long.decode( response );
-            long lPrice = (int) Math.ceil( (float)price/2 );
+            long lPrice = (long) Math.ceil( (double)price/2 );
             
             return new FeeRate( lPrice == 0?1000000000:lPrice, price, price * 2 );
         }
