@@ -24,6 +24,7 @@ import io.hs.bex.currency.model.CurrencyRateStack;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
+import io.hs.bex.currency.model.stats.Stats;
 import io.hs.bex.currency.task.HourlyXRatesTask;
 import io.hs.bex.currency.task.LatestXRatesTask;
 import io.hs.bex.currency.utils.CurrencyUtils;
@@ -91,6 +92,10 @@ public class CurrencyServiceImpl implements CurrencyService
     @Autowired
     @Qualifier( "ExchangeRatesAPI" )
     CurrencyInfoService fiatCcyService;
+    
+    @Autowired
+    CurrencyStatsService statsService;
+
 
     private CurrencyInfoRequest currencyTaskParams = new CurrencyInfoRequest();
 
@@ -98,6 +103,8 @@ public class CurrencyServiceImpl implements CurrencyService
     public void init()
     {
         buildTaskParams();
+        
+        statsService.init(getSupported( CurrencyType.FIAT ),getSupported( CurrencyType.DIGITAL ));
     }
 
     private HourlyXRatesTask startHourlyXRatesTask()
@@ -142,6 +149,12 @@ public class CurrencyServiceImpl implements CurrencyService
     public CurrencyInfoService getInfoService()
     {
         return digitalCcyService;
+    }
+    
+    @Override
+    public void createStats()
+    {
+        statsService.createStats();
     }
 
     @Override
@@ -210,7 +223,7 @@ public class CurrencyServiceImpl implements CurrencyService
         }
         catch( Exception e )
         {
-            logger.error( "Error getting currency list (supported:)", e );
+            logger.error( "Error getting currency list (supported):", e );
         }
 
         return Collections.emptyList();
@@ -275,6 +288,7 @@ public class CurrencyServiceImpl implements CurrencyService
             String path = "";
             List<CurrencyRate> baseXRates, xrates;
             Map<String, String> dataMap = new LinkedHashMap<>();
+            Instant statsTimeStamp = Instant.now();
 
             for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
             {
@@ -287,6 +301,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
                 for( SysCurrency targetCurrency: targetCurrencies )
                 {
+                    float lastRate = 0;
                     String rootPath = "/historical/" + sourceCurrency.getCode() + "/" + targetCurrency.getCode() + "/";
 
                     xrates = calculateXRateDetails( request, baseXRates, targetCurrency );
@@ -320,6 +335,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
                         hour = localDateTime.getHour();
                         lastDate = localDateTime;
+                        lastRate = xrate.getRate();
                     }
 
                     if( dataMap.size() > 0 )
@@ -328,6 +344,10 @@ public class CurrencyServiceImpl implements CurrencyService
                         appendData( path, "index.json", dataMap );
                         dataMap.clear();
                     }
+                    
+                    //--------Set statistics data -------------------------
+                    statsService.setStatsData( new Stats(sourceCurrency, targetCurrency, lastRate, statsTimeStamp ));
+                    //-----------------------------------------------------
                 }
 
                 // ------------------------------------------------------------------------

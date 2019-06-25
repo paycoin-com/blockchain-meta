@@ -33,6 +33,7 @@ public enum SysCurrency
     DGX( 12, "Digix-gold-token", "U+039E",CurrencyType.DIGITAL ),
     ELF( 13, "Aelf", "U+039E", CurrencyType.DIGITAL ),
     ENJ( 14, "Enjin-coin", "U+039E",CurrencyType.DIGITAL ),
+    EOS( 14, "Eos", "U+039E",CurrencyType.DIGITAL ),
     EURS(15, "Stasis-eurs", "U+039E",CurrencyType.DIGITAL ),
     GNT( 16, "Golem", "U+039E",CurrencyType.DIGITAL ),
     GUSD( 17, "Gemini-dollar", "U+039E",CurrencyType.DIGITAL ),

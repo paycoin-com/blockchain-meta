@@ -57,7 +57,9 @@
                             <button class="btn-sm btn-primary" type="submit">
                                 <i class="fa fa-edit"></i> Update Supported</button>&nbsp;&nbsp;
                             <a href="<c:url value = "/currency-sync-start"/>" class="btn-sm btn-primary" role="button">
-                                <i class="fa fa-clock"></i> Start Sync Job</a>
+                                <i class="fa fa-clock"></i> Start Sync Job</a>&nbsp;&nbsp;
+                            <a href="<c:url value = "/currency-stats-create"/>" class="btn-sm btn-primary" role="button">
+                                <i class="fa fa-clock"></i> Create Stats Data</a>
                         </span><br>
                         
                         <table class="table table-responsive-sm table-bordered table-striped table-sm">
