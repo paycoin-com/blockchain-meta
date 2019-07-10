@@ -25,6 +25,7 @@ import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
 import io.hs.bex.currency.model.stats.Stats;
+import io.hs.bex.currency.service.stats.CurrencyStatsService;
 import io.hs.bex.currency.task.HourlyXRatesTask;
 import io.hs.bex.currency.task.LatestXRatesTask;
 import io.hs.bex.currency.utils.CurrencyUtils;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -93,8 +95,7 @@ public class CurrencyServiceImpl implements CurrencyService
     @Qualifier( "ExchangeRatesAPI" )
     CurrencyInfoService fiatCcyService;
     
-    @Autowired
-    CurrencyStatsService statsService;
+    @Autowired CurrencyStatsService statsService;
 
 
     private CurrencyInfoRequest currencyTaskParams = new CurrencyInfoRequest();
@@ -151,10 +152,11 @@ public class CurrencyServiceImpl implements CurrencyService
         return digitalCcyService;
     }
     
+    @Async
     @Override
-    public void createStats()
+    public void createStatsDataAsync()
     {
-        statsService.createStats();
+        statsService.createStatsData();
     }
 
     @Override
@@ -345,9 +347,6 @@ public class CurrencyServiceImpl implements CurrencyService
                         dataMap.clear();
                     }
                     
-                    //--------Set statistics data -------------------------
-                    statsService.setStatsData( new Stats(sourceCurrency, targetCurrency, lastRate, statsTimeStamp ));
-                    //-----------------------------------------------------
                 }
 
                 // ------------------------------------------------------------------------
@@ -398,8 +397,13 @@ public class CurrencyServiceImpl implements CurrencyService
             {
                 String rootPath = "/latest/" + rateStack.getCurrency().getCode() + "/";
                 saveFile( rootPath, "index.json", mapper.writeValueAsString( rateStack ) );
+
             }
-            
+
+            //--------Set statistics data -------------------------
+            statsService.updateStatsData( rateStockList, Instant.now() );
+            //-----------------------------------------------------
+
             //-----------------------------------------------
             dataStoreService.publishNS( "", "", "" );
             //-----------------------------------------------

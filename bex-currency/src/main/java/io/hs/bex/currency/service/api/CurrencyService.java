@@ -40,6 +40,6 @@ public interface CurrencyService
 
     void saveXRates( CurrencyInfoRequest request, List<SysCurrency> targetCurrencies );
 
-    void createStats();
+    void createStatsDataAsync();
 
 }

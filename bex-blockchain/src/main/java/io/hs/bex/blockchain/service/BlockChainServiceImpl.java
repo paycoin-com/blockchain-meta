@@ -67,13 +67,13 @@ public class BlockChainServiceImpl implements BlockChainService
     {
         String handlerName = "";
 
-        for( Node node: nodeService.getNodes() )
-        {
-            handlerName = node.getProvider().getCurrencyType().getCode() + "-BlockChainHandler";
-            BlockChainHandler blockChainHanlder = (BlockChainHandler) appContext.getBean( handlerName );
-            blockChainHanlder.init( node );
-            chainHandlers.put( node.getId(), blockChainHanlder );
-        }
+//        for( Node node: nodeService.getNodes() )
+//        {
+//            handlerName = node.getProvider().getCurrencyType().getCode() + "-BlockChainHandler";
+//            BlockChainHandler blockChainHanlder = (BlockChainHandler) appContext.getBean( handlerName );
+//            blockChainHanlder.init( node );
+//            chainHandlers.put( node.getId(), blockChainHanlder );
+//        }
     }
 
     private BlockChainHandler getHandler( int nodeId )

@@ -15,32 +15,32 @@ public class StatsRates
 {
     @JsonProperty("timestamp")
     private long timestamp;
-    
+
+    @JsonProperty("scale_unit")
+    private String scaleUnit;
+
+    @JsonProperty("scale")
+    private long scale;
+
+
     @JsonProperty("rates")
     private List<String> rates =  new ArrayList<>();
     
     public StatsRates(){}
     
-    public StatsRates( long timestamp )
+    public StatsRates( long timeFrom, StatsType statsType )
     {
-        this.timestamp = timestamp;
+        this.timestamp = timeFrom;
+        this.scale = statsType.getScale();
+        this.scaleUnit = statsType.getScaleUnit().name();
     }
 
     @JsonProperty("time_str")
-    public String getTimeAsStr()
+    public String getTimestampStr()
     {
         return Instant.ofEpochSecond( timestamp ) .toString();
     }
 
-    public long getTimestamp()
-    {
-        return timestamp;
-    }
-
-    public void setTimestamp( long timestamp )
-    {
-        this.timestamp = timestamp;
-    }
 
     public List<String> getRates()
     {
@@ -52,4 +52,33 @@ public class StatsRates
         this.rates = rates;
     }
 
-}   
+    public long getTimestamp()
+    {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp)
+    {
+        this.timestamp = timestamp;
+    }
+
+    public String getScaleUnit()
+    {
+        return scaleUnit;
+    }
+
+    public void setScaleUnit(String scaleUnit)
+    {
+        this.scaleUnit = scaleUnit;
+    }
+
+    public long getScale()
+    {
+        return scale;
+    }
+
+    public void setScale(long scale)
+    {
+        this.scale = scale;
+    }
+}

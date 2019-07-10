@@ -8,7 +8,7 @@ public class Stats
 {
     private float rate = 0;
     
-    private StatsType type = StatsType.OTHER;
+    private StatsType type;
     
     private SysCurrency fiatCurrency;
     
@@ -18,17 +18,17 @@ public class Stats
     
     public Stats(){}
 
-    public Stats( SysCurrency fiatCurrency, SysCurrency digCurrency, float rate, Instant timestamp )
-    {
-        this.fiatCurrency = fiatCurrency;
-        this.digCurrency = digCurrency;
-        this.rate = rate;
-        
-        if(timestamp == null)
-            this.timeStamp = Instant.now();
-        else 
-            this.timeStamp = timestamp;
-    }
+//    public Stats( SysCurrency fiatCurrency, SysCurrency digCurrency, float rate, Instant timestamp )
+//    {
+//        this.fiatCurrency = fiatCurrency;
+//        this.digCurrency = digCurrency;
+//        this.rate = rate;
+//
+//        if(timestamp == null)
+//            this.timeStamp = Instant.now();
+//        else
+//            this.timeStamp = timestamp;
+//    }
 
     public float getRate()
     {

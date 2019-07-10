@@ -58,7 +58,7 @@ public class CurrencyController
     @RequestMapping( value = { "/currency-stats-create" }, method = RequestMethod.GET )
     public String currencyStatsCreate( ModelMap model )
     {
-        currencyService.createStats();
+        currencyService.createStatsDataAsync();
 
         return currencyListView( model );
     }
