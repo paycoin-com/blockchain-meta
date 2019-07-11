@@ -92,61 +92,6 @@
     <script src="<c:url value = "/assets/lib/perfect-scrollbar/js/perfect-scrollbar.min.js"/>"></script>
     <script src="<c:url value = "/assets/lib/@coreui/coreui/js/coreui.min.js"/>"></script>
     <!-- Plugins and scripts required by this view-->
-    <script src="<c:url value = "/assets/lib/chart.js/js/Chart.min.js"/>"></script>
-    <script src="<c:url value = "/assets/lib/@coreui/coreui-chartjs-tooltips/js/custom-tooltips.min.js"/>"></script>
     <script src="<c:url value = "/assets/js/main.js"/>"></script>
-    <script type="text/javascript">
-    
-    /*
-    function drawLineChart() 
-    {
-    	  function formatDate( dateInp ) 
-    	  {
-    		  var day = dateInp.dayOfMonth;
-    		  var month = dateInp.monthValue - 1; // Month is 0-indexed
-    		  var year = dateInp.year;
-
-    		  return (month + 1) + "/" +  day+ "/" +  year;
-    	  }
-
-    	  var jsonData = $.ajax(
-    	  {
-    	      url: 'api/v1/currency/exchangerates?period=m',
-    	      dataType: 'json',
-    	      
-    	  }).done(function (results) 
-    	  {
-    	    var labels = [], data=[];
-    	    results.forEach(function(result) 
-    	    {
-    	      labels.push(formatDate(result.date));
-    	      data.push(parseFloat(result.rate));
-    	    });
-
-    	    // Create the chart.js data structure using 'labels' and 'data'
-    	    var tempData = {
-    	      labels : labels,
-    	      datasets : [{
-    	    	  label: 'BTC',
-    	    	  backgroundColor: hexToRgba(getStyle('--info'), 10),
-    	          borderColor: getStyle('--info'),    	          
-    	          data       : data
-    	      }]
-    	    };
-
-    	    // Get the context of the canvas element we want to select
-    	    var ctx = document.getElementById("main-chart").getContext("2d");
-
-    	    var myLineChart = new Chart(ctx , {
-                type: "line",
-                data: tempData, 
-            });
-    	  });
-    	}
-
-    	drawLineChart();
-    */
-    
-    </script>
-</body>
+    </body>
 </html>

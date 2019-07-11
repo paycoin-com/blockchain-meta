@@ -13,6 +13,7 @@ import io.hs.bex.currency.model.CurrencyRateStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,19 +38,28 @@ import io.hs.bex.datastore.service.api.DataStoreService;
     private final String STATS_ROOT_FOLDER = "/xrates/stats/";
     private final String XRATES_ROOT_FOLDER = "/xrates/";
 
-    @Autowired DataStoreService dataStoreService;
+    @Autowired
+    private DataStoreService dataStoreService;
 
-    @Autowired StatsTracker statsTracker;
+    @Autowired
+    private StatsTracker statsTracker;
 
-    @Autowired ObjectMapper mapper;
+    @Autowired
+    private ObjectMapper mapper;
 
-    List<SysCurrency> fiatCurrencies;
-    List<SysCurrency> digCurrencies;
+    private List<SysCurrency> fiatCurrencies;
+    private List<SysCurrency> digCurrencies;
 
     public void init(List<SysCurrency> fiatCurrencies, List<SysCurrency> digCurrencies)
     {
         this.fiatCurrencies = fiatCurrencies;
         this.digCurrencies = digCurrencies;
+    }
+
+    @Async
+    public void updateStatsDataAsync(List<CurrencyRateStack> rateStackList, Instant timestamp)
+    {
+        updateStatsData(rateStackList, timestamp );
     }
 
     public void updateStatsData(List<CurrencyRateStack> rateStackList, Instant timestamp)
@@ -65,15 +75,24 @@ import io.hs.bex.datastore.service.api.DataStoreService;
                     for ( SysCurrency coin : rateStack.getRates().keySet() )
                     {
                         updateStatsData( statsType, rateStack.getCurrencyStr(), coin.getCode(),
-                                rateStack.getRates().get(coin), rateStack.getTime() );
+                                rateStack.getRates().get( coin ), rateStack.getTime() );
                     }
                 }
             }
+
+            logger.info( " (!!!)  **** Stats data update ended. ***** " );
+
         }
         catch ( Exception e )
         {
-            logger.error( "Error when creating stats data:", e );
+            logger.error( "Error when updating stats data:", e );
         }
+    }
+
+    @Async
+    public void createStatsDataAsync()
+    {
+        createStatsData();
     }
 
     public void createStatsData()
@@ -110,6 +129,11 @@ import io.hs.bex.datastore.service.api.DataStoreService;
         StatsRates statsRates = getStatsData( statsType, fiatCurrency, digCurrency, timestamp, fileName );
 
         statsRates.getRates().add( rate );
+        statsRates.setTimestamp( timestamp.getEpochSecond() );
+
+        //-------- Adjust size of the object --------------------
+        adjustStatsDataSize( statsType, statsRates );
+        //-------------------------------------------------------
 
         saveFile( fiatCurrency + "/" + digCurrency, fileName, mapper.writeValueAsString( statsRates ) );
 
@@ -135,6 +159,12 @@ import io.hs.bex.datastore.service.api.DataStoreService;
 
         return new StatsRates( timestamp.getEpochSecond(), statsType );
 
+    }
+
+    private void adjustStatsDataSize(StatsType statsType, StatsRates statsRates)
+    {
+        if ( statsRates.getRates().size() > statsType.getRecordCount() )
+            statsRates.getRates().remove( 0 );
     }
 
     private void saveStatsData(StatsType statsType, String fiatCurrency, String digCurrency, Instant timestamp)

@@ -3,7 +3,9 @@ package io.hs.bex.web.view;
 public class ModelView
 {
     public static final String VIEW_SYSTEM_MAIN_PAGE = "index";
-  
+    public static final String VIEW_SYSTEM_ERROR_PAGE = "error";
+    public static final String VIEW_SYSTEM_LOGIN_PAGE = "login";
+
     public static final String VIEW_NODE_LIST_PAGE = "node-list";
     public static final String VIEW_NODE_DETAILS_PAGE = "node-details";
     

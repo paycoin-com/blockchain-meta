@@ -26,7 +26,8 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(  {"io.hs.bex.blockchain.dao"})
+@EnableJpaRepositories(  {"io.hs.bex.blockchain.dao",
+                          "io.hs.bex.common.dao"})
 public class DbConfig
 {
     // ---------------------------------
@@ -116,7 +117,7 @@ public class DbConfig
         em.setDataSource( dataSource() );
         em.setJpaVendorAdapter( jpaVendorAdapter() );    
         em.setJpaProperties( hibernateProperties() );
-        em.setPackagesToScan(new String[] { "io.hs.bex.blockchain.model.store"});
+        em.setPackagesToScan(new String[] { "io.hs.bex.blockchain.model.store","io.hs.bex.common.model"});
         
         return em;
     }

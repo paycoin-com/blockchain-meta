@@ -1,7 +1,6 @@
 package io.hs.bex.currency.model.stats;
 
 
-import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 
