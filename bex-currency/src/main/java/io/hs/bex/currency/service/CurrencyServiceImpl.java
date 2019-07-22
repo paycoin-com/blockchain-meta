@@ -24,7 +24,6 @@ import io.hs.bex.currency.model.CurrencyRateStack;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
-import io.hs.bex.currency.model.stats.Stats;
 import io.hs.bex.currency.service.stats.CurrencyStatsService;
 import io.hs.bex.currency.task.HourlyXRatesTask;
 import io.hs.bex.currency.task.LatestXRatesTask;
@@ -42,7 +41,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -294,7 +292,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
             for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
             {
-                LocalDateTime lastDate = null, localDateTime = null;
+                LocalDateTime lastDate = null, localDateTime;
                 dataMap.clear();
 
                 baseXRates = digitalCcyService
@@ -303,7 +301,6 @@ public class CurrencyServiceImpl implements CurrencyService
 
                 for( SysCurrency targetCurrency: targetCurrencies )
                 {
-                    float lastRate = 0;
                     String rootPath = "/historical/" + sourceCurrency.getCode() + "/" + targetCurrency.getCode() + "/";
 
                     xrates = calculateXRateDetails( request, baseXRates, targetCurrency );
@@ -337,7 +334,6 @@ public class CurrencyServiceImpl implements CurrencyService
 
                         hour = localDateTime.getHour();
                         lastDate = localDateTime;
-                        lastRate = xrate.getRate();
                     }
 
                     if( dataMap.size() > 0 )
@@ -368,7 +364,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
     private void appendData( String path, String fileName, Map<String, String> dataMap ) throws IOException
     {
-        LinkedHashMap<String, String> contentMap = null;
+        LinkedHashMap<String, String> contentMap;
 
         String content = getFileContent( path, fileName );
 
@@ -401,7 +397,7 @@ public class CurrencyServiceImpl implements CurrencyService
             }
 
             //--------Set statistics data -------------------------
-            statsService.updateStatsData( rateStockList, Instant.now() );
+            //statsService.updateStatsData( rateStockList, Instant.now() );
             //-----------------------------------------------------
 
             //-----------------------------------------------
@@ -507,7 +503,7 @@ public class CurrencyServiceImpl implements CurrencyService
         }
         else
         {
-            List<CurrencyRate> localFiatXRates = null;
+            List<CurrencyRate> localFiatXRates;
             Instant lastDate = null;
 
             localFiatXRates = fiatXRates;
@@ -546,14 +542,14 @@ public class CurrencyServiceImpl implements CurrencyService
         return xrateDetails;
     }
 
-    private void saveFile( String path, String fileName, String value ) throws JsonProcessingException
+    private void saveFile( String path, String fileName, String value )
     {
-        dataStoreService.saveFile( true, XRATES_ROOT_FOLDER + path, "index.json", value );
+        dataStoreService.saveFile( true, XRATES_ROOT_FOLDER + path, fileName, value );
     }
 
     private String getFileContent( String path, String fileName )
     {
-        return dataStoreService.getFileContent( XRATES_ROOT_FOLDER + path, "index.json" );
+        return dataStoreService.getFileContent( XRATES_ROOT_FOLDER + path, fileName );
     }
 
     public void setFiatXRates( List<CurrencyRate> fiatXRates )

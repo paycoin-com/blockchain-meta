@@ -67,13 +67,13 @@ public class BlockChainServiceImpl implements BlockChainService
     {
         String handlerName = "";
 
-//        for( Node node: nodeService.getNodes() )
-//        {
-//            handlerName = node.getProvider().getCurrencyType().getCode() + "-BlockChainHandler";
-//            BlockChainHandler blockChainHanlder = (BlockChainHandler) appContext.getBean( handlerName );
-//            blockChainHanlder.init( node );
-//            chainHandlers.put( node.getId(), blockChainHanlder );
-//        }
+        for( Node node: nodeService.getNodes() )
+        {
+            handlerName = node.getProvider().getCurrencyType().getCode() + "-BlockChainHandler";
+            BlockChainHandler blockChainHanlder = (BlockChainHandler) appContext.getBean( handlerName );
+            blockChainHanlder.init( node );
+            chainHandlers.put( node.getId(), blockChainHanlder );
+        }
     }
 
     private BlockChainHandler getHandler( int nodeId )
@@ -127,7 +127,7 @@ public class BlockChainServiceImpl implements BlockChainService
     @Override
     public void saveFeeRates()
     {
-        BlockChainHandler bcHandler = null;
+        BlockChainHandler bcHandler;
 
         try
         {
