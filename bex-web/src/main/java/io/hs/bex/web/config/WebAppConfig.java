@@ -47,7 +47,7 @@ import io.hs.bex.web.config.json.JacksonConfig;
                                 "io.hs.bex.web.controller",
                                 "io.hs.bex.*.service",
                                 "io.hs.bex.*.handler"})
-@Import({ /*DbConfig.class,*/ CacheConfig.class, JacksonConfig.class })
+@Import({  CacheConfig.class, JacksonConfig.class })
 public class WebAppConfig implements WebMvcConfigurer
 {
     private static final Charset UTF8 = Charset.forName("UTF-8");

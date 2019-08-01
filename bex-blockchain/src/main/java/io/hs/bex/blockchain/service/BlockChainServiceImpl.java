@@ -127,7 +127,7 @@ public class BlockChainServiceImpl implements BlockChainService
     @Override
     public void saveFeeRates()
     {
-        BlockChainHandler bcHandler = null;
+        BlockChainHandler bcHandler;
 
         try
         {

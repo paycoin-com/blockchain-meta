@@ -24,6 +24,7 @@ import io.hs.bex.currency.model.CurrencyRateStack;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
+import io.hs.bex.currency.service.stats.CurrencyStatsService;
 import io.hs.bex.currency.task.HourlyXRatesTask;
 import io.hs.bex.currency.task.LatestXRatesTask;
 import io.hs.bex.currency.utils.CurrencyUtils;
@@ -37,9 +38,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -91,6 +92,9 @@ public class CurrencyServiceImpl implements CurrencyService
     @Autowired
     @Qualifier( "ExchangeRatesAPI" )
     CurrencyInfoService fiatCcyService;
+    
+    @Autowired CurrencyStatsService statsService;
+
 
     private CurrencyInfoRequest currencyTaskParams = new CurrencyInfoRequest();
 
@@ -98,6 +102,8 @@ public class CurrencyServiceImpl implements CurrencyService
     public void init()
     {
         buildTaskParams();
+        
+        statsService.init(getSupported( CurrencyType.FIAT ),getSupported( CurrencyType.DIGITAL ));
     }
 
     private HourlyXRatesTask startHourlyXRatesTask()
@@ -142,6 +148,13 @@ public class CurrencyServiceImpl implements CurrencyService
     public CurrencyInfoService getInfoService()
     {
         return digitalCcyService;
+    }
+    
+    @Async
+    @Override
+    public void createStatsDataAsync()
+    {
+        statsService.createStatsData();
     }
 
     @Override
@@ -210,7 +223,7 @@ public class CurrencyServiceImpl implements CurrencyService
         }
         catch( Exception e )
         {
-            logger.error( "Error getting currency list (supported:)", e );
+            logger.error( "Error getting currency list (supported):", e );
         }
 
         return Collections.emptyList();
@@ -275,10 +288,11 @@ public class CurrencyServiceImpl implements CurrencyService
             String path = "";
             List<CurrencyRate> baseXRates, xrates;
             Map<String, String> dataMap = new LinkedHashMap<>();
+            Instant statsTimeStamp = Instant.now();
 
             for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
             {
-                LocalDateTime lastDate = null, localDateTime = null;
+                LocalDateTime lastDate = null, localDateTime;
                 dataMap.clear();
 
                 baseXRates = digitalCcyService
@@ -328,6 +342,7 @@ public class CurrencyServiceImpl implements CurrencyService
                         appendData( path, "index.json", dataMap );
                         dataMap.clear();
                     }
+                    
                 }
 
                 // ------------------------------------------------------------------------
@@ -349,7 +364,7 @@ public class CurrencyServiceImpl implements CurrencyService
 
     private void appendData( String path, String fileName, Map<String, String> dataMap ) throws IOException
     {
-        LinkedHashMap<String, String> contentMap = null;
+        LinkedHashMap<String, String> contentMap;
 
         String content = getFileContent( path, fileName );
 
@@ -378,8 +393,13 @@ public class CurrencyServiceImpl implements CurrencyService
             {
                 String rootPath = "/latest/" + rateStack.getCurrency().getCode() + "/";
                 saveFile( rootPath, "index.json", mapper.writeValueAsString( rateStack ) );
+
             }
-            
+
+            //--------Set statistics data -------------------------
+            //statsService.updateStatsData( rateStockList, Instant.now() );
+            //-----------------------------------------------------
+
             //-----------------------------------------------
             dataStoreService.publishNS( "", "", "" );
             //-----------------------------------------------
@@ -483,7 +503,7 @@ public class CurrencyServiceImpl implements CurrencyService
         }
         else
         {
-            List<CurrencyRate> localFiatXRates = null;
+            List<CurrencyRate> localFiatXRates;
             Instant lastDate = null;
 
             localFiatXRates = fiatXRates;
@@ -522,14 +542,14 @@ public class CurrencyServiceImpl implements CurrencyService
         return xrateDetails;
     }
 
-    private void saveFile( String path, String fileName, String value ) throws JsonProcessingException
+    private void saveFile( String path, String fileName, String value )
     {
-        dataStoreService.saveFile( true, XRATES_ROOT_FOLDER + path, "index.json", value );
+        dataStoreService.saveFile( true, XRATES_ROOT_FOLDER + path, fileName, value );
     }
 
     private String getFileContent( String path, String fileName )
     {
-        return dataStoreService.getFileContent( XRATES_ROOT_FOLDER + path, "index.json" );
+        return dataStoreService.getFileContent( XRATES_ROOT_FOLDER + path, fileName );
     }
 
     public void setFiatXRates( List<CurrencyRate> fiatXRates )

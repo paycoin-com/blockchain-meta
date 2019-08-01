@@ -20,7 +20,7 @@ public class SystemController
      * @param model
      * @return
      */
-    @RequestMapping(value={ "/", "/index", "/main"}, method = RequestMethod.GET)
+    @RequestMapping(value={ "/" , "/index"}, method = RequestMethod.GET)
     public String index( ModelMap model ) 
     {
         logger.info( "Index page loaded successfully !!! " );
