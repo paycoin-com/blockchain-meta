@@ -2,20 +2,12 @@
 
 #### DEFINE COINS ##################
 
-#declare -a COINS=('BTC' 'ETH' 'BCH' 'DASH' 'BAT' 'BNB' 'BNT' 'CRO' 'DAI' 'DGD' 'DGX' 'ELF' 'ENJ' 'EOS' 'EOSDT' 'EURS' 'GNT' 'GUSD' 'HOT' 'HT' 'IDXM' 'IQ' 'KCS' 'KNC' 'LINK' 'LOOM' 'LRC' 'MANA' 'MCO' 'MEETONE' 'MITH' 'MKR' 'NEXO' 'NPXS' 'OMG' 'ORBS' 'PAX' 'PGL' 'POLY' 'PPT' 'PTI' 'R' 'REP' 'SNT' 'TUSD' 'USDC' 'USDT' 'WAX' 'WTC' 'ZIL' 'ZRX')
-#declare -a FIATS=('USD' 'EUR' 'GBP' 'JPY' 'CAD' 'AUD' 'CNY' 'CHF' 'RUB' 'KRW' 'TRY')
+declare -a COINS=('BTC' 'ETH' 'BCH' 'DASH' 'BAT' 'BNB' 'BNT' 'CRO' 'DAI' 'DGD' 'DGX' 'ELF' 'ENJ' 'EOS' 'EOSDT' 'EURS' 'GNT' 'GUSD' 'HOT' 'HT' 'IDXM' 'IQ' 'KCS' 'KNC' 'LINK' 'LOOM' 'LRC' 'MANA' 'MCO' 'MEETONE' 'MITH' 'MKR' 'NEXO' 'NPXS' 'OMG' 'ORBS' 'PAX' 'PGL' 'POLY' 'PPT' 'PTI' 'R' 'REP' 'SNT' 'TUSD' 'USDC' 'USDT' 'WAX' 'WTC' 'ZIL' 'ZRX')
+declare -a FIATS=('USD' 'EUR' 'GBP' 'JPY' 'CAD' 'AUD' 'CNY' 'CHF' 'RUB' 'KRW' 'TRY')
 
-EOS    -- OK
-NDX    -- ?
-IQ     -- OK
-EOSDT  -- OK
-NUT    -- ?
-PGL    -- OK
-MEETONE - OK
-PTI    -- OK
 
-declare -a COINS=('BTC' 'BCH') 
-declare -a FIATS=('USD' 'EUR')
+#declare -a COINS=('BTC' 'BCH')
+#declare -a FIATS=('USD' 'EUR')
 
 ####################################
 BEX_API_URL="http://localhost:8181/bex/api/v1/currency/xrates/save"
