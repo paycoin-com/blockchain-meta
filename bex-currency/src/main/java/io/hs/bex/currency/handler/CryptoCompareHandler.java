@@ -14,6 +14,7 @@ import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.TimePeriod;
+import io.hs.bex.currency.model.stats.CoinInfo;
 import io.hs.bex.currency.service.api.CurrencyInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +126,11 @@ public class CryptoCompareHandler implements CurrencyInfoService
 
             return null;
         }
+    }
+
+    @Override public CoinInfo getCoinInfo(CurrencyInfoRequest request)
+    {
+        return null;
     }
 
     @Override

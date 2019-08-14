@@ -22,6 +22,8 @@ public class StatsRates
     @JsonProperty("scale")
     private long scale;
 
+    @JsonProperty("scale_minutes")
+    private long scaleInMinutes;
 
     @JsonProperty("rates")
     private List<String> rates =  new ArrayList<>();
@@ -33,6 +35,7 @@ public class StatsRates
         this.timestamp = timeFrom;
         this.scale = statsType.getScale();
         this.scaleUnit = statsType.getScaleUnit().name();
+        this.scaleInMinutes = statsType.getScaleUnit().getDuration().toMinutes() * this.scale;
     }
 
     @JsonProperty("time_str")
@@ -80,5 +83,15 @@ public class StatsRates
     public void setScale(long scale)
     {
         this.scale = scale;
+    }
+
+    public long getScaleInMinutes()
+    {
+        return scaleInMinutes;
+    }
+
+    public void setScaleInMinutes(long scaleInMinutes)
+    {
+        this.scaleInMinutes = scaleInMinutes;
     }
 }

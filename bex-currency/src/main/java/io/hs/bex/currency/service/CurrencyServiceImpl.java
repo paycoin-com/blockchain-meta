@@ -24,7 +24,9 @@ import io.hs.bex.currency.model.CurrencyRateStack;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
+import io.hs.bex.currency.model.stats.CoinInfo;
 import io.hs.bex.currency.service.stats.CurrencyStatsService;
+import io.hs.bex.currency.task.CoinInfoTask;
 import io.hs.bex.currency.task.HourlyXRatesTask;
 import io.hs.bex.currency.task.LatestXRatesTask;
 import io.hs.bex.currency.utils.CurrencyUtils;
@@ -62,16 +64,19 @@ public class CurrencyServiceImpl implements CurrencyService
      @Value( "${node.ipfs.key.secondary}" )
      private String KEY_SECONDARY;
     
-    final int LAST_XRATES_FETCH_PERIOD = 210; // seconds
+    final int LAST_XRATES_FETCH_PERIOD = 300; // seconds
     final int FIAT_XRATES_FETCH_PERIOD = 600; // seconds
     final int HOURLY_XRATES_FETCH_PERIOD = 2400; // seconds
+    final int COIN_INFO_FETCH_PERIOD = 86400; // seconds  1 day
 
     public final SysCurrency BASE_SYSTEM_CURRENCY = SysCurrency.USD;
 
-    // Later Change exchange to Binance or Coinbase
+    // Latest Change exchange to Binance or Coinbase
     public final String STOCK_EXCHANGE_SOURCE = "";
 
     final String XRATES_ROOT_FOLDER = "/xrates";
+    private final String STATS_ROOT_FOLDER = "/xrates/stats/";
+
 
     private List<CurrencyRate> fiatXRates = Collections.synchronizedList( new ArrayList<>() );
 
@@ -85,7 +90,10 @@ public class CurrencyServiceImpl implements CurrencyService
     DataStoreService dataStoreService;
 
     @Autowired
-    //@Qualifier( "CoinPaprikaHandler" )
+    @Qualifier( "CoinPaprikaHandler" )
+    CurrencyInfoService coinPaprikaService;
+
+    @Autowired
     @Qualifier( "CryptoCompareHandler" )
     CurrencyInfoService digitalCcyService;
 
@@ -111,7 +119,7 @@ public class CurrencyServiceImpl implements CurrencyService
         return new HourlyXRatesTask( this );
     }
 
-    private LatestXRatesTask startLatesXRatesTask()
+    private LatestXRatesTask startLatestXRatesTask()
     {
         return new LatestXRatesTask( this );
     }
@@ -121,6 +129,10 @@ public class CurrencyServiceImpl implements CurrencyService
         return new FiatXRatesTask( this );
     }
 
+    private CoinInfoTask startCoinInfoTask()
+    {
+        return new CoinInfoTask( this );
+    }
 //    private DataPublishTask startDataPublishTask()
 //    {
 //        return new DataPublishTask( dataStoreService , KEY_SECONDARY );
@@ -140,7 +152,9 @@ public class CurrencyServiceImpl implements CurrencyService
         taskManager.startScheduledAtFixed( startFiatXRatesTask(), "FiatXRatesTask", 0, FIAT_XRATES_FETCH_PERIOD );
         taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 30,
                 HOURLY_XRATES_FETCH_PERIOD );
-        taskManager.startScheduledAtFixed( startLatesXRatesTask(), "LatesXRatesTask", 35, LAST_XRATES_FETCH_PERIOD );
+        taskManager.startScheduledAtFixed( startLatestXRatesTask(), "LatesXRatesTask", 35, LAST_XRATES_FETCH_PERIOD );
+        //taskManager.startScheduledAtFixed( startCoinInfoTask(), "CoinInfoTask", 10, COIN_INFO_FETCH_PERIOD );
+
         //taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
     }
 
@@ -397,7 +411,7 @@ public class CurrencyServiceImpl implements CurrencyService
             }
 
             //--------Set statistics data -------------------------
-            //statsService.updateStatsData( rateStockList, Instant.now() );
+            statsService.updateStatsData( rateStockList, Instant.now() );
             //-----------------------------------------------------
 
             //-----------------------------------------------
@@ -429,6 +443,30 @@ public class CurrencyServiceImpl implements CurrencyService
     }
 
     @Override
+    public void fetchAndStoreCoinInfo()
+    {
+        CurrencyInfoRequest request = new CurrencyInfoRequest();
+        request.setSourceCurrencies( getSupported( CurrencyType.DIGITAL ) );
+
+        saveCoinInfo( coinPaprikaService.getCoinInfo( request ) );
+    }
+
+    @Override
+    public void saveCoinInfo( CoinInfo coinInfo )
+    {
+       try
+       {
+           if(  coinInfo != null )
+               dataStoreService.saveFile( true, STATS_ROOT_FOLDER, "coininfo.json",
+                mapper.writeValueAsString( coinInfo ) );
+       }
+       catch( Exception e )
+       {
+           logger.error( "Error saving coinInfo :{}", coinInfo, e );
+       }
+    }
+
+    @Override
     public List<CurrencyRate> getXRates( CurrencyInfoRequest request )
     {
 
@@ -455,7 +493,9 @@ public class CurrencyServiceImpl implements CurrencyService
             List<CurrencyRate> tempXRates = fiatCcyService.getLatestXRates( request );
             fiatXRates.clear();
             fiatXRates.add( new CurrencyRate( BASE_SYSTEM_CURRENCY,BASE_SYSTEM_CURRENCY, 1 ));
-            fiatXRates.addAll( tempXRates );
+
+            if(tempXRates != null)
+                fiatXRates.addAll( tempXRates );
 
             return fiatXRates;
         }
@@ -476,17 +516,16 @@ public class CurrencyServiceImpl implements CurrencyService
             xrateStack = new CurrencyRateStack();
             xrateStack.setCurrency( fiatXRate.getTargetCurrency() );
             xrateStackList.add( xrateStack );
-            
+
             for( CurrencyRate digXRate: digitalCcyXrates )
             {
-                if(fiatXRate.getCurrency() ==  digXRate.getTargetCurrency()) 
+                if(fiatXRate.getCurrency() ==  digXRate.getTargetCurrency())
                 {
                     xrateStack.setTime( digXRate.getDate());
                     xrateStack.addRatesAsFloat( digXRate.getCurrency(), digXRate.getRate() * fiatXRate.getRate() );
                 }
-            }                
+            }
         }
-            
 
         return xrateStackList;
     }
