@@ -411,7 +411,7 @@ public class CurrencyServiceImpl implements CurrencyService
             }
 
             //--------Set statistics data -------------------------
-            //statsService.updateStatsData( rateStockList, Instant.now() );
+            statsService.updateStatsData( rateStockList, Instant.now() );
             //-----------------------------------------------------
 
             //-----------------------------------------------
