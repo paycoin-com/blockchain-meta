@@ -8,6 +8,8 @@ import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.CurrencyType;
 import io.hs.bex.currency.model.SysCurrency;
 import io.hs.bex.currency.model.TimePeriod;
+import io.hs.bex.currency.model.stats.CoinInfo;
+
 
 public interface CurrencyService
 {
@@ -29,7 +31,11 @@ public interface CurrencyService
     void fetchAndStoreXRates( int storeType, TimePeriod timePeriod, int fetchSize );
 
     void saveXRates( CurrencyInfoRequest request );
-    
+
+    void fetchAndStoreCoinInfo();
+
+    void saveCoinInfo(CoinInfo coinInfo);
+
     List<CurrencyRate> getXRates( CurrencyInfoRequest request );
 
     void saveLatestXRates( CurrencyInfoRequest request );

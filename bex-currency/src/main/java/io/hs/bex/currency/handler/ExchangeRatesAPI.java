@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import io.hs.bex.currency.model.stats.CoinInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,25 +98,31 @@ public class ExchangeRatesAPI implements CurrencyInfoService
     @Override
     public List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request )
     {
-        String url = apiUrl + "/latest?base=" + request.joinSourceCurrencies( "," )
-        + "&symbols=" + request.joinTargetCurrencies( "," );
-        
-        try 
+        if(!request.getTargetCurrencies().isEmpty())
         {
-            HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
-            ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET,entity, String.class);
-            
-            return jsonToCurrencyRates( response.getBody() );
+            String url = apiUrl + "/latest?base=" + request.joinSourceCurrencies( "," ) + "&symbols=" + request.joinTargetCurrencies( "," );
+
+            try
+            {
+                HttpEntity<String> entity = new HttpEntity<String>( "parameters", headers );
+                ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET, entity, String.class );
+
+                return jsonToCurrencyRates( response.getBody() );
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Error getting Currency rate from:{}", url, e );
+           }
         }
-        catch( Exception e ) 
-        {
-            logger.error( "Error getting Currency rate from:{}",url, e );
-            
-            return null;
-        }
+
+        return null;
     }
-    
-    
+
+    @Override public CoinInfo getCoinInfo(CurrencyInfoRequest request)
+    {
+        return null;
+    }
+
     private List<CurrencyRate> jsonToCurrencyRates( String json ) 
             throws Exception 
     {

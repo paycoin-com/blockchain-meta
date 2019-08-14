@@ -163,7 +163,7 @@ import io.hs.bex.datastore.service.api.DataStoreService;
 
     private void adjustStatsDataSize(StatsType statsType, StatsRates statsRates)
     {
-        if ( statsRates.getRates().size() > statsType.getRecordCount() )
+        if ( statsRates.getRates().size() > (statsType.getRecordCount() + 1) )
             statsRates.getRates().remove( 0 );
     }
 

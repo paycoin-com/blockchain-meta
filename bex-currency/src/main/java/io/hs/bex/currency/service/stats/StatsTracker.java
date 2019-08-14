@@ -48,7 +48,8 @@ class TrackerData
 }
 //==========================
 
-@Component public class StatsTracker
+@Component
+public class StatsTracker
 {
     private List<TrackerData> trackerDataList = new ArrayList<>();
     private List<StatsType> statsTypeList = new ArrayList<>();
@@ -57,7 +58,8 @@ class TrackerData
     {
     }
 
-    @PostConstruct public void init()
+    @PostConstruct
+    public void init()
     {
         Instant tempTime = Instant.now().minus( 40, ChronoUnit.MINUTES );
 

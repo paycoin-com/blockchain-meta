@@ -1,18 +1,18 @@
 package io.hs.bex.currency.handler;
 
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import io.hs.bex.currency.model.stats.CoinInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,6 +151,55 @@ public class CoinPaprikaHandler implements CurrencyInfoService
 
             return Collections.emptyList();
         }
+    }
+
+    @Override public CoinInfo getCoinInfo(CurrencyInfoRequest request)
+    {
+        String coinId = "", url = "";
+        CoinInfo coinInfo  = new CoinInfo();
+        try
+        {
+
+            for(SysCurrency coin: request.getSourceCurrencies())
+            {
+                coinId = coin.getUid();
+                url = infoServiceUrl + "/v1/tickers/" + coinId;
+
+                HttpEntity<String> entity = new HttpEntity<String>( "parameters", headers );
+                ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET, entity, String.class );
+
+                jsonToCoinInfo( coinInfo, coinId,  response.getBody() );
+            }
+
+            return coinInfo;
+        }
+        catch( Exception e )
+        {
+            logger.error( "Error getting Coin Info for:{}", coinId, e );
+        }
+
+        if(!coinInfo.getCoinInfoMap().isEmpty())
+            return coinInfo;
+        else
+            return null;
+    }
+    private void jsonToCoinInfo( CoinInfo coinInfo, String coinId,  String jsonResponse ) throws IOException
+    {
+        Map info = new HashMap<String,String>();
+        Map<String,Object> responseMap = mapper.readValue( jsonResponse,
+                new TypeReference<Map<String,Object>>() {} );
+        Object valueObj = responseMap.get( "circulating_supply" );
+
+        if( valueObj instanceof Integer )
+            info.put( "circulating_supply", Integer.toString( (int)valueObj ));
+        else if( valueObj instanceof Long )
+            info.put( "circulating_supply", Long.toString( (long)valueObj ));
+        else if( valueObj instanceof Double )
+            info.put( "circulating_supply", StringUtils.doubleToString ( (double)valueObj ));
+        else if( valueObj instanceof Float )
+            info.put( "circulating_supply", StringUtils.doubleToString ( (float)valueObj ));
+
+        coinInfo.getCoinInfoMap().put( coinId, info);
     }
 
     @Override
