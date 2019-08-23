@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.TreeMap;
 
 import io.hs.bex.currency.model.CurrencyRateStack;
+import io.hs.bex.currency.model.stats.CoinInfo;
+import io.hs.bex.currency.model.stats.Stats;
+import io.hs.bex.currency.model.stats.StatsData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
 import io.hs.bex.currency.model.SysCurrency;
-import io.hs.bex.currency.model.stats.StatsRates;
 import io.hs.bex.currency.model.stats.StatsType;
 import io.hs.bex.datastore.service.api.DataStoreService;
 
@@ -29,7 +31,8 @@ import io.hs.bex.datastore.service.api.DataStoreService;
 /**
  * @author nisakov Statistics management service
  */
-@Service( "CurrencyStatsService" ) public class CurrencyStatsService
+@Service( "CurrencyStatsService" )
+public class CurrencyStatsService
 {
     // ---------------------------------
     private static final Logger logger = LoggerFactory.getLogger( CurrencyStatsService.class );
@@ -57,31 +60,29 @@ import io.hs.bex.datastore.service.api.DataStoreService;
     }
 
     @Async
-    public void updateStatsDataAsync(List<CurrencyRateStack> rateStackList, Instant timestamp)
+    public void updateStatsDataAsync(List<CurrencyRateStack> rateStackList, Instant timestamp,
+            List<CoinInfo> coinInfoList)
     {
-        updateStatsData(rateStackList, timestamp );
+        updateStatsData( rateStackList, timestamp, coinInfoList );
     }
 
-    public void updateStatsData(List<CurrencyRateStack> rateStackList, Instant timestamp)
+    public void updateStatsData( List<CurrencyRateStack> rateStackList, Instant timestamp, List<CoinInfo> coinInfoList)
     {
         try
         {
-            List<StatsType> statsTypeList = statsTracker.requiredUpdates( timestamp );
-
-            for ( StatsType statsType : statsTypeList )
+            for ( CurrencyRateStack rateStack : rateStackList )
             {
-                for ( CurrencyRateStack rateStack : rateStackList )
+                for ( SysCurrency coin : rateStack.getRates().keySet() )
                 {
-                    for ( SysCurrency coin : rateStack.getRates().keySet() )
-                    {
-                        updateStatsData( statsType, rateStack.getCurrencyStr(), coin.getCode(),
-                                rateStack.getRates().get( coin ), rateStack.getTime() );
-                    }
+                    CoinInfo info = coinInfoList.stream().filter( coinInfo -> coinInfo.getCoin() == coin ).findAny()
+                            .orElse( new CoinInfo( coin, 0, 0 ) );
+
+                    updateStatsData( rateStack.getCurrencyStr(), coin.getCode(),
+                            rateStack.getRates().get( coin ), rateStack.getTime(), info );
                 }
             }
 
             logger.info( " (!!!)  **** Stats data update ended. ***** " );
-
         }
         catch ( Exception e )
         {
@@ -90,12 +91,12 @@ import io.hs.bex.datastore.service.api.DataStoreService;
     }
 
     @Async
-    public void createStatsDataAsync()
+    public void createStatsDataAsync(List<CoinInfo> coinInfoList)
     {
-        createStatsData();
+        createStatsData( coinInfoList );
     }
 
-    public void createStatsData()
+    public void createStatsData(List<CoinInfo> coinInfoList)
     {
         Instant timestamp = Instant.now();
 
@@ -103,17 +104,16 @@ import io.hs.bex.datastore.service.api.DataStoreService;
         {
             for ( SysCurrency fCcy : fiatCurrencies )
             {
-                for ( SysCurrency dCcy : digCurrencies )
+                for ( SysCurrency coin : digCurrencies )
                 {
-                    for ( StatsType statsType : StatsType.values() )
-                    {
-                        saveStatsData( statsType, fCcy.getCode(), dCcy.getCode(), timestamp );
-                    }
+                    CoinInfo info = coinInfoList.stream().filter( coinInfo -> coinInfo.getCoin() == coin ).findAny()
+                            .orElse( new CoinInfo( coin, 0, 0 ) );
+
+                    saveStatsData( fCcy.getCode(), coin.getCode(), timestamp, info );
                 }
             }
 
             logger.info( " (!!!)  **** Stats data creation ended. ***** " );
-
         }
         catch ( Exception e )
         {
@@ -121,76 +121,114 @@ import io.hs.bex.datastore.service.api.DataStoreService;
         }
     }
 
-    private void updateStatsData(StatsType statsType, String fiatCurrency, String digCurrency, String rate,
-            Instant timestamp) throws IOException
+    public void createStatsData(String fiat, String coin, CoinInfo coinInfo)
     {
-        String fileName = statsType.name().toLowerCase() + ".json";
+        Instant timestamp = Instant.now();
 
-        StatsRates statsRates = getStatsData( statsType, fiatCurrency, digCurrency, timestamp, fileName );
+        try
+        {
+            saveStatsData( fiat, coin, timestamp, coinInfo );
 
-        statsRates.getRates().add( rate );
-        statsRates.setTimestamp( timestamp.getEpochSecond() );
-
-        //-------- Adjust size of the object --------------------
-        adjustStatsDataSize( statsType, statsRates );
-        //-------------------------------------------------------
-
-        saveFile( fiatCurrency + "/" + digCurrency, fileName, mapper.writeValueAsString( statsRates ) );
-
-        logger.info( "Successfully created stats for: {}:{}", fiatCurrency, digCurrency );
-
+            logger.info( " (!!!)  **** Stats data creation ended. ***** " );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Error creating stats data:", e );
+        }
     }
 
-    private StatsRates getStatsData(StatsType statsType, String fiatCurrency, String digCurrency, Instant timestamp,
-            String fileName) throws IOException
+    private void updateStatsData( String fiatCurrency, String digCurrency, String rate, Instant timestamp,
+            CoinInfo coinInfo ) throws IOException
     {
 
-        String outJson = getFileContent( fiatCurrency + "/" + digCurrency, fileName );
+        List<StatsType> statsTypeList = statsTracker.requiredUpdates( timestamp );
+
+        if(!statsTypeList.isEmpty())
+        {
+            Stats stats = getStats( fiatCurrency, digCurrency, timestamp );
+
+            for ( StatsType statsType : statsTypeList )
+            {
+                StatsData statsData = stats.getStatsDatas().get( statsType.name() );
+
+                if( statsData == null )
+                {
+                    statsData = new StatsData( timestamp.getEpochSecond(), statsType );
+                    stats.getStatsDatas().put( statsType.name(), statsData );
+                }
+
+                statsData.getRates().add( rate );
+                statsData.setTimestamp( timestamp.getEpochSecond() );
+
+                //-------- Adjust size of the object --------------------
+                adjustStatsDataSize( statsType, statsData );
+                //-------------------------------------------------------
+                if ( statsData.getStatsType() == StatsType.DAILY )
+                {
+                    stats.setVolume24h( coinInfo.getVolume24h() );
+                    stats.setCirculatingSupply( coinInfo.getCirculatingSupply() );
+                    stats.setLatestRate( Double.parseDouble( rate ) );
+                }
+            }
+            saveFile( fiatCurrency + "/" + digCurrency, "index.json", mapper.writeValueAsString( stats ) );
+
+            logger.info( "Successfully created stats for: {}:{}", fiatCurrency, digCurrency );
+        }
+    }
+
+    private Stats getStats( String fiatCurrency, String digCurrency, Instant timestamp ) throws IOException
+    {
+        String outJson = getFileContent( fiatCurrency + "/" + digCurrency, "index.json" );
 
         if ( !Strings.isNullOrEmpty( outJson ) )
         {
-            StatsRates statRates = mapper.readValue( outJson, StatsRates.class );
+            Stats stats = mapper.readValue( outJson, Stats.class );
 
-            if ( statRates != null )
+            if ( stats != null )
             {
-                return statRates;
+                return stats;
             }
         }
 
-        return new StatsRates( timestamp.getEpochSecond(), statsType );
-
+        return new Stats( timestamp.getEpochSecond(), new CoinInfo( digCurrency, 0, 0 ) );
     }
 
-    private void adjustStatsDataSize(StatsType statsType, StatsRates statsRates)
+    private void adjustStatsDataSize(StatsType statsType, StatsData statsRates)
     {
-        if ( statsRates.getRates().size() > (statsType.getRecordCount() + 1) )
+        if ( statsRates.getRates().size() > ( statsType.getRecordCount() + 1 ) )
             statsRates.getRates().remove( 0 );
     }
 
-    private void saveStatsData(StatsType statsType, String fiatCurrency, String digCurrency, Instant timestamp)
+    private void saveStatsData(String fiatCurrency, String digCurrency, Instant timestamp, CoinInfo coinInfo)
             throws IOException
     {
-        String fileName = statsType.name().toLowerCase() + ".json";
-
         LocalDateTime ldt = LocalDateTime.ofInstant( timestamp, ZoneId.systemDefault() );
-        StatsRates statsRates = new StatsRates( timestamp.getEpochSecond(), statsType );
+        Stats stats = new Stats( timestamp.getEpochSecond(), coinInfo );
 
-        for ( int x = 0; x <= statsType.getRecordCount(); x++ )
+        for ( StatsData statsData : stats.getStatsDatas().values() )
         {
-            String rateValue = getHistoricalXRates( fiatCurrency, digCurrency, ldt );
+            for ( int x = 0; x <= statsData.getStatsType().getRecordCount(); x++ )
+            {
+                String rateValue = getHistoricalXRates( fiatCurrency, digCurrency, ldt );
 
-            if ( !Strings.isNullOrEmpty( rateValue ) )
-                statsRates.getRates().add( rateValue );
+                if ( !Strings.isNullOrEmpty( rateValue ) )
+                    statsData.getRates().add( rateValue );
 
-            ldt = adjustDateTime( statsType, ldt );
+                ldt = adjustDateTime( statsData.getStatsType(), ldt );
+
+            }
+            if ( statsData.getRates().size() > 0 )
+            {
+                if ( statsData.getStatsType() == StatsType.DAILY )
+                    stats.setLatestRate( Double.parseDouble( statsData.getRates().get( 0 ) ) );
+
+                Collections.reverse( statsData.getRates() );
+            }
         }
 
-        Collections.reverse( statsRates.getRates() );
-
-        saveFile( fiatCurrency + "/" + digCurrency, fileName, mapper.writeValueAsString( statsRates ) );
+        saveFile( fiatCurrency + "/" + digCurrency, "index.json", mapper.writeValueAsString( stats ) );
 
         logger.info( "Successfully created stats for: {}:{}", fiatCurrency, digCurrency );
-
     }
 
     private String getHistoricalXRates(String fiatCurrency, String digCurrency, LocalDateTime ldt) throws IOException
@@ -237,5 +275,4 @@ import io.hs.bex.datastore.service.api.DataStoreService;
     {
         return dataStoreService.getFileContent( STATS_ROOT_FOLDER + path, fileName );
     }
-
 }

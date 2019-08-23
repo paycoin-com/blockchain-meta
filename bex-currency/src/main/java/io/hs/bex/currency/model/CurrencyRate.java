@@ -18,29 +18,29 @@ public class CurrencyRate
 {
     @JsonIgnore
     private Instant date =  Instant.now();
-    
+
     @JsonIgnore
     private SysCurrency currency;
-    
+
     private float rate = 0;
-    
+
     @JsonIgnore
     private SysCurrency targetCurrency;
-    
+
     public CurrencyRate(){}
-    
+
     public CurrencyRate( SysCurrency currency )
     {
         this.currency = currency;
     }
-    
+
     public CurrencyRate( SysCurrency currency, SysCurrency targetCurrency, float rate )
     {
         this.currency = currency;
         this.targetCurrency = targetCurrency;
         this.rate = rate;
     }
-    
+
     public CurrencyRate( Instant date, SysCurrency currency, SysCurrency targetCurrency, float rate )
     {
         this.currency = currency;
@@ -64,7 +64,7 @@ public class CurrencyRate
     {
         return rate;
     }
-    
+
     @JsonProperty("rate")
     public String getRateStr()
     {
@@ -92,19 +92,19 @@ public class CurrencyRate
     {
         return date;
     }
-    
+
     @JsonIgnore
     public LocalDateTime getLocalDateTime()
     {
         return LocalDateTime.ofInstant( date, ZoneId.systemDefault() );
     }
-    
+
     @JsonProperty("date_str")
     public String getDateStr()
     {
         return  StringUtils.instantToString( date );
     }
-    
+
     @JsonProperty("date")
     public long getDateEpoch()
     {
@@ -119,8 +119,8 @@ public class CurrencyRate
     @Override
     public String toString()
     {
-        return "CurrencyRate [currency=" + currency + ", rate=" + rate + ", targetCurrency=" + targetCurrency 
+        return "CurrencyRate [currency=" + currency + ", rate=" + rate + ", targetCurrency=" + targetCurrency
                 + ", date:" + StringUtils.instantToString( date ) + "]";
     }
-   
+
 }

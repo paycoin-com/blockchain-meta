@@ -39,6 +39,26 @@ import io.hs.bex.currency.service.api.CurrencyInfoService;
 
 
 //---------------------------------------
+@JsonIgnoreProperties( ignoreUnknown = true )
+class CPCoinInfoResponse
+{
+    @JsonProperty( "circulating_supply" )
+    public long circulatingSupply = 0;
+
+    @JsonProperty( "quotes" )
+    public Map<String, CPQuotesResponse> quotes;
+}
+
+@JsonIgnoreProperties( ignoreUnknown = true )
+class CPQuotesResponse
+{
+    @JsonProperty( "price" )
+    public double price = 0;
+
+    @JsonProperty( "volume_24h" )
+    public double volume24h = 0;
+}
+//---------------------------------------
 
 @JsonIgnoreProperties( ignoreUnknown = true )
 class CoinPResponse
@@ -153,10 +173,13 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         }
     }
 
-    @Override public CoinInfo getCoinInfo(CurrencyInfoRequest request)
+    @Override
+    public List<CoinInfo> getCoinInfo( CurrencyInfoRequest request )
     {
         String coinId = "", url = "";
-        CoinInfo coinInfo  = new CoinInfo();
+        List<CoinInfo> coinInfoList  = new ArrayList<CoinInfo>();
+        int requestCount = 0;
+
         try
         {
 
@@ -168,38 +191,34 @@ public class CoinPaprikaHandler implements CurrencyInfoService
                 HttpEntity<String> entity = new HttpEntity<String>( "parameters", headers );
                 ResponseEntity<String> response = restTemplate.exchange( url, HttpMethod.GET, entity, String.class );
 
-                jsonToCoinInfo( coinInfo, coinId,  response.getBody() );
+                coinInfoList.add( jsonToCoinInfo( coin.getCode(),  response.getBody() ));
+
+                requestCount = adjustRequestDelay( requestCount );
             }
 
-            return coinInfo;
+            return coinInfoList;
         }
         catch( Exception e )
         {
             logger.error( "Error getting Coin Info for:{}", coinId, e );
         }
 
-        if(!coinInfo.getCoinInfoMap().isEmpty())
-            return coinInfo;
+        if(!coinInfoList.isEmpty())
+            return coinInfoList;
+        else
+            return Collections.emptyList();
+    }
+    private CoinInfo jsonToCoinInfo( String coinId,  String jsonResponse ) throws IOException
+    {
+        CPCoinInfoResponse coinInfo = mapper.readValue( jsonResponse, CPCoinInfoResponse.class);
+
+        if( coinInfo != null )
+        {
+            CPQuotesResponse quote = coinInfo.quotes.entrySet().iterator().next().getValue();
+            return new CoinInfo( coinId,coinInfo.circulatingSupply, (long) (quote.volume24h/quote.price));
+        }
         else
             return null;
-    }
-    private void jsonToCoinInfo( CoinInfo coinInfo, String coinId,  String jsonResponse ) throws IOException
-    {
-        Map info = new HashMap<String,String>();
-        Map<String,Object> responseMap = mapper.readValue( jsonResponse,
-                new TypeReference<Map<String,Object>>() {} );
-        Object valueObj = responseMap.get( "circulating_supply" );
-
-        if( valueObj instanceof Integer )
-            info.put( "circulating_supply", Integer.toString( (int)valueObj ));
-        else if( valueObj instanceof Long )
-            info.put( "circulating_supply", Long.toString( (long)valueObj ));
-        else if( valueObj instanceof Double )
-            info.put( "circulating_supply", StringUtils.doubleToString ( (double)valueObj ));
-        else if( valueObj instanceof Float )
-            info.put( "circulating_supply", StringUtils.doubleToString ( (float)valueObj ));
-
-        coinInfo.getCoinInfoMap().put( coinId, info);
     }
 
     @Override

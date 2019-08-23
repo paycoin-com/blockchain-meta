@@ -128,7 +128,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
         }
     }
 
-    @Override public CoinInfo getCoinInfo(CurrencyInfoRequest request)
+    @Override public List<CoinInfo> getCoinInfo(CurrencyInfoRequest request)
     {
         return null;
     }

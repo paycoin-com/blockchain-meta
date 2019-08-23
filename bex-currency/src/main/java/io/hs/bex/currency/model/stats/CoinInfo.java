@@ -1,53 +1,55 @@
 package io.hs.bex.currency.model.stats;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.hs.bex.currency.model.SysCurrency;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-
-
-@JsonIgnoreProperties( ignoreUnknown = true )
-@JsonInclude( JsonInclude.Include.NON_NULL )
 public class CoinInfo
 {
-    @JsonProperty("timestamp")
-    private long timestamp;
+    private SysCurrency coin;
+    private long circulatingSupply = 0;
+    private long volume24h = 0;
 
-    @JsonProperty("coins")
-    private Map<String, Map<String,String>> coinInfoMap =  new HashMap<>();
 
-    public CoinInfo()
+    public CoinInfo( String coinStr, long circulatingSupply, long volume24h )
     {
-        timestamp = Instant.EPOCH.getEpochSecond();
+        this.coin = SysCurrency.find( coinStr );
+        this.circulatingSupply = circulatingSupply;
+        this.volume24h = volume24h;
+    }
+    public CoinInfo( SysCurrency coin, long circulatingSupply, long volume24h )
+    {
+        this.coin = coin;
+        this.circulatingSupply = circulatingSupply;
+        this.volume24h = volume24h;
     }
 
-    public long getTimestamp()
+    public SysCurrency getCoin()
     {
-        return timestamp;
+        return coin;
     }
 
-    public void setTimestamp(long timestamp)
+    public void setCoin(SysCurrency coin)
     {
-        this.timestamp = timestamp;
+        this.coin = coin;
     }
 
-    public Map<String, Map<String, String>> getCoinInfoMap()
+    public long getCirculatingSupply()
     {
-        return coinInfoMap;
+        return circulatingSupply;
     }
 
-    public void setCoinInfoMap(Map<String, Map<String, String>> coinInfoMap)
+    public void setCirculatingSupply(long circulatingSupply)
     {
-        this.coinInfoMap = coinInfoMap;
+        this.circulatingSupply = circulatingSupply;
     }
 
-    @Override public String toString()
+    public long getVolume24h()
     {
-        return "CoinInfo{" + "timestamp=" + timestamp + ", coinInfoMap=" + coinInfoMap + '}';
+        return volume24h;
+    }
+
+    public void setVolume24h(long volume24h)
+    {
+        this.volume24h = volume24h;
     }
 }

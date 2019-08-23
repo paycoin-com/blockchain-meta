@@ -16,6 +16,6 @@ public class CoinInfoTask implements Runnable
     @Override
     public void run()
     {
-        currencyService.fetchAndStoreCoinInfo();
+        currencyService.fetchCoinInfo();
     }
 }

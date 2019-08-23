@@ -42,7 +42,7 @@ public class CurrencyRestController
     {
         try
         {
-            LOGGER.info( " *** Get RestRequest currency/rate?period = ", period );
+            LOGGER.info( " *** Get RestRequest currency/rate?period = {}", period );
 
             return new ResponseEntity<List<CurrencyRate>>(
                     currencyService.getInfoService().getXRatesBy( new CurrencyInfoRequest() ), HttpStatus.OK );
@@ -69,7 +69,7 @@ public class CurrencyRestController
     {
         try
         {
-            LOGGER.info( " *** Get RestRequest currency/xrates/save?period = ", period );
+            LOGGER.info( " *** Get RestRequest currency/xrates/save?period = {} ", period );
 
             CurrencyInfoRequest request = new CurrencyInfoRequest( sourceCurrency, targetCurrency, period, toDate,
                     limit, false );
@@ -88,6 +88,31 @@ public class CurrencyRestController
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
         }
     }
+
+    @RequestMapping( value = "xrates/stats/create/{fiat}/{coin}", method = {
+            RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+    public ResponseEntity<?> createStatsData( @PathVariable( "fiat" ) String fiat,
+            @PathVariable( "coin" ) String coin )
+    {
+        try
+        {
+            LOGGER.info( " *** Create stats data for currency/xrates/stats/create/{}/{} ", fiat, coin );
+
+            currencyService.createStatsData( fiat, coin );
+
+            return new ResponseEntity<>( HttpStatus.OK );
+        }
+        catch( NoSuchElementException e )
+        {
+            return new ResponseEntity<>( HttpStatus.NOT_FOUND );
+        }
+        catch( Exception e )
+        {
+            LOGGER.error( " Error creating stats data for {}/{}:\n", fiat, coin, e );
+            return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
+        }
+    }
+
 
     @RequestMapping( value = "xrates/{scurrency}/{tcurrency}", method = {
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
