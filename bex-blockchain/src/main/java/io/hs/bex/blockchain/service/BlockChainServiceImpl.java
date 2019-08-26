@@ -9,6 +9,8 @@ import javax.annotation.PostConstruct;
 
 import io.hs.bex.blockchain.model.FeeRate;
 import io.hs.bex.blockchain.model.FeeRateStack;
+import io.hs.bex.blockchain.model.fee.FeeData;
+import io.hs.bex.blockchain.model.fee.FeePriorityType;
 import io.hs.bex.blockchain.service.api.BlockChainHandler;
 import io.hs.bex.blockchain.service.api.BlockChainService;
 import io.hs.bex.blockchain.task.FeeEstimateTask;
@@ -62,6 +64,9 @@ public class BlockChainServiceImpl implements BlockChainService
 
     Map<Integer, BlockChainHandler> chainHandlers = new HashMap<>();
 
+    private FeeData FEE_DATA = new FeeData();
+    private boolean TASKS_ACTIVE = false;
+
     @PostConstruct
     public void init()
     {
@@ -70,10 +75,14 @@ public class BlockChainServiceImpl implements BlockChainService
         for( Node node: nodeService.getNodes() )
         {
             handlerName = node.getProvider().getCurrencyType().getCode() + "-BlockChainHandler";
-            BlockChainHandler blockChainHanlder = (BlockChainHandler) appContext.getBean( handlerName );
-            blockChainHanlder.init( node );
-            chainHandlers.put( node.getId(), blockChainHanlder );
+            BlockChainHandler blockChainHandler = (BlockChainHandler) appContext.getBean( handlerName );
+            blockChainHandler.init( node );
+            chainHandlers.put( node.getId(), blockChainHandler );
         }
+
+        FEE_DATA.addCoin( DigitalCurrencyType.BTC.getCode(), 1440, 120, 30 );
+        FEE_DATA.addCoin( DigitalCurrencyType.BCH.getCode(), 240, 120, 30 );
+        FEE_DATA.addCoin( DigitalCurrencyType.ETH.getCode(), 30, 5, 2);
     }
 
     private BlockChainHandler getHandler( int nodeId )
@@ -101,7 +110,11 @@ public class BlockChainServiceImpl implements BlockChainService
     @Override
     public void startTasks()
     {
-        taskManager.startScheduledTask( startFeeEstimateTask(), "FeeEstimateTask", 60, FEE_ESTIMATE_PERIOD );
+        if(!TASKS_ACTIVE)
+        {
+            taskManager.startScheduledTask( startFeeEstimateTask(), "FeeEstimateTask", 60, FEE_ESTIMATE_PERIOD );
+            TASKS_ACTIVE = true;
+        }
     }
 
     private FeeEstimateTask startFeeEstimateTask()
@@ -141,16 +154,26 @@ public class BlockChainServiceImpl implements BlockChainService
 
                     if( feeRate != null && feeRate.getHighPriorityRate() > 0 )
                     {
-                        FEE_RATE_STACK.getRates().put( bcHandler.getNode().getProvider().getCurrencyType(), feeRate );
+                        DigitalCurrencyType ct = bcHandler.getNode().getProvider().getCurrencyType();
+                        FEE_RATE_STACK.getRates().put( ct, feeRate );
+
+                        //----------- New format --------------------------------------
+                        FEE_DATA.setPriorityData( ct.getCode(), FeePriorityType.LOW , feeRate.getLowPriorityRate() );
+                        FEE_DATA.setPriorityData( ct.getCode(), FeePriorityType.MEDIUM , feeRate.getMediumPriorityRate());
+                        FEE_DATA.setPriorityData( ct.getCode(), FeePriorityType.HIGH, feeRate.getHighPriorityRate());
                     }
                 }
             }
 
             FEE_RATE_STACK.setTime( Instant.now() );
             saveFile( "/estimatefee", "index.json", mapper.writeValueAsString( FEE_RATE_STACK ) );
-            
+
+            //----------------------------------------------
+            FEE_DATA.setTime( Instant.now() );
+            saveFile( "/estimatefee", "feerates.json", mapper.writeValueAsString( FEE_DATA ) );
+
             //-----------------------------------------------
-            //dataStoreService.publishNS( KEY_BLOCKCHAIN, "blockchain", "" );
+            // dataStoreService.publishNS( KEY_BLOCKCHAIN, "blockchain", "" );
             //-----------------------------------------------
         }
         catch( Exception e )

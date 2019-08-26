@@ -15,9 +15,6 @@ import io.hs.bex.common.utils.StringUtils;
 @JsonPropertyOrder({ "circulating_supply", "market_cap", "volume24h", "stats" })
 public class Stats
 {
-    @JsonProperty("stats")
-    private Map<String, StatsData> statsDatas;
-
     @JsonGetter("volume24h")
     public String getVolume24hStr()
     {
@@ -29,29 +26,35 @@ public class Stats
         this.volume24h = Long.parseLong( volume24hStr );
     }
 
-    @JsonGetter("circulating_supply")
-    public String getCirculatingSupplyStr()
-    {
-        return Long.toString ( circulatingSupply );
-    }
-    @JsonSetter("circulating_supply")
-    public void setCirculatingSupply( String value )
-    {
-        if( !Strings.isNullOrEmpty(value))
-            circulatingSupply = Long.parseLong( value );
-    }
+    @JsonProperty("circulating_supply")
+    private long circulatingSupply = 0;
 
     @JsonGetter("market_cap")
     public String getMarketCapStr()
     {
+        if(circulatingSupply <= 0 || latestRate  <= 0)
+            return "0";
+
         return StringUtils.doubleToString((double) circulatingSupply * latestRate );
     }
     @JsonSetter("market_cap")
     public void setMarketCap( String value )
     {
-        if( !Strings.isNullOrEmpty(value))
-            latestRate = (double) Double.parseDouble ( value )/circulatingSupply;
+        try
+        {
+            if ( !Strings.isNullOrEmpty( value ) )
+                latestRate = (double) Double.parseDouble( value ) / circulatingSupply;
+            else
+                latestRate = 0;
+        }
+        catch(Exception e)
+        {
+            latestRate = 0;
+        }
     }
+
+    @JsonProperty("stats")
+    private Map<String, StatsData> statsDatas;
 
     public Stats(){}
 
@@ -71,9 +74,6 @@ public class Stats
 
     @JsonIgnore
     private long volume24h;
-
-    @JsonIgnore
-    private long circulatingSupply = 0;
 
 
     public Map<String, StatsData> getStatsDatas()

@@ -70,6 +70,8 @@ public class CurrencyStatsService
     {
         try
         {
+            List<StatsType> statsTypeList = statsTracker.requiredUpdates( timestamp );
+
             for ( CurrencyRateStack rateStack : rateStackList )
             {
                 for ( SysCurrency coin : rateStack.getRates().keySet() )
@@ -78,7 +80,7 @@ public class CurrencyStatsService
                             .orElse( new CoinInfo( coin, 0, 0 ) );
 
                     updateStatsData( rateStack.getCurrencyStr(), coin.getCode(),
-                            rateStack.getRates().get( coin ), rateStack.getTime(), info );
+                            rateStack.getRates().get( coin ), statsTypeList, rateStack.getTime(), info );
                 }
             }
 
@@ -137,15 +139,12 @@ public class CurrencyStatsService
         }
     }
 
-    private void updateStatsData( String fiatCurrency, String digCurrency, String rate, Instant timestamp,
-            CoinInfo coinInfo ) throws IOException
+    private void updateStatsData( String fiatCurrency, String digCurrency, String rate, List<StatsType> statsTypeList,
+            Instant rateTime, CoinInfo coinInfo ) throws IOException
     {
-
-        List<StatsType> statsTypeList = statsTracker.requiredUpdates( timestamp );
-
         if(!statsTypeList.isEmpty())
         {
-            Stats stats = getStats( fiatCurrency, digCurrency, timestamp );
+            Stats stats = getStats( fiatCurrency, digCurrency, rateTime );
 
             for ( StatsType statsType : statsTypeList )
             {
@@ -153,12 +152,12 @@ public class CurrencyStatsService
 
                 if( statsData == null )
                 {
-                    statsData = new StatsData( timestamp.getEpochSecond(), statsType );
+                    statsData = new StatsData( rateTime.getEpochSecond(), statsType );
                     stats.getStatsDatas().put( statsType.name(), statsData );
                 }
 
                 statsData.getRates().add( rate );
-                statsData.setTimestamp( timestamp.getEpochSecond() );
+                statsData.setTimestamp( rateTime.getEpochSecond() );
 
                 //-------- Adjust size of the object --------------------
                 adjustStatsDataSize( statsType, statsData );
@@ -172,7 +171,7 @@ public class CurrencyStatsService
             }
             saveFile( fiatCurrency + "/" + digCurrency, "index.json", mapper.writeValueAsString( stats ) );
 
-            logger.info( "Successfully created stats for: {}:{}", fiatCurrency, digCurrency );
+            logger.info( "Successfully updated stats for: {}:{}", fiatCurrency, digCurrency );
         }
     }
 
@@ -202,11 +201,12 @@ public class CurrencyStatsService
     private void saveStatsData(String fiatCurrency, String digCurrency, Instant timestamp, CoinInfo coinInfo)
             throws IOException
     {
-        LocalDateTime ldt = LocalDateTime.ofInstant( timestamp, ZoneId.systemDefault() );
         Stats stats = new Stats( timestamp.getEpochSecond(), coinInfo );
 
         for ( StatsData statsData : stats.getStatsDatas().values() )
         {
+            LocalDateTime ldt = LocalDateTime.ofInstant( timestamp, ZoneId.systemDefault() );
+
             for ( int x = 0; x <= statsData.getStatsType().getRecordCount(); x++ )
             {
                 String rateValue = getHistoricalXRates( fiatCurrency, digCurrency, ldt );
@@ -215,8 +215,8 @@ public class CurrencyStatsService
                     statsData.getRates().add( rateValue );
 
                 ldt = adjustDateTime( statsData.getStatsType(), ldt );
-
             }
+
             if ( statsData.getRates().size() > 0 )
             {
                 if ( statsData.getStatsType() == StatsType.DAILY )

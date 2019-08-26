@@ -218,7 +218,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
             return new CoinInfo( coinId,coinInfo.circulatingSupply, (long) (quote.volume24h/quote.price));
         }
         else
-            return null;
+            return new CoinInfo( coinId, 0, 0  );
     }
 
     @Override
