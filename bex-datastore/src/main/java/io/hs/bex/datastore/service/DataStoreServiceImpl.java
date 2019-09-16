@@ -204,4 +204,10 @@ public class DataStoreServiceImpl implements DataStoreService
         return publishNS( path, fileName );
     }
 
+    @Async
+    @Override
+    public String publishNSAsync( String key, String path, String fileName )
+    {
+        return publishNS( key, path, fileName );
+    }
 }

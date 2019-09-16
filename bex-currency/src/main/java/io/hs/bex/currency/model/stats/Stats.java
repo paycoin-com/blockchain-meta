@@ -18,12 +18,12 @@ public class Stats
     @JsonGetter("volume24h")
     public String getVolume24hStr()
     {
-        return  Long.toString( volume24h );
+        return  StringUtils.doubleToString( volume24h );
     }
     @JsonSetter("volume24h")
     public void setVolume24hStr(String volume24hStr)
     {
-        this.volume24h = Long.parseLong( volume24hStr );
+        this.volume24h = Double.parseDouble( volume24hStr );
     }
 
     @JsonProperty("circulating_supply")
@@ -60,7 +60,7 @@ public class Stats
 
     public Stats( long epochSeconds, CoinInfo coinInfo )
     {
-        statsDatas = new HashMap<String,StatsData>();
+        statsDatas = new HashMap<>();
 
         this.circulatingSupply = coinInfo.getCirculatingSupply();
         this.volume24h = coinInfo.getVolume24h();
@@ -73,7 +73,7 @@ public class Stats
     private double latestRate = 0;
 
     @JsonIgnore
-    private long volume24h;
+    private double volume24h;
 
 
     public Map<String, StatsData> getStatsDatas()
@@ -111,12 +111,12 @@ public class Stats
         this.latestRate = latestRate;
     }
 
-    public long getVolume24h()
+    public double getVolume24h()
     {
         return volume24h;
     }
 
-    public void setVolume24h(long volume24h)
+    public void setVolume24h(double volume24h)
     {
         this.volume24h = volume24h;
     }

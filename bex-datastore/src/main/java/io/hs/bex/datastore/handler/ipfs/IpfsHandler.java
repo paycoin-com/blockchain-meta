@@ -93,7 +93,7 @@ public class IpfsHandler implements DataStoreHandler
 
             if( response.getStatusCode() == HttpStatus.OK ) 
             {
-                //logger.info( "Successfully published Hash:{}, Body:{}", nsValue, response.getBody() );
+                logger.info( "(!!!) **** Successfully published Hash:{}", nsValue );
 
                 return "OK";
             }

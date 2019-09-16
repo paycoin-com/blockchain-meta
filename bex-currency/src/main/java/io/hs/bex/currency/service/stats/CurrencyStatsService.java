@@ -77,11 +77,12 @@ public class CurrencyStatsService
                 for ( SysCurrency coin : rateStack.getRates().keySet() )
                 {
                     CoinInfo info = coinInfoList.stream().filter( coinInfo -> coinInfo.getCoin() == coin ).findAny()
-                            .orElse( new CoinInfo( coin, 0, 0 ) );
+                            .orElse( new CoinInfo( coin.getCode(), "" ) );
 
                     updateStatsData( rateStack.getCurrencyStr(), coin.getCode(),
                             rateStack.getRates().get( coin ), statsTypeList, rateStack.getTime(), info );
                 }
+                logger.info( "Successfully updated stats for: {}", rateStack.getCurrencyStr());
             }
 
             logger.info( " (!!!)  **** Stats data update ended. ***** " );
@@ -109,7 +110,7 @@ public class CurrencyStatsService
                 for ( SysCurrency coin : digCurrencies )
                 {
                     CoinInfo info = coinInfoList.stream().filter( coinInfo -> coinInfo.getCoin() == coin ).findAny()
-                            .orElse( new CoinInfo( coin, 0, 0 ) );
+                            .orElse( new CoinInfo( coin, null, 0, 0, 0 ) );
 
                     saveStatsData( fCcy.getCode(), coin.getCode(), timestamp, info );
                 }
@@ -139,7 +140,7 @@ public class CurrencyStatsService
         }
     }
 
-    private void updateStatsData( String fiatCurrency, String digCurrency, String rate, List<StatsType> statsTypeList,
+    private void    updateStatsData( String fiatCurrency, String digCurrency, String rate, List<StatsType> statsTypeList,
             Instant rateTime, CoinInfo coinInfo ) throws IOException
     {
         if(!statsTypeList.isEmpty())
@@ -170,8 +171,6 @@ public class CurrencyStatsService
                 }
             }
             saveFile( fiatCurrency + "/" + digCurrency, "index.json", mapper.writeValueAsString( stats ) );
-
-            logger.info( "Successfully updated stats for: {}:{}", fiatCurrency, digCurrency );
         }
     }
 
@@ -189,7 +188,7 @@ public class CurrencyStatsService
             }
         }
 
-        return new Stats( timestamp.getEpochSecond(), new CoinInfo( digCurrency, 0, 0 ) );
+        return new Stats( timestamp.getEpochSecond(), new CoinInfo( digCurrency, "" ) );
     }
 
     private void adjustStatsDataSize(StatsType statsType, StatsData statsRates)
@@ -239,6 +238,7 @@ public class CurrencyStatsService
         String month = String.format( "%02d", ldt.getMonthValue() );
         String day = String.format( "%02d", ldt.getDayOfMonth() );
         String hour = String.format( "%02d", ldt.getHour() );
+        String minute = String.format( "%02d", ldt.getMinute() );
 
         String pathDay = "historical/" + digCurrency + "/" + fiatCurrency + "/" + year + "/" + month + "/" + day;
         String jsonValue = dataStoreService.getFileContent( XRATES_ROOT_FOLDER + pathDay + "/" + hour, "index.json" );
@@ -248,7 +248,11 @@ public class CurrencyStatsService
             TreeMap<String, String> rates = mapper.readValue( jsonValue, new TypeReference<TreeMap<String, String>>()
             {
             } );
-            rateValue = rates.lastEntry().getValue();
+
+            if( !Strings.isNullOrEmpty( rates.get( minute ) ))
+                rateValue = rates.get( minute );
+            else
+                rateValue = rates.lastEntry().getValue();
         }
         else
         {

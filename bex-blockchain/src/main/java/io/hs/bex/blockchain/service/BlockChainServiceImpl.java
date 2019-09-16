@@ -165,8 +165,8 @@ public class BlockChainServiceImpl implements BlockChainService
                 }
             }
 
-            FEE_RATE_STACK.setTime( Instant.now() );
-            saveFile( "/estimatefee", "index.json", mapper.writeValueAsString( FEE_RATE_STACK ) );
+            //FEE_RATE_STACK.setTime( Instant.now() );
+            //saveFile( "/estimatefee", "index.json", mapper.writeValueAsString( FEE_RATE_STACK ) );
 
             //----------------------------------------------
             FEE_DATA.setTime( Instant.now() );

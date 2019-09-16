@@ -1,40 +1,31 @@
 package io.hs.bex.web.config.cache;
 
+
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.core.io.ClassPathResource;
 
-@Configuration
+
+@Configurable
 @EnableCaching
 public class CacheConfig
 {
-    /*
-     * Disable Simple Caching
-     * 
-     * @Bean public CacheManager cacheManager() { SimpleCacheManager
-     * cacheManager = new SimpleCacheManager(); cacheManager.setCaches(
-     * Arrays.asList( new ConcurrentMapCache( "iplocations" ) ) ); return
-     * cacheManager; }
-     */
-    
-    
     @Bean
-    public CacheManager cacheManager()
+    public CacheManager getEhCacheManager()
     {
-        return new EhCacheCacheManager( ehCacheCacheManager().getObject() );
+        return new EhCacheCacheManager( getEhCacheFactory().getObject() );
     }
 
     @Bean
-    public EhCacheManagerFactoryBean ehCacheCacheManager()
+    public EhCacheManagerFactoryBean getEhCacheFactory()
     {
-        EhCacheManagerFactoryBean factory = new EhCacheManagerFactoryBean();
-        factory.setConfigLocation( new ClassPathResource( "ehcache.xml" ) );
-        factory.setShared( true );
-        return factory;
+        EhCacheManagerFactoryBean factoryBean = new EhCacheManagerFactoryBean();
+        factoryBean.setConfigLocation( new ClassPathResource( "ehcache.xml" ) );
+        factoryBean.setShared( true );
+        return factoryBean;
     }
-
 }

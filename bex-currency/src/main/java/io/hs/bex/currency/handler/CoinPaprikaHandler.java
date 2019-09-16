@@ -182,8 +182,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
 
         try
         {
-
-            for(SysCurrency coin: request.getSourceCurrencies())
+            for( SysCurrency coin: request.getSourceCurrencies() )
             {
                 coinId = coin.getUid();
                 url = infoServiceUrl + "/v1/tickers/" + coinId;
@@ -215,10 +214,10 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         if( coinInfo != null )
         {
             CPQuotesResponse quote = coinInfo.quotes.entrySet().iterator().next().getValue();
-            return new CoinInfo( coinId,coinInfo.circulatingSupply, (long) (quote.volume24h/quote.price));
+            return new CoinInfo( coinId, "USD", coinInfo.circulatingSupply, quote.volume24h, quote.price );
         }
         else
-            return new CoinInfo( coinId, 0, 0  );
+            return new CoinInfo( coinId, "USD", 0, 0 , 0 );
     }
 
     @Override

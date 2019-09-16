@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.CurrencyRate;
+import io.hs.bex.currency.model.stats.CoinInfo;
 import io.hs.bex.currency.service.api.CurrencyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,25 +34,30 @@ public class CurrencyRestController
 
     /**
      * Get latest currency rates
-     * 
+     *
      * @return
      */
-    @RequestMapping( value = "exchangerates", method = {
+    @RequestMapping( value = "info/{scurrency}/{tcurrency}", method = {
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> get( @RequestParam( required = false, name = "period" ) String period )
+    public ResponseEntity<?> getXRates(@PathVariable( "scurrency" ) String coin,
+            @PathVariable( "tcurrency" ) String fiat, @RequestParam( required = false, name = "source" ) String source,
+            @RequestParam( required = false, name = "period" ) String period,
+            @RequestParam( required = false, name = "to_date" ) String toDate,
+            @RequestParam( required = false, name = "limit" ) Integer limit)
     {
         try
         {
-            LOGGER.info( " *** Get RestRequest currency/rate?period = {}", period );
+            LOGGER.info( " *** Get RestRequest currency/info?{}/{}", coin, fiat );
 
-            return new ResponseEntity<List<CurrencyRate>>(
-                    currencyService.getInfoService().getXRatesBy( new CurrencyInfoRequest() ), HttpStatus.OK );
+            return new ResponseEntity<List<CoinInfo>>(
+                    currencyService.getInfoService().getCoinInfo ( new CurrencyInfoRequest( coin, fiat ) ),
+                    HttpStatus.OK );
         }
-        catch( NoSuchElementException e )
+        catch ( NoSuchElementException e )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
         }
-        catch( Exception e )
+        catch ( Exception e )
         {
             LOGGER.error( " Error getting currency rates by period:{}", period, e );
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
@@ -60,12 +66,12 @@ public class CurrencyRestController
 
     @RequestMapping( value = "xrates/save/{scurrency}/{tcurrency}", method = {
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> saveXRates( @PathVariable( "scurrency" ) String sourceCurrency,
+    public ResponseEntity<?> saveXRates(@PathVariable( "scurrency" ) String sourceCurrency,
             @PathVariable( "tcurrency" ) String targetCurrency,
             @RequestParam( required = false, name = "source" ) String source,
             @RequestParam( required = false, name = "period" ) String period,
             @RequestParam( required = false, name = "to_date" ) String toDate,
-            @RequestParam( required = false, name = "limit" ) int limit )
+            @RequestParam( required = false, name = "limit" ) Integer limit)
     {
         try
         {
@@ -78,11 +84,11 @@ public class CurrencyRestController
 
             return new ResponseEntity<>( HttpStatus.OK );
         }
-        catch( NoSuchElementException e )
+        catch ( NoSuchElementException e )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
         }
-        catch( Exception e )
+        catch ( Exception e )
         {
             LOGGER.error( " Error saving currency rates by period:{}", period, e );
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
@@ -91,8 +97,7 @@ public class CurrencyRestController
 
     @RequestMapping( value = "xrates/stats/create/{fiat}/{coin}", method = {
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> createStatsData( @PathVariable( "fiat" ) String fiat,
-            @PathVariable( "coin" ) String coin )
+    public ResponseEntity<?> createStatsData(@PathVariable( "fiat" ) String fiat, @PathVariable( "coin" ) String coin)
     {
         try
         {
@@ -102,25 +107,24 @@ public class CurrencyRestController
 
             return new ResponseEntity<>( HttpStatus.OK );
         }
-        catch( NoSuchElementException e )
+        catch ( NoSuchElementException e )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
         }
-        catch( Exception e )
+        catch ( Exception e )
         {
             LOGGER.error( " Error creating stats data for {}/{}:\n", fiat, coin, e );
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );
         }
     }
 
-
     @RequestMapping( value = "xrates/{scurrency}/{tcurrency}", method = {
             RequestMethod.GET }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    public ResponseEntity<?> getXRates( @PathVariable( "scurrency" ) String sourceCurrency,
+    public ResponseEntity<?> getXRates(@PathVariable( "scurrency" ) String sourceCurrency,
             @PathVariable( "tcurrency" ) String targetCurrency,
             @RequestParam( required = false, name = "period" ) String period,
             @RequestParam( required = false, name = "to_date" ) String toDate,
-            @RequestParam( required = false, name = "limit" ) int limit )
+            @RequestParam( required = false, name = "limit" ) Integer limit)
     {
         try
         {
@@ -132,11 +136,11 @@ public class CurrencyRestController
             return new ResponseEntity<List<CurrencyRate>>( currencyService.getInfoService().getXRatesBy( request ),
                     HttpStatus.OK );
         }
-        catch( NoSuchElementException e )
+        catch ( NoSuchElementException e )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
         }
-        catch( Exception e )
+        catch ( Exception e )
         {
             LOGGER.error( " Error getting currency rates by period:{}", period, e );
             return new ResponseEntity<>( HttpStatus.INTERNAL_SERVER_ERROR );

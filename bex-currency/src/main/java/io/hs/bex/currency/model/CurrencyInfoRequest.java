@@ -87,6 +87,12 @@ public class CurrencyInfoRequest
         this.targetCurrencies.add( targetCurrency );
     }
 
+    public CurrencyInfoRequest( String sourceCurrency, String targetCurrency )
+    {
+        this.sourceCurrencies.add( SysCurrency.find( sourceCurrency ) );
+        this.targetCurrencies.add( SysCurrency.find( targetCurrency ) );
+    }
+
     public void clearCurrencies()
     {
         sourceCurrencies.clear();

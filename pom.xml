@@ -40,7 +40,7 @@
         <postgresql.version>42.2.2</postgresql.version>
         <junit.version>4.12</junit.version>
         <mockito-core.version>2.13.0</mockito-core.version>
-        <ehcache.version>2.10.4</ehcache.version>
+        <ehcache.version>2.10.6</ehcache.version>
         <!--  <bitcoinj.core.version>0.14.7</bitcoinj.core.version> -->
         <com.google.zxing.version>3.3.0</com.google.zxing.version>
 
