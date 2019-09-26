@@ -26,7 +26,8 @@
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         <jstl.version>1.2</jstl.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
-        <jackson.version>2.9.9.2</jackson.version>
+        <jackson.version>2.9.10</jackson.version>
+        <jackson.databind.version>2.9.10</jackson.databind.version>
         <slf4j-api.version>1.7.25</slf4j-api.version>
         <logback.version>1.2.3</logback.version>
         <httpclient.version>4.5.4</httpclient.version>
@@ -39,7 +40,7 @@
         <postgresql.version>42.2.2</postgresql.version>
         <junit.version>4.12</junit.version>
         <mockito-core.version>2.13.0</mockito-core.version>
-        <ehcache.version>2.10.4</ehcache.version>
+        <ehcache.version>2.10.6</ehcache.version>
         <!--  <bitcoinj.core.version>0.14.7</bitcoinj.core.version> -->
         <com.google.zxing.version>3.3.0</com.google.zxing.version>
 

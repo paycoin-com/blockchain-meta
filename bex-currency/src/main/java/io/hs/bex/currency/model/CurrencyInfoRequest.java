@@ -87,6 +87,12 @@ public class CurrencyInfoRequest
         this.targetCurrencies.add( targetCurrency );
     }
 
+    public CurrencyInfoRequest( String sourceCurrency, String targetCurrency )
+    {
+        this.sourceCurrencies.add( SysCurrency.find( sourceCurrency ) );
+        this.targetCurrencies.add( SysCurrency.find( targetCurrency ) );
+    }
+
     public void clearCurrencies()
     {
         sourceCurrencies.clear();
@@ -122,6 +128,17 @@ public class CurrencyInfoRequest
         else
             return "";
     }
+    
+    public String getSourceSecondaryCode()
+    {
+        if( sourceCurrencies.get( 0 ) != null )
+        {
+            return sourceCurrencies.get( 0 ).getSecondaryCode();
+        }
+        else
+            return "";
+    }
+    
     
     public String getSourceCcyUid()
     {
@@ -217,6 +234,12 @@ public class CurrencyInfoRequest
                 .collect( Collectors.joining( separator ) );
     }
 
+    public String joinSourceSecondaryCcys( String separator )
+    {
+        return sourceCurrencies.stream().map( currency -> currency.getSecondaryCode() )
+                .collect( Collectors.joining( separator ) );
+    }
+    
     public boolean isFastCalculation()
     {
         return fastCalculation;

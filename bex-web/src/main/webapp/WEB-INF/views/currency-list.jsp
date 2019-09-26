@@ -51,7 +51,7 @@
                 <div class="card">
                     <div class="card-header">
                         <i class="fa fa-align-justify"></i> Currencies </div>
-                        <div class="card-body">
+                    <div class="card-body">
                         <form class="form-horizontal" action="<c:url value = "/currency-update"/>" method="POST">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                         <span class="input-group-prepend">

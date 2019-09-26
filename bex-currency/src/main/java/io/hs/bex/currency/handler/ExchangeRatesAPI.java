@@ -118,7 +118,7 @@ public class ExchangeRatesAPI implements CurrencyInfoService
         return null;
     }
 
-    @Override public CoinInfo getCoinInfo(CurrencyInfoRequest request)
+    @Override public List<CoinInfo> getCoinInfo(CurrencyInfoRequest request)
     {
         return null;
     }

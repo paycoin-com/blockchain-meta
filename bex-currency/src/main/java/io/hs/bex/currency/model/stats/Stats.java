@@ -1,83 +1,123 @@
 package io.hs.bex.currency.model.stats;
 
-import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import io.hs.bex.currency.model.SysCurrency;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.base.Strings;
+import io.hs.bex.common.utils.StringUtils;
 
+
+@JsonIgnoreProperties( ignoreUnknown = true )
+@JsonInclude( Include.NON_NULL )
+@JsonPropertyOrder({ "circulating_supply", "market_cap", "volume24h", "stats" })
 public class Stats
 {
-    private float rate = 0;
-    
-    private StatsType type;
-    
-    private SysCurrency fiatCurrency;
-    
-    private SysCurrency digCurrency;
-    
-    private Instant timeStamp;
-    
+    @JsonGetter("volume24h")
+    public String getVolume24hStr()
+    {
+        return  StringUtils.doubleToString( volume24h );
+    }
+    @JsonSetter("volume24h")
+    public void setVolume24hStr(String volume24hStr)
+    {
+        this.volume24h = Double.parseDouble( volume24hStr );
+    }
+
+    @JsonProperty("circulating_supply")
+    private long circulatingSupply = 0;
+
+    @JsonGetter("market_cap")
+    public String getMarketCapStr()
+    {
+        if(circulatingSupply <= 0 || latestRate  <= 0)
+            return "0";
+
+        return StringUtils.doubleToString((double) circulatingSupply * latestRate );
+    }
+    @JsonSetter("market_cap")
+    public void setMarketCap( String value )
+    {
+        try
+        {
+            if ( !Strings.isNullOrEmpty( value ) )
+                latestRate = (double) Double.parseDouble( value ) / circulatingSupply;
+            else
+                latestRate = 0;
+        }
+        catch(Exception e)
+        {
+            latestRate = 0;
+        }
+    }
+
+    @JsonProperty("stats")
+    private Map<String, StatsData> statsDatas;
+
     public Stats(){}
 
-//    public Stats( SysCurrency fiatCurrency, SysCurrency digCurrency, float rate, Instant timestamp )
-//    {
-//        this.fiatCurrency = fiatCurrency;
-//        this.digCurrency = digCurrency;
-//        this.rate = rate;
-//
-//        if(timestamp == null)
-//            this.timeStamp = Instant.now();
-//        else
-//            this.timeStamp = timestamp;
-//    }
-
-    public float getRate()
+    public Stats( long epochSeconds, CoinInfo coinInfo )
     {
-        return rate;
+        statsDatas = new HashMap<>();
+
+        this.circulatingSupply = coinInfo.getCirculatingSupply();
+        this.volume24h = coinInfo.getVolume24h();
+
+        Arrays.stream( StatsType.values() ).forEach( type -> statsDatas.put( type.name(),
+                new StatsData( epochSeconds, type )));
     }
 
-    public void setRate( float rate )
+    @JsonIgnore
+    private double latestRate = 0;
+
+    @JsonIgnore
+    private double volume24h;
+
+
+    public Map<String, StatsData> getStatsDatas()
     {
-        this.rate = rate;
+        return statsDatas;
     }
 
-    public StatsType getType()
+    public void setStatsDatas(Map<String, StatsData> statsDatas)
     {
-        return type;
+        this.statsDatas = statsDatas;
     }
 
-    public void setType( StatsType type )
+    public double getLatestRate()
     {
-        this.type = type;
+        return latestRate;
     }
 
-    public Instant getTimeStamp()
+    public void setLatestRate(double latestRate)
     {
-        return timeStamp;
+        this.latestRate = latestRate;
     }
 
-    public void setTimeStamp( Instant timeStamp )
+    public long getCirculatingSupply()
     {
-        this.timeStamp = timeStamp;
+        return circulatingSupply;
     }
 
-    public SysCurrency getFiatCurrency()
+    public void setCirculatingSupply(long circulatingSupply)
     {
-        return fiatCurrency;
+        this.circulatingSupply = circulatingSupply;
     }
 
-    public void setFiatCurrency( SysCurrency fiatCurrency )
+    public void setLatestRate(float latestRate)
     {
-        this.fiatCurrency = fiatCurrency;
+        this.latestRate = latestRate;
     }
 
-    public SysCurrency getDigCurrency()
+    public double getVolume24h()
     {
-        return digCurrency;
+        return volume24h;
     }
 
-    public void setDigCurrency( SysCurrency digCurrency )
+    public void setVolume24h(double volume24h)
     {
-        this.digCurrency = digCurrency;
+        this.volume24h = volume24h;
     }
-    
 }

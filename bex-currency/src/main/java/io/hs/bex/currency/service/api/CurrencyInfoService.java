@@ -5,7 +5,6 @@ import java.util.List;
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.stats.CoinInfo;
-import io.hs.bex.currency.task.CoinInfoTask;
 
 
 public interface CurrencyInfoService
@@ -16,6 +15,6 @@ public interface CurrencyInfoService
 
     List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request );
 
-    CoinInfo getCoinInfo( CurrencyInfoRequest request );
+    List<CoinInfo> getCoinInfo( CurrencyInfoRequest request );
 
 }

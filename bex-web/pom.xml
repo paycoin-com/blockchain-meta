@@ -100,7 +100,20 @@
             <artifactId>bex-currency</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
+        <!-- ******* Test ********************** -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <finalName>HS Bex Web</finalName>

@@ -32,9 +32,7 @@ public interface CurrencyService
 
     void saveXRates( CurrencyInfoRequest request );
 
-    void fetchAndStoreCoinInfo();
-
-    void saveCoinInfo(CoinInfo coinInfo);
+    void fetchCoinInfo();
 
     List<CurrencyRate> getXRates( CurrencyInfoRequest request );
 
@@ -48,4 +46,5 @@ public interface CurrencyService
 
     void createStatsDataAsync();
 
+    void createStatsData(String fiat, String coin);
 }

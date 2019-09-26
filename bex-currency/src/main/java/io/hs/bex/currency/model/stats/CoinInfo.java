@@ -1,53 +1,93 @@
 package io.hs.bex.currency.model.stats;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.hs.bex.currency.model.SysCurrency;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
-
-@JsonIgnoreProperties( ignoreUnknown = true )
-@JsonInclude( JsonInclude.Include.NON_NULL )
 public class CoinInfo
 {
-    @JsonProperty("timestamp")
-    private long timestamp;
+    private SysCurrency coin;
+    private SysCurrency fiat;
 
-    @JsonProperty("coins")
-    private Map<String, Map<String,String>> coinInfoMap =  new HashMap<>();
+    private long circulatingSupply = 0;
+    private double volume24h = 0;
+    private double rate = 0;
 
-    public CoinInfo()
+    public CoinInfo(String coinCode, String fiatCode)
     {
-        timestamp = Instant.EPOCH.getEpochSecond();
+        this.coin = SysCurrency.find( coinCode );
+        this.fiat = SysCurrency.find( fiatCode );
+
+        this.circulatingSupply = 0;
+        this.volume24h = 0;
+        this.rate = 0;
     }
 
-    public long getTimestamp()
+    public CoinInfo(String coinCode, String fiatCode, long circulatingSupply, double volume24h, double rate)
     {
-        return timestamp;
+        this.coin = SysCurrency.find( coinCode );
+        this.fiat = SysCurrency.find( fiatCode );
+        this.circulatingSupply = circulatingSupply;
+        this.volume24h = volume24h;
+        this.rate = rate;
     }
 
-    public void setTimestamp(long timestamp)
+    public CoinInfo(SysCurrency coin, SysCurrency fiat, long circulatingSupply, double volume24h, double rate)
     {
-        this.timestamp = timestamp;
+        this.coin = coin;
+        this.fiat = fiat;
+        this.circulatingSupply = circulatingSupply;
+        this.volume24h = volume24h;
+        this.rate = rate;
     }
 
-    public Map<String, Map<String, String>> getCoinInfoMap()
+    public SysCurrency getCoin()
     {
-        return coinInfoMap;
+        return coin;
     }
 
-    public void setCoinInfoMap(Map<String, Map<String, String>> coinInfoMap)
+    public void setCoin(SysCurrency coin)
     {
-        this.coinInfoMap = coinInfoMap;
+        this.coin = coin;
     }
 
-    @Override public String toString()
+    public long getCirculatingSupply()
     {
-        return "CoinInfo{" + "timestamp=" + timestamp + ", coinInfoMap=" + coinInfoMap + '}';
+        return circulatingSupply;
+    }
+
+    public void setCirculatingSupply(long circulatingSupply)
+    {
+        this.circulatingSupply = circulatingSupply;
+    }
+
+    public double getVolume24h()
+    {
+        return volume24h;
+    }
+
+    public void setVolume24h(double volume24h)
+    {
+        this.volume24h = volume24h;
+    }
+
+    public double getRate()
+    {
+        return rate;
+    }
+
+    public void setRate(double rate)
+    {
+        this.rate = rate;
+    }
+
+    public SysCurrency getFiat()
+    {
+        return fiat;
+    }
+
+    public void setFiat(SysCurrency fiat)
+    {
+        this.fiat = fiat;
     }
 }

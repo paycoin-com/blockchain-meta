@@ -1,6 +1,7 @@
 package io.hs.bex.common.service;
 
 
+import com.google.common.base.Strings;
 import io.hs.bex.common.exceptions.security.InvalidAuthException;
 import io.hs.bex.common.model.CustomUserDetails;
 import org.slf4j.Logger;
@@ -32,11 +33,14 @@ public class CustomAuthProvider implements AuthenticationProvider
 
         try
         {
+            if( Strings.isNullOrEmpty(userName))
+                userName = "token";
+
             CustomUserDetails userDetails = identityService.loginUser( userName, password);
 
             if(userDetails != null)
             {
-                return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getUser().getAuthorities() );
+                return new UsernamePasswordAuthenticationToken( userDetails, password, userDetails.getUser().getAuthorities() );
             }
             else
             {

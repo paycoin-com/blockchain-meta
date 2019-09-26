@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.base.Strings;
 
 
-
 @Service("identityService")
 @Transactional( readOnly = true )
 public class IdentityService
@@ -35,14 +34,12 @@ public class IdentityService
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
     /* ******************************************
      * init
      */
     @PostConstruct
     public void init()
     {
-
         //insert default User
         if(getUserList().isEmpty())
         {
@@ -67,14 +64,10 @@ public class IdentityService
             if ( user != null )
             {
                 if (!passwordEncoder.matches(password, user.getPassword()))
-                {
                     throw new InvalidAuthException("");// invalid credentials exception
-                }
             }
             else
-            {
                 throw new InvalidAuthException();
-            }
         }
         catch ( DaoException e )
         {
@@ -90,28 +83,36 @@ public class IdentityService
     
     public User auhtenticateByToken( String token ) throws InvalidAuthException
     {
-        return null;
+        User user;
+
+        try
+        {
+            user = userDAO.findActiveByToken( token );
+
+            if ( user != null )
+                return user;
+            else
+                throw new InvalidAuthException();
+        }
+        catch ( DaoException e )
+        {
+            throw new InvalidAuthException();
+        }
     }
 
 
     /*  ************************************************
      *
      */
-    
     public CustomUserDetails loginUser( String userName , String password  ) throws InvalidAuthException
     {
         CustomUserDetails userDetails = null;
         User user = null;
 
-
         if("token".equals( userName ))
-        {
             user = auhtenticateByToken( password );
-        }
         else
-        {
             user = auhtenticateUser( userName, password );
-        }
 
         if(user != null)
         {
@@ -122,10 +123,7 @@ public class IdentityService
             return userDetails;
         }
         else
-        {
             return null;
-        }
-
     }
 
 
@@ -186,7 +184,6 @@ public class IdentityService
     }
 
 
-
     /* *************************************************
      *
      */
@@ -221,5 +218,4 @@ public class IdentityService
             throw new IllegalArgumentException( "Password doesn't match security requirements" );
         }
     }
-
 }

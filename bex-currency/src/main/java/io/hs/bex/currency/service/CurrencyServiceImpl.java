@@ -5,14 +5,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
@@ -67,7 +60,7 @@ public class CurrencyServiceImpl implements CurrencyService
     final int LAST_XRATES_FETCH_PERIOD = 300; // seconds
     final int FIAT_XRATES_FETCH_PERIOD = 600; // seconds
     final int HOURLY_XRATES_FETCH_PERIOD = 2400; // seconds
-    final int COIN_INFO_FETCH_PERIOD = 86400; // seconds  1 day
+    final int COIN_INFO_FETCH_PERIOD = 1200; // seconds  1 day
 
     public final SysCurrency BASE_SYSTEM_CURRENCY = SysCurrency.USD;
 
@@ -75,13 +68,13 @@ public class CurrencyServiceImpl implements CurrencyService
     public final String STOCK_EXCHANGE_SOURCE = "";
 
     final String XRATES_ROOT_FOLDER = "/xrates";
-    private final String STATS_ROOT_FOLDER = "/xrates/stats/";
 
+    private List<CoinInfo> COIN_INFO_LIST = new ArrayList<>();
 
     private List<CurrencyRate> fiatXRates = Collections.synchronizedList( new ArrayList<>() );
 
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     @Autowired
     CurrencyTaskManager taskManager;
@@ -101,10 +94,11 @@ public class CurrencyServiceImpl implements CurrencyService
     @Qualifier( "ExchangeRatesAPI" )
     CurrencyInfoService fiatCcyService;
     
-    @Autowired CurrencyStatsService statsService;
-
+    @Autowired
+    CurrencyStatsService statsService;
 
     private CurrencyInfoRequest currencyTaskParams = new CurrencyInfoRequest();
+    private boolean TASKS_ACTIVE = false;
 
     @PostConstruct
     public void init()
@@ -112,6 +106,8 @@ public class CurrencyServiceImpl implements CurrencyService
         buildTaskParams();
         
         statsService.init(getSupported( CurrencyType.FIAT ),getSupported( CurrencyType.DIGITAL ));
+
+        taskManager.startScheduledAtFixed( startCoinInfoTask(), "CoinInfoTask", 5, COIN_INFO_FETCH_PERIOD );
     }
 
     private HourlyXRatesTask startHourlyXRatesTask()
@@ -149,13 +145,16 @@ public class CurrencyServiceImpl implements CurrencyService
     @Override
     public void startSyncJob()
     {
-        taskManager.startScheduledAtFixed( startFiatXRatesTask(), "FiatXRatesTask", 0, FIAT_XRATES_FETCH_PERIOD );
-        taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 30,
-                HOURLY_XRATES_FETCH_PERIOD );
-        taskManager.startScheduledAtFixed( startLatestXRatesTask(), "LatesXRatesTask", 35, LAST_XRATES_FETCH_PERIOD );
-        //taskManager.startScheduledAtFixed( startCoinInfoTask(), "CoinInfoTask", 10, COIN_INFO_FETCH_PERIOD );
+        if ( !TASKS_ACTIVE )
+        {
+            taskManager.startScheduledAtFixed( startFiatXRatesTask(), "FiatXRatesTask", 0, FIAT_XRATES_FETCH_PERIOD );
+            taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 20,
+                    HOURLY_XRATES_FETCH_PERIOD );
+            taskManager.startScheduledAtFixed( startLatestXRatesTask(), "LatesXRatesTask", 60, LAST_XRATES_FETCH_PERIOD );
 
-        //taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
+            //taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
+            TASKS_ACTIVE = true;
+        }
     }
 
     @Override
@@ -168,7 +167,17 @@ public class CurrencyServiceImpl implements CurrencyService
     @Override
     public void createStatsDataAsync()
     {
-        statsService.createStatsData();
+        statsService.createStatsData(COIN_INFO_LIST);
+    }
+
+    @Override
+    public void createStatsData( String fiatCode, String coinCode )
+    {
+        Optional<CoinInfo> info = COIN_INFO_LIST.stream()
+                .filter( coinInfo -> coinInfo.getCoin().getCode().equals( coinCode ) ).findFirst();
+
+        if(info.isPresent() )
+            statsService.createStatsData(fiatCode, coinCode, info.get());
     }
 
     @Override
@@ -302,16 +311,23 @@ public class CurrencyServiceImpl implements CurrencyService
             String path = "";
             List<CurrencyRate> baseXRates, xrates;
             Map<String, String> dataMap = new LinkedHashMap<>();
-            Instant statsTimeStamp = Instant.now();
 
             for( SysCurrency sourceCurrency: request.getSourceCurrencies() )
             {
                 LocalDateTime lastDate = null, localDateTime;
                 dataMap.clear();
 
-                baseXRates = digitalCcyService
-                        .getXRatesBy( new CurrencyInfoRequest( sourceCurrency, BASE_SYSTEM_CURRENCY,
-                                request.getPeriod(), request.getDateTo(), request.getLimit(), STOCK_EXCHANGE_SOURCE ) );
+                CurrencyInfoRequest InfoRequest = new CurrencyInfoRequest( sourceCurrency, BASE_SYSTEM_CURRENCY,
+                        request.getPeriod(), request.getDateTo(), request.getLimit(), STOCK_EXCHANGE_SOURCE );
+
+                baseXRates = digitalCcyService.getXRatesBy( InfoRequest );
+
+                //---------- ON error fetch data from another API ------------
+                if(baseXRates == null || baseXRates.isEmpty())
+                {
+                    baseXRates =  coinPaprikaService.getXRatesBy( InfoRequest );
+                }
+                //------------------------------------------------------------
 
                 for( SysCurrency targetCurrency: targetCurrencies )
                 {
@@ -356,7 +372,6 @@ public class CurrencyServiceImpl implements CurrencyService
                         appendData( path, "index.json", dataMap );
                         dataMap.clear();
                     }
-                    
                 }
 
                 // ------------------------------------------------------------------------
@@ -397,26 +412,34 @@ public class CurrencyServiceImpl implements CurrencyService
     {
         try
         {
-            List<CurrencyRate> xrates = digitalCcyService.getLatestXRates( request );
+            List<CurrencyRate> xRates = digitalCcyService.getLatestXRates( request );
+
+            xRates = null;
+            //--------- On error fetch data from CoinPaprika ------------------------
+            if(xRates == null || xRates.isEmpty())
+            {
+                xRates = coinPaprikaService.getLatestXRates( request );
+            }
 
             // ---------- Add other currency rates ----------
-            List<CurrencyRateStack> rateStockList = calculateXRateDetails( xrates );
+            List<CurrencyRateStack> rateStockList = calculateXRateDetails( xRates );
             // ----------------------------------------------
 
             for( CurrencyRateStack rateStack: rateStockList )
             {
                 String rootPath = "/latest/" + rateStack.getCurrency().getCode() + "/";
                 saveFile( rootPath, "index.json", mapper.writeValueAsString( rateStack ) );
-
             }
 
-            //--------Set statistics data -------------------------
-            statsService.updateStatsData( rateStockList, Instant.now() );
-            //-----------------------------------------------------
+            logger.info( "(!!!) *** Successfully saved latest xrates:{}", Instant.now() );
 
+            //-----------------------------------------------l
+            dataStoreService.publishNSAsync( "", "", "" );
             //-----------------------------------------------
-            dataStoreService.publishNS( "", "", "" );
-            //-----------------------------------------------
+
+            //--------Set statistics data -------------------------
+            statsService.updateStatsData( rateStockList, Instant.now(), COIN_INFO_LIST );
+            //-----------------------------------------------------
         }
         catch( Exception e )
         {
@@ -443,33 +466,31 @@ public class CurrencyServiceImpl implements CurrencyService
     }
 
     @Override
-    public void fetchAndStoreCoinInfo()
+    public void fetchCoinInfo()
     {
-        CurrencyInfoRequest request = new CurrencyInfoRequest();
-        request.setSourceCurrencies( getSupported( CurrencyType.DIGITAL ) );
+        try
+        {
+            CurrencyInfoRequest request = new CurrencyInfoRequest();
+            request.setSourceCurrencies( getSupported( CurrencyType.DIGITAL ) );
 
-        saveCoinInfo( coinPaprikaService.getCoinInfo( request ) );
+            synchronized (this)
+            {
+                COIN_INFO_LIST.clear();
+                COIN_INFO_LIST.addAll( coinPaprikaService.getCoinInfo( request ) );
+            }
+
+            logger.info( "(!!!) Successfully fetched CoinInfo." );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "(!!!) Error getting CoinInfo:" , e );
+        }
     }
 
-    @Override
-    public void saveCoinInfo( CoinInfo coinInfo )
-    {
-       try
-       {
-           if(  coinInfo != null )
-               dataStoreService.saveFile( true, STATS_ROOT_FOLDER, "coininfo.json",
-                mapper.writeValueAsString( coinInfo ) );
-       }
-       catch( Exception e )
-       {
-           logger.error( "Error saving coinInfo :{}", coinInfo, e );
-       }
-    }
 
     @Override
     public List<CurrencyRate> getXRates( CurrencyInfoRequest request )
     {
-
         if( request.getCurrencyType() == CurrencyType.FIAT )
         {
             return fiatCcyService.getXRatesBy( request );
@@ -483,7 +504,6 @@ public class CurrencyServiceImpl implements CurrencyService
     @Override
     public List<CurrencyRate> getLatestXRates( CurrencyInfoRequest request )
     {
-
         if( request.getCurrencyType() == CurrencyType.FIAT )
         {
             request.getSourceCurrencies().add( BASE_SYSTEM_CURRENCY );

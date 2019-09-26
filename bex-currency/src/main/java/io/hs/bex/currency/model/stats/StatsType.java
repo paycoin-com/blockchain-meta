@@ -10,7 +10,7 @@ public enum StatsType
     WEEKLY( ChronoUnit.HOURS, 3, 56 ),
     MONTHLY( ChronoUnit.HOURS, 12, 60),
     MONTHLY6( ChronoUnit.DAYS, 3, 60),
-    ANNUAL( ChronoUnit.DAYS, 7, 52 );
+    MONTHLY18( ChronoUnit.DAYS, 7, 81 );
     
     private ChronoUnit scaleUnit;
     private short scale;
@@ -38,6 +38,5 @@ public enum StatsType
     {
         return scale;
     }
-
 
 }

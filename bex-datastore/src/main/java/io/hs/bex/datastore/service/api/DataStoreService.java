@@ -23,6 +23,8 @@ public interface DataStoreService
 
     String publishNSAsync( String path, String fileName );
 
+    String publishNSAsync( String key, String path, String fileName );
+
     FileInfo getFileInfo( DataStoreType dataStoreType, String path, String fileName );
 
     String createDir( DataStoreType dataStoreType, String path, boolean createParent );
