@@ -129,6 +129,17 @@ public class CurrencyInfoRequest
             return "";
     }
     
+    public String getSourceSecondaryCode()
+    {
+        if( sourceCurrencies.get( 0 ) != null )
+        {
+            return sourceCurrencies.get( 0 ).getSecondaryCode();
+        }
+        else
+            return "";
+    }
+    
+    
     public String getSourceCcyUid()
     {
         if( sourceCurrencies.get( 0 ) != null )
@@ -223,6 +234,12 @@ public class CurrencyInfoRequest
                 .collect( Collectors.joining( separator ) );
     }
 
+    public String joinSourceSecondaryCcys( String separator )
+    {
+        return sourceCurrencies.stream().map( currency -> currency.getSecondaryCode() )
+                .collect( Collectors.joining( separator ) );
+    }
+    
     public boolean isFastCalculation()
     {
         return fastCalculation;

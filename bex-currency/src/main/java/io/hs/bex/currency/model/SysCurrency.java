@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 import io.hs.bex.common.utils.StringUtils;
 
@@ -43,7 +44,7 @@ public enum SysCurrency
     GNT( 16, "Golem", "U+039E",CurrencyType.DIGITAL ),
     GUSD( 17, "Gemini-dollar", "U+039E",CurrencyType.DIGITAL ),
     GTO( 17, "Gifto", "U+039E",CurrencyType.DIGITAL ),
-    HOT(  18, "Holo", "U+039E",CurrencyType.DIGITAL ),
+    HOT( 18, "Holo" , "Holo", "U+039E",CurrencyType.DIGITAL ),
     HT(  19, "Huobi-Token", "U+039E",CurrencyType.DIGITAL ),
     IDEX( 20, "IDEX", "U+039E",CurrencyType.DIGITAL ),
     IDXM( 21, "Idex-membership", "U+039E",CurrencyType.DIGITAL ),
@@ -101,9 +102,11 @@ public enum SysCurrency
     private boolean supported = false;
     
     private String details;
+    private String secondaryCode;
     
 
     private java.util.Currency internalIns = null;
+    
 
     SysCurrency( String symbolUnicode )
     {
@@ -114,6 +117,15 @@ public enum SysCurrency
 
     SysCurrency( int codeNumeric, String displayName, String symbolUnicode, CurrencyType type )
     {
+        this.codeNumeric = codeNumeric;
+        this.displayName = displayName;
+        this.type = type;
+        this.symbolUnicode = symbolUnicode;
+    }
+    
+    SysCurrency( int codeNumeric, String secondaryCode, String displayName, String symbolUnicode, CurrencyType type )
+    {
+        this.secondaryCode = secondaryCode;
         this.codeNumeric = codeNumeric;
         this.displayName = displayName;
         this.type = type;
@@ -182,6 +194,15 @@ public enum SysCurrency
     public void setSupported( boolean supported )
     {
         this.supported = supported;
+    }
+    
+
+    public String getSecondaryCode()
+    {
+        if(!Strings.isNullOrEmpty( secondaryCode ))
+            return secondaryCode.toUpperCase();
+        
+        return name().toUpperCase();
     }
 
     public static SysCurrency find( String code )

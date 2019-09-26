@@ -33,12 +33,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
+
 //-------------------------------------
 
 @JsonIgnoreProperties( ignoreUnknown = true )
 class InfoResponse
 {
-    public InfoResponse() {}
+    public InfoResponse()
+    {
+    }
 
     @JsonProperty( "Response" )
     public String response;
@@ -59,7 +62,9 @@ class InfoResponse
 @JsonIgnoreProperties( ignoreUnknown = true )
 class Data
 {
-    public Data() {}
+    public Data()
+    {
+    }
 
     @JsonProperty( "time" )
     public long time;
@@ -76,6 +81,7 @@ class Data
     @JsonProperty( "open" )
     public double open = 0;
 }
+
 @JsonIgnoreProperties( ignoreUnknown = true )
 class CCCoinInfoRaw
 {
@@ -87,7 +93,9 @@ class CCCoinInfoRaw
 @JsonIgnoreProperties( ignoreUnknown = true )
 class CCCoinInfo
 {
-    public CCCoinInfo() {}
+    public CCCoinInfo()
+    {
+    }
 
     @JsonProperty( "SUPPLY" )
     public long supply;
@@ -126,9 +134,8 @@ public class CryptoCompareHandler implements CurrencyInfoService
     @Override
     public List<CurrencyRate> getLatestXRates(CurrencyInfoRequest request)
     {
-        String url =
-                infoServiceUrl + "/data/pricemulti?relaxedValidation=true&fsyms=" + request.joinSourceCurrencies( "," )
-                        + "&tsyms=" + request.joinTargetCurrencies( "," );
+        String url = infoServiceUrl + "/data/pricemulti?relaxedValidation=true&fsyms="
+                + request.joinSourceSecondaryCcys( "," ) + "&tsyms=" + request.joinTargetCurrencies( "," );
 
         if ( !Strings.isNullOrEmpty( request.getXStockSource() ) )
             url += "&e=" + request.getXStockSource();
@@ -151,8 +158,8 @@ public class CryptoCompareHandler implements CurrencyInfoService
     @Override
     public List<CoinInfo> getCoinInfo(CurrencyInfoRequest request)
     {
-        String url = infoServiceUrl + "/data/pricemultifull?relaxedValidation=true&fsyms=" + request
-                .joinSourceCurrencies( "," ) + "&tsyms=" + request.joinTargetCurrencies( "," );
+        String url = infoServiceUrl + "/data/pricemultifull?relaxedValidation=true&fsyms="
+                + request.joinSourceSecondaryCcys( "," ) + "&tsyms=" + request.joinTargetCurrencies( "," );
 
         if ( !Strings.isNullOrEmpty( request.getXStockSource() ) )
             url += "&e=" + request.getXStockSource();
@@ -175,8 +182,8 @@ public class CryptoCompareHandler implements CurrencyInfoService
     @Override
     public CurrencyRate getXRate(String sourceCurrency, String targetCurrency)
     {
-        String url = infoServiceUrl + "/data/price?fsym=" + sourceCurrency.toUpperCase() + "&tsyms=" + sourceCurrency
-                .toUpperCase();
+        String url = infoServiceUrl + "/data/price?fsym=" + sourceCurrency.toUpperCase() + "&tsyms="
+                + sourceCurrency.toUpperCase();
 
         try
         {
@@ -228,21 +235,21 @@ public class CryptoCompareHandler implements CurrencyInfoService
         }
         else if ( request.getPeriod() == TimePeriod.DAY )
         {
-            url = infoServiceUrl + "/data/histoday?aggregate=1&fsym=" + request.getSourceCcyCode() + "&tsym=" + request
-                    .getTargetCcyCode() + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo()
-                    .getEpochSecond();
+            url = infoServiceUrl + "/data/histoday?aggregate=1&fsym=" + request.getSourceSecondaryCode() + "&tsym="
+                    + request.getTargetCcyCode() + "&limit=" + request.getLimit() + "&toTs="
+                    + request.getDateTo().getEpochSecond();
         }
         else if ( request.getPeriod() == TimePeriod.HOUR )
         {
-            url = infoServiceUrl + "/data/histohour?aggregate=1&fsym=" + request.getSourceCcyCode() + "&tsym=" + request
-                    .getTargetCcyCode() + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo()
-                    .getEpochSecond();
+            url = infoServiceUrl + "/data/histohour?aggregate=1&fsym=" + request.getSourceSecondaryCode() + "&tsym="
+                    + request.getTargetCcyCode() + "&limit=" + request.getLimit() + "&toTs="
+                    + request.getDateTo().getEpochSecond();
         }
         else if ( request.getPeriod() == TimePeriod.MINUTE )
         {
-            url = infoServiceUrl + "/data/histominute?aggregate=1&fsym=" + request.getSourceCcyCode() + "&tsym="
-                    + request.getTargetCcyCode() + "&limit=" + request.getLimit() + "&toTs=" + request.getDateTo()
-                    .getEpochSecond();
+            url = infoServiceUrl + "/data/histominute?aggregate=1&fsym=" + request.getSourceSecondaryCode() + "&tsym="
+                    + request.getTargetCcyCode() + "&limit=" + request.getLimit() + "&toTs="
+                    + request.getDateTo().getEpochSecond();
         }
 
         if ( !Strings.isNullOrEmpty( request.getXStockSource() ) )
@@ -262,13 +269,15 @@ public class CryptoCompareHandler implements CurrencyInfoService
             if ( responseObject.response.equals( "Error" ) )
                 throw new Exception( responseObject.message );
 
-            for ( Data data : responseObject.dataList )
+            for ( Data data: responseObject.dataList )
             {
                 return new CurrencyRate( Instant.ofEpochSecond( data.time ), SysCurrency.find( sourceCurrency ),
                         SysCurrency.find( targetCurrency ), (float) data.open );
             }
         }
-        catch ( IOException e ){}
+        catch ( IOException e )
+        {
+        }
 
         return null;
     }
@@ -282,14 +291,16 @@ public class CryptoCompareHandler implements CurrencyInfoService
             List<CurrencyRate> currencyRates = new ArrayList<>();
             Instant now = Instant.now();
 
-            Map<String, Map<String, Double>> sourceCurrencies = mapper
-                    .readValue( json, new TypeReference<Map<String, Map<String, Double>>>() {} );
+            Map<String, Map<String, Double>> sourceCurrencies = mapper.readValue( json,
+                    new TypeReference<Map<String, Map<String, Double>>>()
+                    {
+                    } );
 
-            for ( String sourceCurrencyStr : sourceCurrencies.keySet() )
+            for ( String sourceCurrencyStr: sourceCurrencies.keySet() )
             {
                 Map<String, Double> targetCurrencies = sourceCurrencies.get( sourceCurrencyStr );
 
-                for ( String targetCurrencyStr : targetCurrencies.keySet() )
+                for ( String targetCurrencyStr: targetCurrencies.keySet() )
                 {
                     Double value = targetCurrencies.get( targetCurrencyStr );
 
@@ -317,17 +328,17 @@ public class CryptoCompareHandler implements CurrencyInfoService
         try
         {
             List<CoinInfo> coinInfoList = new ArrayList<>();
-            Instant now = Instant.now();
+            // Instant now = Instant.now();
 
             CCCoinInfoRaw rawData = mapper.readValue( json, CCCoinInfoRaw.class );
 
             if ( rawData != null )
             {
-                for ( String sCoinCode : rawData.coins.keySet() )
+                for ( String sCoinCode: rawData.coins.keySet() )
                 {
                     Map<String, CCCoinInfo> targetCurrencies = rawData.coins.get( sCoinCode );
 
-                    for ( String tCoinCode : targetCurrencies.keySet() )
+                    for ( String tCoinCode: targetCurrencies.keySet() )
                     {
                         CCCoinInfo ccCoinInfo = targetCurrencies.get( tCoinCode );
                         CoinInfo coinInfo = new CoinInfo( sCoinCode, tCoinCode, ccCoinInfo.supply, ccCoinInfo.volume23h,
@@ -361,7 +372,7 @@ public class CryptoCompareHandler implements CurrencyInfoService
             if ( responseObject.response.equals( "Error" ) )
                 throw new Exception( responseObject.message );
 
-            for ( Data data : responseObject.dataList )
+            for ( Data data: responseObject.dataList )
             {
                 rateList.add( new CurrencyRate( Instant.ofEpochSecond( data.time ), sourceCurrency, targetCurrency,
                         data.open > 0 ? (float) data.open : (float) data.close ) );
