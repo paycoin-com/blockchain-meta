@@ -207,6 +207,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         else
             return Collections.emptyList();
     }
+    
     private CoinInfo jsonToCoinInfo( String coinId,  String jsonResponse ) throws IOException
     {
         CPCoinInfoResponse coinInfo = mapper.readValue( jsonResponse, CPCoinInfoResponse.class);
@@ -381,7 +382,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         }
         catch( Exception e )
         {
-            logger.error( "Error parsing JSON in CoinPaprika:{}", e.toString() );
+            logger.error( "Error parsing JSON in CoinPaprika:{}-{}", sourceCurrency, targetCurrency, e.toString() );
         }
 
         return Collections.emptyList();
@@ -404,7 +405,7 @@ public class CoinPaprikaHandler implements CurrencyInfoService
         }
         catch( Exception e )
         {
-            logger.error( "(!!!) Error in converting response to object:", e );
+            logger.error( "(!!!) Error in converting response to object:{}-{}", sourceCurrency, targetCurrency, e );
         }
 
         return null;

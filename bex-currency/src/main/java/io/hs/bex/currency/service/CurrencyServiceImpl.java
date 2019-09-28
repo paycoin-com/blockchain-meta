@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import io.hs.bex.common.utils.StringUtils;
-import io.hs.bex.currency.handler.CryptoCompareHandler;
 import io.hs.bex.currency.model.CurrencyInfoRequest;
 import io.hs.bex.currency.model.CurrencyRate;
 import io.hs.bex.currency.model.CurrencyRateStack;
@@ -45,7 +44,7 @@ import com.google.common.base.Strings;
 public class CurrencyServiceImpl implements CurrencyService
 {
     // ---------------------------------
-    private static final Logger logger = LoggerFactory.getLogger( CryptoCompareHandler.class );
+    private static final Logger logger = LoggerFactory.getLogger( CurrencyServiceImpl.class );
     // ---------------------------------
     
 //    @Value( "${node.ipfs.key.xrates.latest}" )
@@ -106,8 +105,9 @@ public class CurrencyServiceImpl implements CurrencyService
         buildTaskParams();
         
         statsService.init(getSupported( CurrencyType.FIAT ),getSupported( CurrencyType.DIGITAL ));
-
+        
         taskManager.startScheduledAtFixed( startCoinInfoTask(), "CoinInfoTask", 5, COIN_INFO_FETCH_PERIOD );
+        
     }
 
     private HourlyXRatesTask startHourlyXRatesTask()
@@ -137,7 +137,7 @@ public class CurrencyServiceImpl implements CurrencyService
     public void buildTaskParams()
     {
         currencyTaskParams.clearCurrencies();
-
+        
         currencyTaskParams.getSourceCurrencies().addAll( getSupported( CurrencyType.DIGITAL ) );
         currencyTaskParams.getTargetCurrencies().addAll( getSupported( CurrencyType.FIAT ) );
     }
@@ -148,9 +148,9 @@ public class CurrencyServiceImpl implements CurrencyService
         if ( !TASKS_ACTIVE )
         {
             taskManager.startScheduledAtFixed( startFiatXRatesTask(), "FiatXRatesTask", 0, FIAT_XRATES_FETCH_PERIOD );
-            taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 20,
+            taskManager.startScheduledAtFixed( startHourlyXRatesTask(), "HourlyXRatesTask", 60,
                     HOURLY_XRATES_FETCH_PERIOD );
-            taskManager.startScheduledAtFixed( startLatestXRatesTask(), "LatesXRatesTask", 60, LAST_XRATES_FETCH_PERIOD );
+            taskManager.startScheduledAtFixed( startLatestXRatesTask(), "LatesXRatesTask", 20, LAST_XRATES_FETCH_PERIOD );
 
             //taskManager.startScheduledTask( startDataPublishTask(), "DataPublishProcessTask", 60, 60 );
             TASKS_ACTIVE = true;
@@ -414,7 +414,6 @@ public class CurrencyServiceImpl implements CurrencyService
         {
             List<CurrencyRate> xRates = digitalCcyService.getLatestXRates( request );
 
-            xRates = null;
             //--------- On error fetch data from CoinPaprika ------------------------
             if(xRates == null || xRates.isEmpty())
             {

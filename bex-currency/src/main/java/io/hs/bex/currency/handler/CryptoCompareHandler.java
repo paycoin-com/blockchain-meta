@@ -304,7 +304,13 @@ public class CryptoCompareHandler implements CurrencyInfoService
                 {
                     Double value = targetCurrencies.get( targetCurrencyStr );
 
-                    CurrencyRate currencyRate = new CurrencyRate( now, SysCurrency.find( sourceCurrencyStr ),
+                    SysCurrency sysCurr;
+                    if("HOLO".toUpperCase().contentEquals( sourceCurrencyStr.toUpperCase() ))
+                        sysCurr = SysCurrency.HOT;                   
+                    else
+                        sysCurr = SysCurrency.find( sourceCurrencyStr );     
+                    
+                    CurrencyRate currencyRate = new CurrencyRate( now, sysCurr,
                             SysCurrency.find( targetCurrencyStr ), value.floatValue() );
 
                     currencyRates.add( currencyRate );

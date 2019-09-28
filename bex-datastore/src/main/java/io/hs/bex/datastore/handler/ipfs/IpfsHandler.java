@@ -15,6 +15,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -50,7 +51,11 @@ public class IpfsHandler implements DataStoreHandler
     @PostConstruct
     private void init()
     {
-        restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory httpRFactory = new SimpleClientHttpRequestFactory();
+        httpRFactory.setConnectTimeout(240000);
+        httpRFactory.setReadTimeout(240000);
+
+        restTemplate = new RestTemplate(httpRFactory);
     }
 
     private HttpHeaders createHeader( MediaType mediType )
@@ -101,9 +106,16 @@ public class IpfsHandler implements DataStoreHandler
                 return null;
 
         }
+        catch(HttpServerErrorException e ) 
+        {
+            logger.error( "Error publishing to IPFS Key:{}-{}\nUrl:{}:", key, nsValue, url );
+            logger.error( "Status Code:{}\nError Code:{}", e.getStatusCode().toString(), e.getResponseBodyAsString() );
+
+            return null;
+        } 
         catch( Exception e )
         {
-            logger.error( "Error publishing IPFS hash:{}", nsValue, e );
+            logger.error( "Error publishing IPFS Key:{}-{}\nUrl:{}:", key, nsValue, url, e );
 
             return null;
         }
